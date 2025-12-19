@@ -8,7 +8,7 @@ Set up tests to use the test DB
 
 import sys
 
-from mrcs_core.db.dbclient import DBClient, DBMode
+from mrcs_control.db.dbclient import DBClient, DBMode
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -25,4 +25,3 @@ class Setup(object):
 
         DBClient.kill_all()
         DBClient.set_client_db_mode(DBMode.TEST)
-        print('dbSetup: set DB for test', file=sys.stderr)

@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+
+"""
+Created on 17 Nov 2025
+
+@author: Bruno Beloff (bbeloff@me.com)
+
+source repo: mrcs_core
+
+DESCRIPTION
+A tool to manage message broker exchanges and queues.
+Note that exchanges cannot be deleted if any queues exist for that exchange - delete the queues first.
+
+SYNOPSIS
+mrcs_broker [-h] [-t] [--indent INDENT] [-v] [--version] (-e | -q) [-d DELETE]
+
+EXAMPLES
+mrcs_broker -t -e -v -i4 -d mrcs.test
+
+RESOURCES
+"""
+
+import sys
+
+from pika.exceptions import AMQPError
+
+from mrcs_control.cli.args.broker_args import BrokerArgs
+from mrcs_control.messaging.broker import Broker
+from mrcs_control.messaging.mqclient import MQManager
+
+from mrcs_core.data.json import JSONify
+from mrcs_core.sys.logging import Logging
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+def find_filtered():
+    items = broker.list_exchanges() if args.exchange else broker.list_queues()
+    return args.mode.value.broker_filter(items)
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+
+    manager = None
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    args = BrokerArgs('a tool for managing message broker exchanges and queues')
+
+    Logging.config('mrcs_broker', verbose=args.verbose)
+    logger = Logging.getLogger()
+    logger.info(f'args: {args}')
+    logger.info(f'mode: {args.mode.value}')
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    try:
+        broker = Broker.construct()
+        logger.info(f'broker: {broker}')
+
+        if args.delete:
+            if args.delete not in [item.name for item in find_filtered()]:
+                logger.error(f'item "{args.delete}" not present.')
+                exit(2)
+
+            manager = MQManager()
+            manager.connect()
+
+            if args.exchange:
+                manager.exchange_delete(args.delete)
+
+            if args.queue:
+                manager.queue_delete(args.delete)
+
+        filtered_items = find_filtered()
+        print(JSONify.dumps(filtered_items, indent=args.indent))
+        logger.info(f'found {len(filtered_items)} items.')
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    except AMQPError as ex:
+        logger.error(ex)
+        exit(1)
+
+    except KeyboardInterrupt:
+        print(file=sys.stderr)
+
+    finally:
+        if manager:
+            manager.close()

@@ -1,0 +1,110 @@
+#!/usr/bin/env python3
+
+"""
+Created on 22 Nov 2025
+
+@author: Bruno Beloff (bbeloff@me.com)
+
+source repo: mrcs_core
+
+DESCRIPTION
+A tool for publishing messages.
+Message bodies are read from stdin or from the --message argument. Messages are published with source and target
+routing specified by command-line arguments.
+
+SYNOPSIS
+mrcs_publisher [-h] [-t] [--indent INDENT] [-v] [--version] [-s SOURCE_SERIAL]
+[-e TARGET_EQUIPMENT] [-b TARGET_BLOCK] [-n TARGET_SERIAL]
+
+EXAMPLES
+mrcs_publisher -t -v -e MPU -b 1 -n 2
+
+RESOURCES
+"""
+
+import json
+import sys
+
+from json import JSONDecodeError
+
+from pika.exceptions import AMQPError
+
+from mrcs_control.cli.args.publisher_args import PublisherArgs
+from mrcs_control.messaging.mqclient import Publisher
+
+from mrcs_core.data.datum import Datum
+from mrcs_core.data.equipment_identity import EquipmentType, EquipmentIdentifier, EquipmentFilter
+from mrcs_core.data.json import JSONify
+from mrcs_core.messaging.message import Message
+from mrcs_core.messaging.routing_key import PublicationRoutingKey
+from mrcs_core.sys.logging import Logging
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+def publish_message(body):
+    try:
+        message = Message(routing_key, json.loads(body))
+        publisher.publish(message)
+
+        logger.info(JSONify.dumps(message, indent=args.indent))
+        return True
+
+    except JSONDecodeError as jde:
+        logger.error(f'{jde.__class__.__name__}: {body}')
+        return False
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+
+    publisher = None
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    args = PublisherArgs('a tool for publishing messages')
+
+    Logging.config('mrcs_publisher', verbose=args.verbose)
+    logger = Logging.getLogger()
+    logger.info(f'args: {args}')
+    logger.info(f'mode: {args.mode.value}')
+
+    try:
+        target = EquipmentFilter.construct(args.target_equipment, args.target_block, args.target_serial)
+    except ValueError as ve:
+        logger.error(ve)
+        exit(2)
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    try:
+        source = EquipmentIdentifier(EquipmentType.TST, None, args.source_serial)
+        routing_key = PublicationRoutingKey(source, target)
+
+        publisher = Publisher.construct_pub(args.mode.value.mq_mode)
+
+        publisher.connect()
+        logger.info(f'publisher: {publisher}')
+
+        if args.message_body:
+            if not publish_message(args.message_body):
+                exit(2)
+        else:
+            for message_body in Datum.effective_lines(sys.stdin):
+                publish_message(message_body)
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    except AMQPError as ex:
+        logger.error(ex)
+        exit(1)
+
+    except KeyboardInterrupt:
+        print(file=sys.stderr)
+
+    finally:
+        if publisher:
+            publisher.close()
