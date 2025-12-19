@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+
+"""
+Created on 17 Nov 2025
+
+@author: Bruno Beloff (bbeloff@me.com)
+
+source repo: mrcs_core
+
+DESCRIPTION
+A service to record all inter-process messages.
+Note that in --subscribe mode, the utility runs forever.
+
+SYNOPSIS
+mrcs_recorder [-h] [-t] [--indent INDENT] [-v] [--version] (-c | -r REPORT | -s)
+
+EXAMPLES
+mrcs_recorder -v -t -r 10
+
+RESOURCES
+"""
+
+import sys
+
+from mrcs_control.cli.args.recorder_args import RecorderArgs
+from mrcs_control.operations.recorder.message_recorder import MessageRecorder
+
+from mrcs_core.data.json import JSONify
+from mrcs_core.sys.logging import Logging
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    args = RecorderArgs('a service to record all inter-process messages')
+
+    Logging.config('mrcs_recorder', verbose=args.verbose)
+    logger = Logging.getLogger()
+    logger.info(f'args: {args}')
+    logger.info(f'mode: {args.mode.value}')
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    try:
+        recorder = MessageRecorder.construct(args.mode)
+        logger.info(f'recorder: {recorder}')
+
+        if args.clean:
+            recorder.clean()
+
+        if args.report is not None:
+            records = list(recorder.find_latest(args.report))
+            print(JSONify.dumps(records, indent=args.indent))
+
+            logger.info(f'found {len(records)} items.')
+
+        if args.subscribe:
+            recorder.subscribe()
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    except KeyboardInterrupt:
+        print(file=sys.stderr)

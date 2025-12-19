@@ -6,7 +6,7 @@ Created on 19 Dec 2025
 Set up tests to use the test DB
 """
 
-from mrcs_core.db.dbclient import DBClient, DBMode
+from mrcs_control.db.dbclient import DBClient, DBMode
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -18,8 +18,6 @@ class TestSetup(object):
 
     @classmethod
     def dbSetup(cls):
-        print('*** mrcs_control: dbSetup')
-
         if DBClient.client_db_mode() == DBMode.TEST:
             return
 
