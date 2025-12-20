@@ -44,6 +44,13 @@ class TestUserPersistence(unittest.TestCase):
         self.assertEqual(obj2.email, obj1.email)
 
 
+    def test_exists(self):
+        obj1, _ = self.__setup_db()
+        exists = PersistentUser.exists(obj1.uid)
+
+        self.assertEqual(exists, True)
+
+
     def test_update(self):
         obj1, _ = self.__setup_db()
         obj2 = PersistentUser(obj1.uid, obj1.email, obj1.role, obj1.must_set_password,
@@ -81,8 +88,8 @@ class TestUserPersistence(unittest.TestCase):
 
     def test_email(self):
         obj1, _ = self.__setup_db()
-        self.assertEqual(PersistentUser.email_in_use(obj1.email), True)
-        self.assertEqual(PersistentUser.email_in_use('xbeloff@me.com'), False)
+        self.assertIsNotNone(PersistentUser.email_user(obj1.email))
+        self.assertIsNone(PersistentUser.email_user('xbeloff@me.com'))
 
 
     # ----------------------------------------------------------------------------------------------------------------
