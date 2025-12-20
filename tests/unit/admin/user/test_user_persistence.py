@@ -65,7 +65,7 @@ class TestUserPersistence(unittest.TestCase):
 
     def test_log_in(self):
         obj1, _ = self.__setup_db()
-        user = obj1.log_in(obj1.email, 'password')
+        user = obj1.log_in(obj1.email, 'pass')
         self.assertIsNotNone(user)
 
         user = obj1.log_in(obj1.email, 'junk')
@@ -95,13 +95,13 @@ class TestUserPersistence(unittest.TestCase):
         with open(abs_filename) as fp:
             jdict = json.load(fp)
         obj1 = PersistentUser.construct_from_jdict(jdict)
-        obj1 = obj1.save(password='password')
+        obj1 = obj1.save(password='pass')
 
         abs_filename = os.path.join(os.path.dirname(__file__), 'data', 'new_user2.json')
         with open(abs_filename) as fp:
             jdict = json.load(fp)
         obj2 = PersistentUser.construct_from_jdict(jdict)
-        obj2 = obj2.save(password='password')
+        obj2 = obj2.save(password='pass')
 
         return obj1, obj2
 

@@ -9,9 +9,11 @@ A universal message logger
 from mrcs_control.db.dbclient import DBClient
 from mrcs_control.messaging.mqclient import Subscriber
 from mrcs_control.operations.operation_mode import OperationMode, OperationService
+from mrcs_control.operations.recorder.message import PersistentMessage
 from mrcs_control.operations.recorder.message_record import PersistentMessageRecord
 
 from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentFilter, EquipmentType
+from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
 from mrcs_core.sys.logging import Logging
 
@@ -43,9 +45,9 @@ class MessageRecorder(object):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def callback(self, message: PersistentMessageRecord):       # TODO: this is some sort of widening?
+    def callback(self, message: Message):
         self.__logger.info(message)
-        message.save()
+        PersistentMessage.widen(message).save()
 
 
     # ----------------------------------------------------------------------------------------------------------------
