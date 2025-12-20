@@ -31,6 +31,8 @@ class PersistentMessageRecord(MessageRecord, MessagePersistence):
     classdocs
     """
 
+    # TODO: construct from superclass
+
     @classmethod
     def construct_from_db(cls, uid_field, rec_field, routing_key_field, body_field):
         uid = int(uid_field)

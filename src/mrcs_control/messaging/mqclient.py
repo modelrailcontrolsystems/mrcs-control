@@ -19,8 +19,6 @@ from enum import unique, StrEnum
 import pika
 from pika.exceptions import AMQPError
 
-from mrcs_control.operations.recorder.message import PersistentMessage
-
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.data.json import JSONify
 from mrcs_core.data.meta_enum import MetaEnum
@@ -258,7 +256,7 @@ class Subscriber(Publisher):
         if routing_key.source == self.identity:
             return                                          # do not send message to self
 
-        self.callback(PersistentMessage.construct_from_callback(routing_key, body))
+        self.callback(Message.construct_from_callback(routing_key, body))
 
         ch.basic_ack(delivery_tag=method.delivery_tag)      # ACK will not take place if callback raises an exception
 

@@ -11,8 +11,6 @@ A structured representation of a message
 }
 """
 
-import json
-
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.operations.recorder.message_persistence import MessagePersistence
 
@@ -25,12 +23,12 @@ from mrcs_core.messaging.routing_key import RoutingKey
 
 class PersistentMessage(Message, MessagePersistence, PersistentObject):
     """
-    classdocs
+    classdocs message.routing_key, message.body
     """
 
     @classmethod
-    def construct_from_callback(cls, routing_key, body_str):
-        return cls(routing_key, json.loads(body_str.decode()))
+    def widen(cls, message: Message):
+        return cls(*message.__dict__.values())
 
 
     @classmethod
