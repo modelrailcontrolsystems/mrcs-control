@@ -219,6 +219,9 @@ class UserPersistence(PersistentObject, ABC):
             client.execute(sql, data=(uid,))
             row = client.fetchone()
 
+            if row is None:
+                return
+
             if row[0] == 'ADMIN':
                 sql = f'SELECT COUNT(uid) FROM {table} WHERE role == "ADMIN"'
                 client.execute(sql)
