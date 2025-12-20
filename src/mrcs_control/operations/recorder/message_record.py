@@ -17,6 +17,7 @@ https://forum.xojo.com/t/sqlite-return-id-of-record-inserted/37896/3
 
 import json
 
+from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.operations.recorder.message_persistence import MessagePersistence
 
 from mrcs_core.data.iso_datetime import ISODatetime
@@ -26,12 +27,10 @@ from mrcs_core.messaging.routing_key import RoutingKey, PublicationRoutingKey
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class PersistentMessageRecord(MessageRecord, MessagePersistence):
+class PersistentMessageRecord(MessageRecord, MessagePersistence, PersistentObject):
     """
     classdocs
     """
-
-    # TODO: construct from superclass
 
     @classmethod
     def construct_from_db(cls, uid_field, rec_field, routing_key_field, body_field):
