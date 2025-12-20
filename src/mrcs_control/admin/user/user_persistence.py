@@ -149,15 +149,15 @@ class UserPersistence(PersistentObject, ABC):
 
 
     @classmethod
-    def email_in_use(cls, email):
+    def email_user(cls, email):
         client = DBClient.instance(cls.__DATABASE)
         table = cls.table()
 
-        sql = f'SELECT COUNT(uid) FROM {table} WHERE email == ?'
+        sql = f'SELECT uid FROM {table} WHERE email == ?'
         client.execute(sql, data=(email, ))
         row = client.fetchone()
 
-        return bool(row[0])     # TODO: return uid of user - so that updates don't grab another user's email address
+        return row[0] if row else None
 
 
     @classmethod
@@ -165,11 +165,11 @@ class UserPersistence(PersistentObject, ABC):
         client = DBClient.instance(cls.__DATABASE)
         table = cls.table()
 
-        sql = f'SELECT COUNT(uid) FROM {table} WHERE uid == ?'
+        sql = f'SELECT uid FROM {table} WHERE uid == ?'
         client.execute(sql, data=(uid, ))
         row = client.fetchone()
 
-        return bool(row[0])
+        return row is not None
 
 
     # ----------------------------------------------------------------------------------------------------------------
