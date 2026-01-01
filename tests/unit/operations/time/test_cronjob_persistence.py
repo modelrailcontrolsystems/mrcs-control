@@ -13,9 +13,9 @@ import time
 import unittest
 
 from mrcs_control.operations.time.persistent_cronjob import PersistentCronjob
+
 from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType
 from mrcs_core.data.iso_datetime import ISODatetime
-from mrcs_core.data.json import JSONify
 
 from setup import Setup
 
