@@ -8,22 +8,26 @@ Created on 17 Nov 2025
 source repo: mrcs_control
 
 DESCRIPTION
-A service to record all inter-process messages.
+A service to record cron event schedules.
 Note that in --subscribe mode, the utility runs forever.
 
+Test with:
+cli/mrcs_publisher -vti4 -t CRN -m '{"event_id": "abc", "on": "2026-01-03T06:00:00.000"}'
+
 SYNOPSIS
-mrcs_recorder [-h] [-t] [--indent INDENT] [-v] [--version] (-c | -r REPORT | -s)
+mrcs_crontab [-h] [-t] [-i INDENT] [-v] [--version] (-c | -r | -s)
 
 EXAMPLES
-mrcs_recorder -v -t -r 10
+mrcs_crontab -tvi4 -r
+mrcs_crontab -tvi4 -s
 
-RESOURCES
+SEE ALSO
 """
 
 import sys
 
-from mrcs_control.cli.args.recorder_args import RecorderArgs
-from mrcs_control.operations.recorder.message_recorder import MessageRecorder
+from mrcs_control.cli.args.crontab_args import CrontabArgs
+from mrcs_control.operations.time.crontab import Crontab
 
 from mrcs_core.data.json import JSONify
 from mrcs_core.sys.logging import Logging
@@ -35,9 +39,9 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    args = RecorderArgs('a service to record all inter-process messages')
+    args = CrontabArgs('a service to record cron event schedules')
 
-    Logging.config('mrcs_recorder', verbose=args.verbose)
+    Logging.config('mrcs_crontab', verbose=args.verbose)
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')
@@ -46,20 +50,23 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
-        recorder = MessageRecorder.construct(args.mode)
-        logger.info(f'recorder: {recorder}')
+        crontab = Crontab.construct(args.mode)
+        logger.info(f'crontab: {crontab}')
 
         if args.clean:
-            recorder.clean()
+            crontab.clean()
+            exit(0)
 
-        if args.report is not None:
-            records = list(recorder.find_latest(args.report))
+        if args.report:
+            records = list(crontab.find_all())
             print(JSONify.dumps(records, indent=args.indent))
 
             logger.info(f'found {len(records)} items.')
+            exit(0)
 
         if args.subscribe:
-            recorder.subscribe()
+            crontab.subscribe()
+            exit(0)
 
 
     # ----------------------------------------------------------------------------------------------------------------

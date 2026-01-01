@@ -5,7 +5,7 @@ Created on 17 Nov 2025
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-source repo: mrcs_core
+source repo: mrcs_control
 
 DESCRIPTION
 A tool to manage message broker exchanges and queues.

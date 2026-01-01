@@ -4,6 +4,8 @@ Created on 1 Jan 2026
 @author: Bruno Beloff (bbeloff@me.com)
 
 SQLite database management for cron jobs
+
+https://stackoverflow.com/questions/2701877/sqlite-table-constraint-unique-on-multiple-columns
 """
 
 from abc import ABC
@@ -66,7 +68,8 @@ class CronjobPersistence(PersistentObject, ABC):
             id INTEGER PRIMARY KEY, 
             source TEXT NOT NULL, 
             event_id TEXT NOT NULL, 
-            on_datetime TIMESTAMP)
+            on_datetime TIMESTAMP,
+            UNIQUE(source, event_id, on_datetime) ON CONFLICT REPLACE)
             '''
         client.execute(sql)
 
@@ -86,6 +89,18 @@ class CronjobPersistence(PersistentObject, ABC):
 
 
     # ----------------------------------------------------------------------------------------------------------------
+
+    @classmethod
+    def find_all(cls):
+        client = DBClient.instance(cls.__DATABASE)
+        table = cls.table()
+
+        sql = f'SELECT id, source, event_id, on_datetime FROM {table} ORDER BY on_datetime, source'
+        client.execute(sql)
+        rows = client.fetchall()
+
+        return (cls.construct_from_db(*fields) for fields in rows)
+
 
     @classmethod
     def find_next(cls):
