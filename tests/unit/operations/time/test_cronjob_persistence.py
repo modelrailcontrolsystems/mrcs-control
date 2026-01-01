@@ -58,7 +58,6 @@ class TestCronjobPersistence(unittest.TestCase):
         time.sleep(1)
 
         job = PersistentCronjob.find_next()
-        print(JSONify.dumps(job, indent=4))
         self.assertEqual(job, job1)
 
 
