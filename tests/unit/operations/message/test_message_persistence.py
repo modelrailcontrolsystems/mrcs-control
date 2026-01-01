@@ -12,8 +12,8 @@ https://www.jetbrains.com/help/pycharm/creating-tests.html
 import json
 import unittest
 
-from mrcs_control.operations.recorder.message import PersistentMessage
 from mrcs_control.operations.recorder.message_record import PersistentMessageRecord
+from mrcs_control.operations.recorder.persistent_message import PersistentMessage
 
 from setup import Setup
 

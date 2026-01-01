@@ -13,7 +13,7 @@ import json
 import os
 import unittest
 
-from mrcs_control.operations.recorder.message import PersistentMessage
+from mrcs_control.operations.recorder.persistent_message import PersistentMessage
 
 from mrcs_core.data.json import JSONify
 
