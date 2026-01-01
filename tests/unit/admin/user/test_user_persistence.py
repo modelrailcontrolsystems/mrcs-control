@@ -13,7 +13,7 @@ import json
 import os
 import unittest
 
-from mrcs_control.admin.user.user import PersistentUser
+from mrcs_control.admin.user.persistent_user import PersistentUser
 from mrcs_control.db.dbclient import DBClient, DBMode
 
 from setup import Setup

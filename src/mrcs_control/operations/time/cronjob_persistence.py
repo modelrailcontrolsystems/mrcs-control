@@ -1,11 +1,9 @@
 """
-Created on 9 Nov 2025
+Created on 1 Jan 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-SQLite database management for messages
-
-https://forum.xojo.com/t/sqlite-return-id-of-record-inserted/37896/3
+SQLite database management for cron jobs
 """
 
 from abc import ABC
@@ -13,17 +11,19 @@ from abc import ABC
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.db.dbclient import DBClient
 
+from mrcs_core.data.iso_datetime import ISODatetime
+
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class MessagePersistence(PersistentObject, ABC):
+class CronjobPersistence(PersistentObject, ABC):
     """
-    SQLite database management for messages
+    SQLite database management for cron jobs
     """
 
-    __DATABASE = 'MessageLog'
+    __DATABASE = 'Cron'
 
-    __TABLE_NAME = 'messages'
+    __TABLE_NAME = 'cronjobs'
     __TABLE_VERSION = 1
 
     @classmethod
@@ -64,19 +64,13 @@ class MessagePersistence(PersistentObject, ABC):
         sql = f'''
             CREATE TABLE IF NOT EXISTS {table} (
             id INTEGER PRIMARY KEY, 
-            rec TIMESTAMP NOT NULL DEFAULT(datetime('subsec')), 
-            routing TEXT NOT NULL, 
-            body TEXT NOT NULL 
-        )'''
+            source TEXT NOT NULL, 
+            event_id TEXT NOT NULL, 
+            on_datetime TIMESTAMP)
+            '''
         client.execute(sql)
 
-        sql = f'CREATE INDEX IF NOT EXISTS {table}_id ON {table}(id)'
-        client.execute(sql)
-
-        sql = f'CREATE INDEX IF NOT EXISTS {table}_rec ON {table}(rec)'
-        client.execute(sql)
-
-        sql = f'CREATE INDEX IF NOT EXISTS {table}_routing ON {table}(routing)'
+        sql = f'CREATE INDEX IF NOT EXISTS {table}_on_datetime ON {table}(on_datetime)'
         client.execute(sql)
 
 
@@ -84,13 +78,7 @@ class MessagePersistence(PersistentObject, ABC):
     def __drop_tables(cls, client):
         table = cls.table()
 
-        sql = f'DROP INDEX IF EXISTS {table}_id'
-        client.execute(sql)
-
-        sql = f'DROP INDEX IF EXISTS {table}_rec'
-        client.execute(sql)
-
-        sql = f'DROP INDEX IF EXISTS {table}_routing'
+        sql = f'DROP INDEX IF EXISTS {table}_on_datetime'
         client.execute(sql)
 
         sql = f'DROP TABLE IF EXISTS {table}'
@@ -100,46 +88,29 @@ class MessagePersistence(PersistentObject, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def find_latest(cls, limit):
+    def find_next(cls):
         client = DBClient.instance(cls.__DATABASE)
         table = cls.table()
 
-        sql = f'SELECT * FROM {table} WHERE id IN (SELECT id FROM {table} ORDER BY id DESC LIMIT {limit})'
-        client.execute(sql)
+        sql = (f'SELECT id, source, event_id, on_datetime '
+               f'FROM {table} WHERE on_datetime <= ? ORDER BY on_datetime LIMIT 1')
+        client.execute(sql, data=(ISODatetime.now().dbformat(), ))
+        row = client.fetchone()
 
-        rows = client.fetchall()
-
-        return (cls.construct_from_db(*fields) for fields in rows)
+        return cls.construct_from_db(*row) if row else None
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def insert(cls, entry: PersistentObject):
+    def insert(cls, job: PersistentObject):
         client = DBClient.instance(cls.__DATABASE)
         table = cls.table()
 
         client.begin()
-        sql = f'INSERT INTO {table} (routing, body) VALUES (?,?)'
-        client.execute(sql, data=entry.as_db_insert())
-
-        sql = 'SELECT last_insert_rowid()'
-        client.execute(sql)
+        sql = f'INSERT INTO {table} (source, event_id, on_datetime) VALUES (?, ?, ?)'
+        client.execute(sql, data=job.as_db_insert())
         client.commit()
-
-        row = client.fetchone()
-
-        return int(row[0])
-
-
-    @classmethod
-    def test_insert(cls, rec, entry: PersistentObject):
-        client = DBClient.instance(cls.__DATABASE)
-        table = cls.table()
-
-        client.begin()
-        sql = f'INSERT INTO {table} (rec, routing, body) VALUES (?,?,?)'
-        client.execute(sql, data=(rec,) + entry.as_db_insert())
 
         sql = 'SELECT last_insert_rowid()'
         client.execute(sql)
@@ -152,4 +123,18 @@ class MessagePersistence(PersistentObject, ABC):
 
     @classmethod
     def update(cls, entry: PersistentObject):
-        raise NotImplementedError('messages are immutable')
+        raise NotImplementedError('cron jobs are immutable')
+
+
+    @classmethod
+    def delete(cls, id: int):
+        client = DBClient.instance(cls.__DATABASE)
+        table = cls.table()
+
+        try:
+            client.begin()
+            sql = f'DELETE FROM {table} WHERE id = ?'
+            client.execute(sql, data=(id, ))
+
+        finally:
+            client.commit()
