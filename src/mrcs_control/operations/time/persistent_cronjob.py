@@ -20,6 +20,7 @@ from mrcs_control.operations.time.cronjob_persistence import CronjobPersistence
 
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.data.iso_datetime import ISODatetime
+from mrcs_core.messaging.message import Message
 from mrcs_core.operations.time.cronjob import Cronjob
 
 
@@ -29,6 +30,15 @@ class PersistentCronjob(Cronjob, CronjobPersistence, PersistentObject):
     """
     represents a cron job to be performed
     """
+
+    @classmethod
+    def construct_from_message(cls, message: Message):
+        source = message.routing_key.source
+        event_id = message.body.get('event_id')
+        on_datetime = ISODatetime.construct_from_jdict(message.body.get('on'))
+
+        return cls(None, source, event_id, on_datetime)
+
 
     @classmethod
     def construct_from_db(cls, id, source, event_id, db_on_datetime):

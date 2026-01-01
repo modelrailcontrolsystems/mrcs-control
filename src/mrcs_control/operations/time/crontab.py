@@ -1,16 +1,15 @@
 """
-Created on 16 Nov 2025
+Created on 31 Dec 2025
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-A universal message logger
+Message-based Cron - this component accepts event schedules
 """
 
 from mrcs_control.db.dbclient import DBClient
 from mrcs_control.messaging.mqclient import Subscriber
 from mrcs_control.operations.operation_mode import OperationMode, OperationService
-from mrcs_control.operations.recorder.message_record import PersistentMessageRecord
-from mrcs_control.operations.recorder.persistent_message import PersistentMessage
+from mrcs_control.operations.time.persistent_cronjob import PersistentCronjob
 
 from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentFilter, EquipmentType
 from mrcs_core.messaging.message import Message
@@ -18,17 +17,21 @@ from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
 from mrcs_core.sys.logging import Logging
 
 
+# TODO: we need a MessagingNode ABC?
 # --------------------------------------------------------------------------------------------------------------------
 
-class MessageRecorder(object):
+class Crontab(object):
     """
-    A universal message logger
+    accepts event schedules
     """
 
     @classmethod
     def construct(cls, ops_mode: OperationMode):
-        identity = EquipmentIdentifier(EquipmentType.MLG, None, 1)
-        routing_key = SubscriptionRoutingKey(EquipmentFilter.all(), EquipmentFilter.all())
+        identity = EquipmentIdentifier(EquipmentType.CRN, None, 1)
+
+        source = EquipmentFilter.all()
+        target = EquipmentFilter(EquipmentType.CRN, None, None)
+        routing_key = SubscriptionRoutingKey(source, target)
 
         return cls(identity, routing_key, ops_mode.value)
 
@@ -46,27 +49,28 @@ class MessageRecorder(object):
     # ----------------------------------------------------------------------------------------------------------------
 
     def callback(self, message: Message):
-        self.__logger.info(message)
-        PersistentMessage.widen(message).save()
+        cronjob = PersistentCronjob.construct_from_message(message)
+        self.__logger.info(f'callback - cronjob:{cronjob}')
+        cronjob.save()
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def clean(self):
         DBClient.set_client_db_mode(self.ops.db_mode)
-        PersistentMessageRecord.recreate_tables()
+        PersistentCronjob.recreate_tables()
 
 
-    def find_latest(self, limit):
+    def find_all(self):
         DBClient.set_client_db_mode(self.ops.db_mode)
-        PersistentMessageRecord.create_tables()
+        PersistentCronjob.create_tables()
 
-        return PersistentMessageRecord.find_latest(limit)
+        return PersistentCronjob.find_all()
 
 
     def subscribe(self):
         DBClient.set_client_db_mode(self.ops.db_mode)
-        PersistentMessageRecord.create_tables()
+        PersistentCronjob.create_tables()
 
         endpoint = Subscriber.construct_sub(self.ops.mq_mode, self.identity, self.callback)
         endpoint.connect()
@@ -97,4 +101,4 @@ class MessageRecorder(object):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return f'MessageRecorder:{{identity:{self.identity}, routing_key:{self.routing_key}, ops:{self.ops}}}'
+        return f'Crontab:{{identity:{self.identity}, routing_key:{self.routing_key}, ops:{self.ops}}}'
