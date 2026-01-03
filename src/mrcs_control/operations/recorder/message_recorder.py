@@ -6,7 +6,7 @@ Created on 16 Nov 2025
 A universal message logger
 """
 
-from mrcs_control.db.dbclient import DBClient
+from mrcs_control.db.db_client import DbClient
 from mrcs_control.messaging.mqclient import Subscriber
 from mrcs_control.operations.operation_mode import OperationMode, OperationService
 from mrcs_control.operations.recorder.message_record import PersistentMessageRecord
@@ -53,19 +53,19 @@ class MessageRecorder(object):
     # ----------------------------------------------------------------------------------------------------------------
 
     def clean(self):
-        DBClient.set_client_db_mode(self.ops.db_mode)
+        DbClient.set_client_db_mode(self.ops.db_mode)
         PersistentMessageRecord.recreate_tables()
 
 
     def find_latest(self, limit):
-        DBClient.set_client_db_mode(self.ops.db_mode)
+        DbClient.set_client_db_mode(self.ops.db_mode)
         PersistentMessageRecord.create_tables()
 
         return PersistentMessageRecord.find_latest(limit)
 
 
     def subscribe(self):
-        DBClient.set_client_db_mode(self.ops.db_mode)
+        DbClient.set_client_db_mode(self.ops.db_mode)
         PersistentMessageRecord.create_tables()
 
         endpoint = Subscriber.construct_sub(self.ops.mq_mode, self.identity, self.callback)

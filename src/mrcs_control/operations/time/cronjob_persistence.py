@@ -4,6 +4,7 @@ Created on 1 Jan 2026
 @author: Bruno Beloff (bbeloff@me.com)
 
 SQLite database management for cron jobs
+Note that the cron components work in model time, not true time.
 
 https://stackoverflow.com/questions/2701877/sqlite-table-constraint-unique-on-multiple-columns
 """
@@ -11,7 +12,8 @@ https://stackoverflow.com/questions/2701877/sqlite-table-constraint-unique-on-mu
 from abc import ABC
 
 from mrcs_control.data.persistence import PersistentObject
-from mrcs_control.db.dbclient import DBClient
+from mrcs_control.db.db_client import DbClient
+from mrcs_control.db.db_name import DbName
 
 from mrcs_core.data.iso_datetime import ISODatetime
 
@@ -23,7 +25,7 @@ class CronjobPersistence(PersistentObject, ABC):
     SQLite database management for cron jobs
     """
 
-    __DATABASE = 'Cron'
+    __DATABASE = DbName.Cron
 
     __TABLE_NAME = 'cronjobs'
     __TABLE_VERSION = 1
@@ -35,7 +37,7 @@ class CronjobPersistence(PersistentObject, ABC):
 
     @classmethod
     def recreate_tables(cls):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
 
         client.begin()
         cls.__drop_tables(client)
@@ -45,7 +47,7 @@ class CronjobPersistence(PersistentObject, ABC):
 
     @classmethod
     def create_tables(cls):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
 
         cls.__create_tables(client)
         client.commit()
@@ -53,7 +55,7 @@ class CronjobPersistence(PersistentObject, ABC):
 
     @classmethod
     def drop_tables(cls):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
 
         cls.__drop_tables(client)
         client.commit()
@@ -66,14 +68,20 @@ class CronjobPersistence(PersistentObject, ABC):
         sql = f'''
             CREATE TABLE IF NOT EXISTS {table} (
             id INTEGER PRIMARY KEY, 
-            source TEXT NOT NULL, 
+            target TEXT NOT NULL, 
             event_id TEXT NOT NULL, 
             on_datetime TIMESTAMP,
-            UNIQUE(source, event_id, on_datetime) ON CONFLICT REPLACE)
+            UNIQUE(target, event_id, on_datetime) ON CONFLICT REPLACE)
             '''
         client.execute(sql)
 
+        sql = f'CREATE INDEX IF NOT EXISTS {table}_id ON {table}(id)'
+        client.execute(sql)
+
         sql = f'CREATE INDEX IF NOT EXISTS {table}_on_datetime ON {table}(on_datetime)'
+        client.execute(sql)
+
+        sql = f'CREATE INDEX IF NOT EXISTS {table}_on_target ON {table}(target)'
         client.execute(sql)
 
 
@@ -81,8 +89,15 @@ class CronjobPersistence(PersistentObject, ABC):
     def __drop_tables(cls, client):
         table = cls.table()
 
+        sql = f'DROP INDEX IF EXISTS {table}_id'
+        client.execute(sql)
+
         sql = f'DROP INDEX IF EXISTS {table}_on_datetime'
         client.execute(sql)
+
+        sql = f'DROP INDEX IF EXISTS {table}_on_target'
+        client.execute(sql)
+
 
         sql = f'DROP TABLE IF EXISTS {table}'
         client.execute(sql)
@@ -92,10 +107,10 @@ class CronjobPersistence(PersistentObject, ABC):
 
     @classmethod
     def find_all(cls):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
         table = cls.table()
 
-        sql = f'SELECT id, source, event_id, on_datetime FROM {table} ORDER BY on_datetime, source'
+        sql = f'SELECT id, target, event_id, on_datetime FROM {table} ORDER BY on_datetime, target'
         client.execute(sql)
         rows = client.fetchall()
 
@@ -103,13 +118,13 @@ class CronjobPersistence(PersistentObject, ABC):
 
 
     @classmethod
-    def find_next(cls):
-        client = DBClient.instance(cls.__DATABASE)
+    def find_next(cls, now: ISODatetime):
+        client = DbClient.instance(cls.__DATABASE)
         table = cls.table()
 
-        sql = (f'SELECT id, source, event_id, on_datetime '
+        sql = (f'SELECT id, target, event_id, on_datetime '
                f'FROM {table} WHERE on_datetime <= ? ORDER BY on_datetime LIMIT 1')
-        client.execute(sql, data=(ISODatetime.now().dbformat(), ))
+        client.execute(sql, data=(now.dbformat(), ))
         row = client.fetchone()
 
         return cls.construct_from_db(*row) if row else None
@@ -119,11 +134,11 @@ class CronjobPersistence(PersistentObject, ABC):
 
     @classmethod
     def insert(cls, job: PersistentObject):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
         table = cls.table()
 
         client.begin()
-        sql = f'INSERT INTO {table} (source, event_id, on_datetime) VALUES (?, ?, ?)'
+        sql = f'INSERT INTO {table} (target, event_id, on_datetime) VALUES (?, ?, ?)'
         client.execute(sql, data=job.as_db_insert())
         client.commit()
 
@@ -143,7 +158,7 @@ class CronjobPersistence(PersistentObject, ABC):
 
     @classmethod
     def delete(cls, id: int):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
         table = cls.table()
 
         try:

@@ -11,7 +11,8 @@ https://forum.xojo.com/t/sqlite-return-id-of-record-inserted/37896/3
 from abc import ABC
 
 from mrcs_control.data.persistence import PersistentObject
-from mrcs_control.db.dbclient import DBClient
+from mrcs_control.db.db_client import DbClient
+from mrcs_control.db.db_name import DbName
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -21,7 +22,7 @@ class MessagePersistence(PersistentObject, ABC):
     SQLite database management for messages
     """
 
-    __DATABASE = 'MessageLog'
+    __DATABASE = DbName.MessageLog
 
     __TABLE_NAME = 'messages'
     __TABLE_VERSION = 1
@@ -33,7 +34,7 @@ class MessagePersistence(PersistentObject, ABC):
 
     @classmethod
     def recreate_tables(cls):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
 
         client.begin()
         cls.__drop_tables(client)
@@ -43,7 +44,7 @@ class MessagePersistence(PersistentObject, ABC):
 
     @classmethod
     def create_tables(cls):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
 
         cls.__create_tables(client)
         client.commit()
@@ -51,7 +52,7 @@ class MessagePersistence(PersistentObject, ABC):
 
     @classmethod
     def drop_tables(cls):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
 
         cls.__drop_tables(client)
         client.commit()
@@ -101,7 +102,7 @@ class MessagePersistence(PersistentObject, ABC):
 
     @classmethod
     def find_latest(cls, limit):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
         table = cls.table()
 
         sql = f'SELECT * FROM {table} WHERE id IN (SELECT id FROM {table} ORDER BY id DESC LIMIT {limit})'
@@ -116,7 +117,7 @@ class MessagePersistence(PersistentObject, ABC):
 
     @classmethod
     def insert(cls, entry: PersistentObject):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
         table = cls.table()
 
         client.begin()
@@ -134,7 +135,7 @@ class MessagePersistence(PersistentObject, ABC):
 
     @classmethod
     def test_insert(cls, rec, entry: PersistentObject):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
         table = cls.table()
 
         client.begin()

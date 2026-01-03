@@ -1,5 +1,5 @@
 """
-Created on 17 Nov 2025
+Created on 2 Jan 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
@@ -11,16 +11,16 @@ from mrcs_control.cli.args.multimode_control_args import MultimodeControlArgs
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class RecorderArgs(MultimodeControlArgs):
+class CronArgs(MultimodeControlArgs):
     """unix command line handler"""
 
     def __init__(self, description):
         super().__init__(description)
 
         group = self._parser.add_mutually_exclusive_group(required=True)
-        group.add_argument('-c', '--clean', action='store_true', help='discard existing messages')
-        group.add_argument('-r', '--report', action='store', type=int, help='report latest N messages')
-        group.add_argument('-s', '--subscribe', action='store_true', help='subscribe to messages')
+        group.add_argument('-c', '--clean', action='store_true', help='discard existing schedule')
+        group.add_argument('-r', '--run', action='store_true', help='run the cron')
+        group.add_argument('-s', '--run-save', action='store_true', help='run the cron with model time save on')
 
         self._args = self._parser.parse_args()
 
@@ -33,17 +33,17 @@ class RecorderArgs(MultimodeControlArgs):
 
 
     @property
-    def report(self):
-        return self._args.report
+    def run(self):
+        return self._args.run
 
 
     @property
-    def subscribe(self):
-        return self._args.subscribe
+    def run_save(self):
+        return self._args.run_save
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'RecorderArgs:{{test:{self.test}, clean:{self.clean}, report:{self.report}, '
-                f'subscribe:{self.subscribe}, indent:{self.indent}, verbose:{self.verbose}}}')
+        return (f'CronArgs:{{test:{self.test}, clean:{self.clean}, run:{self.run}, run_save:{self.run_save}, '
+                f'indent:{self.indent}, verbose:{self.verbose}}}')

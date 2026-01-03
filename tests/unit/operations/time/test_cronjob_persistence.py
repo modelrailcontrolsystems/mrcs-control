@@ -31,15 +31,15 @@ class TestCronjobPersistence(unittest.TestCase):
     def test_recreate_tables(self):
         PersistentCronjob.recreate_tables()
 
-        job = PersistentCronjob.find_next()
+        job = PersistentCronjob.find_next(ISODatetime.now())
         self.assertIsNone(job)
 
 
     def test_insert(self):
         PersistentCronjob.recreate_tables()
 
-        source = EquipmentIdentifier(EquipmentType.SCH, None, 1)
-        job = PersistentCronjob(None, source, 'abc', ISODatetime.now())
+        target = EquipmentIdentifier(EquipmentType.SCH, None, 1)
+        job = PersistentCronjob(None, target, 'abc', ISODatetime.now())
         id = job.save()
         self.assertEqual(id, 1)
 
@@ -47,39 +47,40 @@ class TestCronjobPersistence(unittest.TestCase):
     def test_find(self):
         PersistentCronjob.recreate_tables()
 
-        source = EquipmentIdentifier(EquipmentType.SCH, None, 1)
-        job1 = PersistentCronjob(None, source, 'abc', ISODatetime.now())
+        target = EquipmentIdentifier(EquipmentType.SCH, None, 1)
+        job1 = PersistentCronjob(None, target, 'abc', ISODatetime.now())
         job1.save()
         time.sleep(1)
 
-        source = EquipmentIdentifier(EquipmentType.SCH, None, 1)
-        job2 = PersistentCronjob(None, source, 'abd', ISODatetime.now())
+        target = EquipmentIdentifier(EquipmentType.SCH, None, 1)
+        job2 = PersistentCronjob(None, target, 'abd', ISODatetime.now())
         job2.save()
         time.sleep(1)
 
-        job = PersistentCronjob.find_next()
+        job = PersistentCronjob.find_next(ISODatetime.now())
         self.assertEqual(job, job1)
 
+        # TODO: check that the OLDEST job is retrieved first
 
     def test_delete(self):
         PersistentCronjob.recreate_tables()
 
-        source = EquipmentIdentifier(EquipmentType.SCH, None, 1)
-        job1 = PersistentCronjob(None, source, 'abc', ISODatetime.now())
+        target = EquipmentIdentifier(EquipmentType.SCH, None, 1)
+        job1 = PersistentCronjob(None, target, 'abc', ISODatetime.now())
         job1.save()
         time.sleep(1)
 
-        source = EquipmentIdentifier(EquipmentType.SCH, None, 1)
-        job2 = PersistentCronjob(None, source, 'abd', ISODatetime.now())
+        target = EquipmentIdentifier(EquipmentType.SCH, None, 1)
+        job2 = PersistentCronjob(None, target, 'abd', ISODatetime.now())
         job2.save()
         time.sleep(1)
 
-        job = PersistentCronjob.find_next()
+        job = PersistentCronjob.find_next(ISODatetime.now())
         self.assertEqual(job, job1)
 
         PersistentCronjob.delete(job.id)
 
-        job = PersistentCronjob.find_next()
+        job = PersistentCronjob.find_next(ISODatetime.now())
         self.assertEqual(job, job2)
 
 

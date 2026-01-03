@@ -14,7 +14,7 @@ import os
 import unittest
 
 from mrcs_control.admin.user.persistent_user import PersistentUser
-from mrcs_control.db.dbclient import DBClient, DBMode
+from mrcs_control.db.db_client import DbClient, DbMode
 
 from setup import Setup
 
@@ -25,7 +25,7 @@ class TestUserPersistence(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        DBClient.set_client_db_mode(DBMode.TEST)
+        DbClient.set_client_db_mode(DbMode.TEST)
         Setup.dbSetup()
 
 

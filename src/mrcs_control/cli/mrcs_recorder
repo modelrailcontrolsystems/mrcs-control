@@ -12,7 +12,7 @@ A service to record all inter-process messages.
 Note that in --subscribe mode, the utility runs forever.
 
 SYNOPSIS
-mrcs_recorder [-h] [-t] [--indent INDENT] [-v] [--version] (-c | -r REPORT | -s)
+mrcs_recorder [-h] [-i INDENT] [-v] [--version] [-t] (-c | -r REPORT | -s)
 
 EXAMPLES
 mrcs_recorder -v -t -r 10

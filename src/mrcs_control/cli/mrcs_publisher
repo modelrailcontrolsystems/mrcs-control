@@ -13,8 +13,8 @@ Message bodies are read from stdin or from the --message argument. Messages are 
 routing specified by command-line arguments.
 
 SYNOPSIS
-mrcs_publisher [-h] [-t] [--indent INDENT] [-v] [--version] [-s SOURCE_SERIAL]
-[-e TARGET_EQUIPMENT] [-b TARGET_BLOCK] [-n TARGET_SERIAL]
+mrcs_publisher [-h] [-i INDENT] [-v] [--version] [-t] [-s SOURCE_SERIAL]
+[-e TARGET_EQUIPMENT] [-b TARGET_BLOCK] [-n TARGET_SERIAL] [-m MESSAGE_BODY]
 
 EXAMPLES
 mrcs_publisher -t -v -e MPU -b 1 -n 2

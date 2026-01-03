@@ -19,6 +19,8 @@ import sqlite3
 from enum import unique, StrEnum
 from sqlite3 import ProgrammingError
 
+from mrcs_control.db.db_name import DbName
+
 from mrcs_core.data.meta_enum import MetaEnum
 from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging
@@ -27,7 +29,7 @@ from mrcs_core.sys.logging import Logging
 # --------------------------------------------------------------------------------------------------------------------
 
 @unique
-class DBMode(StrEnum, metaclass=MetaEnum):
+class DbMode(StrEnum, metaclass=MetaEnum):
     """
     An enumeration of all the possible database modes
     """
@@ -38,12 +40,12 @@ class DBMode(StrEnum, metaclass=MetaEnum):
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class DBClient(object):
+class DbClient(object):
     """
     An SQLite database client
     """
 
-    __client_db_mode = DBMode.LIVE
+    __client_db_mode = DbMode.LIVE
 
     @classmethod
     def client_db_mode(cls):
@@ -51,7 +53,7 @@ class DBClient(object):
 
 
     @classmethod
-    def set_client_db_mode(cls, db_mode: DBMode):
+    def set_client_db_mode(cls, db_mode: DbMode):
         if cls.__client_db_mode == db_mode:
             return
 
@@ -66,9 +68,9 @@ class DBClient(object):
     __clients = {}
 
     @classmethod
-    def instance(cls, db_name) -> DBClient:
+    def instance(cls, db_name: DbName) -> DbClient:
         if db_name not in cls.__clients:
-            cls.__clients[db_name] = DBClient(cls.__client_db_mode, db_name)
+            cls.__clients[db_name] = DbClient(cls.__client_db_mode, db_name)
             cls.__clients[db_name].__open()
 
         return cls.__clients[db_name]
@@ -174,5 +176,5 @@ class DBClient(object):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'DBClient:{{db_mode:{self.db_mode}, db_name:{self.db_name}, '
+        return (f'DbClient:{{db_mode:{self.db_mode}, db_name:{self.db_name}, '
                 f'connection:{self.connection}, cursor:{self.cursor}}}')
