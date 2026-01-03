@@ -62,12 +62,12 @@ class Cron(object):
         if not save_model_time:
             PersistentISODatetime.delete(Host)
 
-        clock = Clock.load(Host, skeleton=True)
+        clock = Clock.load(Host)
         timer = IntervalTimer(clock.tick_interval)
         prev_time = None
 
         while timer.true(interval=clock.tick_interval):
-            clock = Clock.load(Host, skeleton=True)
+            clock = Clock.load(Host)
             now = clock.now()
 
             if now == prev_time:
