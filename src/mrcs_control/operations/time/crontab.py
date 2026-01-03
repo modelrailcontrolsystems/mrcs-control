@@ -51,8 +51,9 @@ class Crontab(object):
 
     def callback(self, message: Message):
         cronjob = PersistentCronjob.construct_from_message(message)
-        self.__logger.info(f'callback - cronjob:{cronjob}')
         cronjob.save()
+
+        self.__logger.info(f'callback: {cronjob}')
 
 
     # ----------------------------------------------------------------------------------------------------------------

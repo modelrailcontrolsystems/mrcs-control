@@ -46,8 +46,9 @@ class MessageRecorder(object):
     # ----------------------------------------------------------------------------------------------------------------
 
     def callback(self, message: Message):
-        self.__logger.info(message)
         PersistentMessage.widen(message).save()
+
+        self.__logger.info(f'callback: {message}')
 
 
     # ----------------------------------------------------------------------------------------------------------------

@@ -69,7 +69,7 @@ class Cron(object):
         while timer.true(interval=clock.tick_interval):
             clock = Clock.load(Host, skeleton=True)
             now = clock.now()
-            print(f'now:{now}\r', end='')
+
             if now == prev_time:
                 continue
 
@@ -84,9 +84,11 @@ class Cron(object):
                     break
 
                 routing = PublicationRoutingKey(self.identity, job.target)
-                publisher.publish(Message(routing, job))
-
+                message = Message(routing, job)
+                publisher.publish(message)
                 PersistentCronjob.delete(job.id)
+
+                self.__logger.info(f'run - published: {message}')
 
 
     # ----------------------------------------------------------------------------------------------------------------
