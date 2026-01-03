@@ -15,9 +15,10 @@ SYNOPSIS
 mrcs_cron [-h] [-i INDENT] [-v] [--version] [-t] (-c | -r | -s)
 
 EXAMPLES
-mrcs_cron -v -t -r
+mrcs_cron --verbose --run-save --test
 
-RESOURCES
+SEE ALSO
+mrcs_crontab
 """
 
 import sys

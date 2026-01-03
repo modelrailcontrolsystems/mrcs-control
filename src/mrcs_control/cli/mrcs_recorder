@@ -9,13 +9,15 @@ source repo: mrcs_control
 
 DESCRIPTION
 A service to record all inter-process messages.
+Recorder components follow system time, not model time.
+
 Note that in --subscribe mode, the utility runs forever.
 
 SYNOPSIS
 mrcs_recorder [-h] [-i INDENT] [-v] [--version] [-t] (-c | -r REPORT | -s)
 
 EXAMPLES
-mrcs_recorder -v -t -r 10
+mrcs_recorder --verbose --subscribe --test
 
 RESOURCES
 """
