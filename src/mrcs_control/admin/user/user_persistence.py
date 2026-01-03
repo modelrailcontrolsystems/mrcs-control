@@ -18,7 +18,8 @@ from abc import ABC
 from pwdlib import PasswordHash
 
 from mrcs_control.data.persistence import PersistentObject
-from mrcs_control.db.dbclient import DBClient
+from mrcs_control.db.db_client import DbClient
+from mrcs_control.db.db_name import DbName
 
 from mrcs_core.data.iso_datetime import ISODatetime
 
@@ -39,7 +40,7 @@ class UserPersistence(PersistentObject, ABC):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    __DATABASE = 'Admin'
+    __DATABASE = DbName.Admin
 
     __TABLE_NAME = 'users'
     __TABLE_VERSION = 1
@@ -51,7 +52,7 @@ class UserPersistence(PersistentObject, ABC):
 
     @classmethod
     def recreate_tables(cls):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
 
         client.begin()
         cls.__drop_tables(client)
@@ -61,7 +62,7 @@ class UserPersistence(PersistentObject, ABC):
 
     @classmethod
     def create_tables(cls):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
 
         cls.__create_tables(client)
         client.commit()
@@ -69,7 +70,7 @@ class UserPersistence(PersistentObject, ABC):
 
     @classmethod
     def drop_tables(cls):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
 
         cls.__drop_tables(client)
         client.commit()
@@ -124,7 +125,7 @@ class UserPersistence(PersistentObject, ABC):
 
     @classmethod
     def find_all(cls):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
         table = cls.table()
 
         sql = (f'SELECT uid, email, role, must_set_password, given_name, family_name, created, latest_login '
@@ -137,7 +138,7 @@ class UserPersistence(PersistentObject, ABC):
 
     @classmethod
     def find(cls, uid):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
         table = cls.table()
 
         sql = (f'SELECT uid, email, role, must_set_password, given_name, family_name, created, latest_login '
@@ -150,7 +151,7 @@ class UserPersistence(PersistentObject, ABC):
 
     @classmethod
     def email_user(cls, email):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
         table = cls.table()
 
         sql = f'SELECT uid FROM {table} WHERE email == ?'
@@ -162,7 +163,7 @@ class UserPersistence(PersistentObject, ABC):
 
     @classmethod
     def exists(cls, uid):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
         table = cls.table()
 
         sql = f'SELECT uid FROM {table} WHERE uid == ?'
@@ -176,7 +177,7 @@ class UserPersistence(PersistentObject, ABC):
 
     @classmethod
     def insert(cls, item: PersistentObject, password=None):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
         table = cls.table()
 
         uid = str(uuid.uuid4())
@@ -199,7 +200,7 @@ class UserPersistence(PersistentObject, ABC):
 
     @classmethod
     def update(cls, item: PersistentObject):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
         table = cls.table()
 
         client.begin()
@@ -210,7 +211,7 @@ class UserPersistence(PersistentObject, ABC):
 
     @classmethod
     def delete(cls, uid: str):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
         table = cls.table()
 
         try:
@@ -239,7 +240,7 @@ class UserPersistence(PersistentObject, ABC):
 
     @classmethod
     def log_in(cls, email, password):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
         table = cls.table()
 
         hashed_password = cls.hash_password(password)
@@ -271,7 +272,7 @@ class UserPersistence(PersistentObject, ABC):
 
     @classmethod
     def set_password(cls, uid, password):
-        client = DBClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.__DATABASE)
         table = cls.table()
 
         hashed_password = cls.hash_password(password)

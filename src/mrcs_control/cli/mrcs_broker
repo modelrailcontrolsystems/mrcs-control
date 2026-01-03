@@ -12,7 +12,7 @@ A tool to manage message broker exchanges and queues.
 Note that exchanges cannot be deleted if any queues exist for that exchange - delete the queues first.
 
 SYNOPSIS
-mrcs_broker [-h] [-t] [--indent INDENT] [-v] [--version] (-e | -q) [-d DELETE]
+mrcs_broker [-h] [-i INDENT] [-v] [--version] [-t] (-e | -q) [-d DELETE]
 
 EXAMPLES
 mrcs_broker -t -e -v -i4 -d mrcs.test

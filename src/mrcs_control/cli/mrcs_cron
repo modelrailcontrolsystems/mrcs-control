@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+
+"""
+Created on 2 Jan 2026
+
+@author: Bruno Beloff (bbeloff@me.com)
+
+source repo: mrcs_control
+
+DESCRIPTION
+A service to raise cron events according to model time
+Note that in --run mode, the utility runs forever.
+
+SYNOPSIS
+mrcs_cron [-h] [-i INDENT] [-v] [--version] [-t] (-c | -r | -s)
+
+EXAMPLES
+mrcs_cron -v -t -r
+
+RESOURCES
+"""
+
+import sys
+
+from mrcs_control.cli.args.cron_args import CronArgs
+from mrcs_control.operations.time.cron import Cron
+
+from mrcs_core.sys.logging import Logging
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    args = CronArgs('a service to raise cron events according to model time')
+
+    Logging.config('mrcs_cron', verbose=args.verbose)
+    logger = Logging.getLogger()
+    logger.info(f'args: {args}')
+    logger.info(f'mode: {args.mode.value}')
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    try:
+        cron = Cron.construct(args.mode)
+        logger.info(f'cron: {cron}')
+
+        if args.clean:
+            cron.clean()
+            exit(0)
+
+        if args.run:
+            cron.run(False)
+
+        if args.run_save:
+            cron.run(True)
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    except KeyboardInterrupt:
+        print(file=sys.stderr)

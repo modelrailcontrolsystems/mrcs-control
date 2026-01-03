@@ -4,9 +4,10 @@ Created on 31 Dec 2025
 @author: Bruno Beloff (bbeloff@me.com)
 
 Message-based Cron - this component accepts event schedules
+Note that the cron components work in model time, not true time.
 """
 
-from mrcs_control.db.dbclient import DBClient
+from mrcs_control.db.db_client import DbClient
 from mrcs_control.messaging.mqclient import Subscriber
 from mrcs_control.operations.operation_mode import OperationMode, OperationService
 from mrcs_control.operations.time.persistent_cronjob import PersistentCronjob
@@ -57,19 +58,19 @@ class Crontab(object):
     # ----------------------------------------------------------------------------------------------------------------
 
     def clean(self):
-        DBClient.set_client_db_mode(self.ops.db_mode)
+        DbClient.set_client_db_mode(self.ops.db_mode)
         PersistentCronjob.recreate_tables()
 
 
     def find_all(self):
-        DBClient.set_client_db_mode(self.ops.db_mode)
+        DbClient.set_client_db_mode(self.ops.db_mode)
         PersistentCronjob.create_tables()
 
         return PersistentCronjob.find_all()
 
 
     def subscribe(self):
-        DBClient.set_client_db_mode(self.ops.db_mode)
+        DbClient.set_client_db_mode(self.ops.db_mode)
         PersistentCronjob.create_tables()
 
         endpoint = Subscriber.construct_sub(self.ops.mq_mode, self.identity, self.callback)

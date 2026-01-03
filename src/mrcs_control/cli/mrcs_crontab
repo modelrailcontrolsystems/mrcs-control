@@ -1,25 +1,23 @@
 #!/usr/bin/env python3
 
 """
-Created on 17 Nov 2025
+Created on 1 Jan 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
 source repo: mrcs_control
 
 DESCRIPTION
-A service to record cron event schedules.
+A service to record cron event schedules according to model time
 Note that in --subscribe mode, the utility runs forever.
 
 Test with:
 cli/mrcs_publisher -vti4 -t CRN -m '{"event_id": "abc", "on": "2026-01-03T06:00:00.000"}'
 
 SYNOPSIS
-mrcs_crontab [-h] [-t] [-i INDENT] [-v] [--version] (-c | -r | -s)
+mrcs_crontab [-h] [-i INDENT] [-v] [--version] [-t] (-c | -r | -s)
 
 EXAMPLES
-mrcs_crontab -tvi4 -r
-mrcs_crontab -tvi4 -s
 
 SEE ALSO
 """
@@ -33,13 +31,14 @@ from mrcs_core.data.json import JSONify
 from mrcs_core.sys.logging import Logging
 
 
+# TODO: find out why it does not get the first message on startup - needs second message
 # --------------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    args = CrontabArgs('a service to record cron event schedules')
+    args = CrontabArgs('a service to record cron event schedules according to model time')
 
     Logging.config('mrcs_crontab', verbose=args.verbose)
     logger = Logging.getLogger()

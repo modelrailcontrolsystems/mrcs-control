@@ -10,7 +10,7 @@ https://stackoverflow.com/questions/37678418/python-enums-with-complex-types
 
 from enum import unique, Enum
 
-from mrcs_control.db.dbclient import DBMode
+from mrcs_control.db.db_client import DbMode
 from mrcs_control.messaging.mqclient import MQMode
 
 from mrcs_core.data.meta_enum import MetaEnum
@@ -23,7 +23,7 @@ class OperationService(object):
     A gathering-together of service operation modes
     """
 
-    def __init__(self, id: str, db_mode: DBMode, mq_mode: MQMode):
+    def __init__(self, id: str, db_mode: DbMode, mq_mode: MQMode):
         self.__id = id
         self.__db_mode = db_mode
         self.__mq_mode = mq_mode
@@ -66,5 +66,5 @@ class OperationMode(Enum, metaclass=MetaEnum):
     An enumeration of all the possible operation modes
     """
 
-    TEST = OperationService('TEST', DBMode.TEST, MQMode.TEST)
-    LIVE = OperationService('LIVE', DBMode.LIVE, MQMode.LIVE)
+    TEST = OperationService('TEST', DbMode.TEST, MQMode.TEST)
+    LIVE = OperationService('LIVE', DbMode.LIVE, MQMode.LIVE)
