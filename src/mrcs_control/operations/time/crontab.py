@@ -8,43 +8,39 @@ Note that the cron components work in model time, not true time.
 """
 
 from mrcs_control.db.db_client import DbClient
-from mrcs_control.messaging.mq_client import Subscriber
-from mrcs_control.operations.operation_mode import OperationMode, OperationService
+from mrcs_control.operations.messaging_node import SubscriberNode
+from mrcs_control.operations.operation_mode import OperationService
 from mrcs_control.operations.time.persistent_cronjob import PersistentCronjob
 
 from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentFilter, EquipmentType
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
-from mrcs_core.sys.logging import Logging
 
 
-# TODO: we need a MessagingNode ABC?
 # --------------------------------------------------------------------------------------------------------------------
 
-class Crontab(object):
+class Crontab(SubscriberNode):
     """
     accepts event schedules
     """
 
     @classmethod
-    def construct(cls, ops_mode: OperationMode):
-        identity = EquipmentIdentifier(EquipmentType.CRN, None, 1)
+    def identity(cls):
+        return EquipmentIdentifier(EquipmentType.CRN, None, 1)
 
+
+    @classmethod
+    def routing_key(cls):
         source = EquipmentFilter.all()
         target = EquipmentFilter(EquipmentType.CRN, None, None)
-        routing_key = SubscriptionRoutingKey(source, target)
 
-        return cls(identity, routing_key, ops_mode.value)
+        return SubscriptionRoutingKey(source, target)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, identity: EquipmentIdentifier, routing_key: SubscriptionRoutingKey, ops: OperationService):
-        self.__identity = identity
-        self.__routing_key = routing_key
-        self.__ops = ops
-
-        self.__logger = Logging.getLogger()
+    def __init__(self, ops: OperationService):
+        super().__init__(ops)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -53,7 +49,7 @@ class Crontab(object):
         cronjob = PersistentCronjob.construct_from_message(message)
         cronjob.save()
 
-        self.__logger.info(f'callback: {cronjob}')
+        self.logger.info(f'callback: {cronjob}')
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -74,33 +70,9 @@ class Crontab(object):
         DbClient.set_client_db_mode(self.ops.db_mode)
         PersistentCronjob.create_tables()
 
-        endpoint = Subscriber.construct_sub(self.ops.mq_mode, self.identity, self.callback)
-        endpoint.connect()
+        self.mq_client.connect()
 
         try:
-            endpoint.subscribe(self.routing_key)
+            self.mq_client.subscribe(self.routing_key())
         except KeyboardInterrupt:
             return
-
-
-    # ----------------------------------------------------------------------------------------------------------------
-
-    @property
-    def identity(self):
-        return self.__identity
-
-
-    @property
-    def routing_key(self):
-        return self.__routing_key
-
-
-    @property
-    def ops(self):
-        return self.__ops
-
-
-    # ----------------------------------------------------------------------------------------------------------------
-
-    def __str__(self, *args, **kwargs):
-        return f'Crontab:{{identity:{self.identity}, routing_key:{self.routing_key}, ops:{self.ops}}}'

@@ -7,48 +7,46 @@ A universal message logger
 """
 
 from mrcs_control.db.db_client import DbClient
-from mrcs_control.messaging.mq_client import Subscriber
-from mrcs_control.operations.operation_mode import OperationMode, OperationService
+from mrcs_control.operations.messaging_node import SubscriberNode
+from mrcs_control.operations.operation_mode import OperationService
 from mrcs_control.operations.recorder.message_record import PersistentMessageRecord
 from mrcs_control.operations.recorder.persistent_message import PersistentMessage
 
 from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentFilter, EquipmentType
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
-from mrcs_core.sys.logging import Logging
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class MessageRecorder(object):
+class MessageRecorder(SubscriberNode):
     """
     A universal message logger
     """
 
     @classmethod
-    def construct(cls, ops_mode: OperationMode):
-        identity = EquipmentIdentifier(EquipmentType.MLG, None, 1)
-        routing_key = SubscriptionRoutingKey(EquipmentFilter.all(), EquipmentFilter.all())
+    def identity(cls):
+        return EquipmentIdentifier(EquipmentType.MLG, None, 1)
 
-        return cls(identity, routing_key, ops_mode.value)
+
+    @classmethod
+    def routing_key(cls):
+        return SubscriptionRoutingKey(EquipmentFilter.all(), EquipmentFilter.all())
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, identity: EquipmentIdentifier, routing_key: SubscriptionRoutingKey, ops: OperationService):
-        self.__identity = identity
-        self.__routing_key = routing_key
-        self.__ops = ops
-
-        self.__logger = Logging.getLogger()
+    def __init__(self, ops: OperationService):
+        super().__init__(ops)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def callback(self, message: Message):
-        PersistentMessage.widen(message).save()
+        message = PersistentMessage.widen(message)
+        message.save()
 
-        self.__logger.info(f'callback: {message}')
+        self.logger.info(f'callback: {message}')
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -69,33 +67,9 @@ class MessageRecorder(object):
         DbClient.set_client_db_mode(self.ops.db_mode)
         PersistentMessageRecord.create_tables()
 
-        endpoint = Subscriber.construct_sub(self.ops.mq_mode, self.identity, self.callback)
-        endpoint.connect()
+        self.mq_client.connect()
 
         try:
-            endpoint.subscribe(self.routing_key)
+            self.mq_client.subscribe(self.routing_key())
         except KeyboardInterrupt:
             return
-
-
-    # ----------------------------------------------------------------------------------------------------------------
-
-    @property
-    def identity(self):
-        return self.__identity
-
-
-    @property
-    def routing_key(self):
-        return self.__routing_key
-
-
-    @property
-    def ops(self):
-        return self.__ops
-
-
-    # ----------------------------------------------------------------------------------------------------------------
-
-    def __str__(self, *args, **kwargs):
-        return f'MessageRecorder:{{identity:{self.identity}, routing_key:{self.routing_key}, ops:{self.ops}}}'
