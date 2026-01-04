@@ -17,7 +17,7 @@ from abc import ABC
 from enum import unique, StrEnum
 
 import pika
-from pika.exceptions import AMQPError, ChannelClosedByBroker, ChannelWrongStateError
+from pika.exceptions import AMQPError
 
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.data.json import JSONify
@@ -234,26 +234,28 @@ class Subscriber(Publisher):
         if not routing_keys:
             raise RuntimeError('subscribe: no routing keys')
 
-        self.channel.queue_declare(self.queue, durable=True, exclusive=False)   # durables may not be exclusive
-
-        for routing_key in routing_keys:
-            self.channel.queue_bind(
-                exchange=self.exchange_name,
-                queue=self.queue,
-                routing_key=routing_key.as_json(),
-            )
-
-        self.channel.basic_consume(
-            queue=self.queue,
-            on_message_callback=self.on_message_callback,
-        )
 
         while True:
             try:
+                self.channel.queue_declare(self.queue, durable=True, exclusive=False)  # durables may not be exclusive
+
+                for routing_key in routing_keys:
+                    self.channel.queue_bind(
+                        exchange=self.exchange_name,
+                        queue=self.queue,
+                        routing_key=routing_key.as_json(),
+                    )
+
+                self.channel.basic_consume(
+                    queue=self.queue,
+                    on_message_callback=self.on_message_callback,
+                )
+
                 self.channel.start_consuming()
-            except (ChannelClosedByBroker, ChannelWrongStateError) as ex:
-                self._logger.warn(f'subscribe: {ex}')
-                continue
+            except AMQPError:
+                self.close()
+                self.connect()
+                self._logger.warn('subscribe: connection re-established')
 
 
     def on_message_callback(self, ch, method, _properties, body):
