@@ -17,7 +17,7 @@ from abc import ABC
 from enum import unique, StrEnum
 
 import pika
-from pika.exceptions import AMQPError
+from pika.exceptions import AMQPError, ChannelWrongStateError
 
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.data.json import JSONify
@@ -72,6 +72,9 @@ class MQClient(ABC):
 
             self.channel.close()
             return True
+
+        except ChannelWrongStateError:
+            return False
 
         except AMQPError as ex:
             self._logger.warn(f'close: {ex.__class__.__name__}:{ex}')
