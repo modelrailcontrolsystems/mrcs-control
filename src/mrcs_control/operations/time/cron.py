@@ -8,8 +8,8 @@ Note that the cron components work in model time, not true time.
 """
 
 from mrcs_control.db.db_client import DbClient
-from mrcs_control.messaging.mq_client import Publisher
-from mrcs_control.operations.operation_mode import OperationMode, OperationService
+from mrcs_control.operations.messaging_node import PublisherNode
+from mrcs_control.operations.operation_mode import OperationService
 from mrcs_control.operations.time.persistent_cronjob import PersistentCronjob
 from mrcs_control.sync.interval_timer import IntervalTimer
 
@@ -19,30 +19,24 @@ from mrcs_core.messaging.routing_key import PublicationRoutingKey
 from mrcs_core.operations.time.clock import Clock
 from mrcs_core.operations.time.persistent_iso_datetime import PersistentISODatetime
 from mrcs_core.sys.host import Host
-from mrcs_core.sys.logging import Logging
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class Cron(object):
+class Cron(PublisherNode):
     """
     raises events
     """
 
     @classmethod
-    def construct(cls, ops_mode: OperationMode):
-        identity = EquipmentIdentifier(EquipmentType.CRN, None, 1)
-
-        return cls(identity, ops_mode.value)
+    def identity(cls):
+        return EquipmentIdentifier(EquipmentType.CRN, None, 1)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, identity: EquipmentIdentifier, ops: OperationService):
-        self.__identity = identity
-        self.__ops = ops
-
-        self.__logger = Logging.getLogger()
+    def __init__(self, ops: OperationService):
+        super().__init__(ops)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -56,8 +50,7 @@ class Cron(object):
         DbClient.set_client_db_mode(self.ops.db_mode)
         PersistentCronjob.create_tables()
 
-        publisher = Publisher.construct_pub(self.ops.mq_mode)
-        publisher.connect()
+        self.mq_client.connect()
 
         if not save_model_time:
             PersistentISODatetime.delete(Host)
@@ -83,27 +76,9 @@ class Cron(object):
                 if not job:
                     break
 
-                routing = PublicationRoutingKey(self.identity, job.target)
+                routing = PublicationRoutingKey(self.identity(), job.target)
                 message = Message(routing, job)
-                publisher.publish(message)
+                self.mq_client.publish(message)
                 PersistentCronjob.delete(job.id)
 
-                self.__logger.info(f'run - published: {message}')
-
-
-    # ----------------------------------------------------------------------------------------------------------------
-
-    @property
-    def identity(self):
-        return self.__identity
-
-
-    @property
-    def ops(self):
-        return self.__ops
-
-
-    # ----------------------------------------------------------------------------------------------------------------
-
-    def __str__(self, *args, **kwargs):
-        return f'Cron:{{identity:{self.identity}, ops:{self.ops}}}'
+                self.logger.info(f'run - published: {message}')

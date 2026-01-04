@@ -30,7 +30,7 @@ from json import JSONDecodeError
 from pika.exceptions import AMQPError
 
 from mrcs_control.cli.args.publisher_args import PublisherArgs
-from mrcs_control.messaging.mq_client import Publisher
+from mrcs_control.messaging.mq_client import MQPublisher
 
 from mrcs_core.data.datum import Datum
 from mrcs_core.data.equipment_identity import EquipmentType, EquipmentIdentifier, EquipmentFilter
@@ -83,7 +83,7 @@ if __name__ == '__main__':
         source = EquipmentIdentifier(EquipmentType.TST, None, args.source_serial)
         routing_key = PublicationRoutingKey(source, target)
 
-        publisher = Publisher.construct_pub(args.mode.value.mq_mode)
+        publisher = MQPublisher.construct_pub(args.mode.value.mq_mode)
 
         publisher.connect()
         logger.info(f'publisher: {publisher}')

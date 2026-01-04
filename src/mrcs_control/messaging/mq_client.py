@@ -134,7 +134,7 @@ class MQManager(MQClient):
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class Publisher(MQClient):
+class MQPublisher(MQClient):
     """
     A RabbitMQ peer that can act as a publisher only
     """
@@ -197,7 +197,7 @@ class Publisher(MQClient):
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class Subscriber(Publisher):
+class MQSubscriber(MQPublisher):
     """
     A RabbitMQ peer that can act as a publisher and subscriber
     """
@@ -292,4 +292,4 @@ class Subscriber(Publisher):
 
     def __str__(self, *args, **kwargs):
         return (f'Subscriber:{{exchange_name:{self.exchange_name}, identity:{self.identity}, queue:{self.queue}, '
-                f'callback:{self.callback}, channel:{self.channel}}}')
+                f'channel:{self.channel}}}')
