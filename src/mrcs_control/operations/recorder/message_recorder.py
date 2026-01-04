@@ -56,7 +56,7 @@ class MessageRecorder(SubscriberNode):
         PersistentMessageRecord.recreate_tables()
 
 
-    def find_latest(self, limit):
+    def find_latest(self, limit: int):
         DbClient.set_client_db_mode(self.ops.db_mode)
         PersistentMessageRecord.create_tables()
 

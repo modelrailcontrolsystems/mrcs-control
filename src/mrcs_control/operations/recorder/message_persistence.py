@@ -101,7 +101,7 @@ class MessagePersistence(PersistentObject, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def find_latest(cls, limit):
+    def find_latest(cls, limit: int):
         client = DbClient.instance(cls.__DATABASE)
         table = cls.table()
 
