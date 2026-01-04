@@ -7,7 +7,7 @@ A universal message logger
 """
 
 from mrcs_control.db.db_client import DbClient
-from mrcs_control.messaging.mqclient import Subscriber
+from mrcs_control.messaging.mq_client import Subscriber
 from mrcs_control.operations.operation_mode import OperationMode, OperationService
 from mrcs_control.operations.recorder.message_record import PersistentMessageRecord
 from mrcs_control.operations.recorder.persistent_message import PersistentMessage

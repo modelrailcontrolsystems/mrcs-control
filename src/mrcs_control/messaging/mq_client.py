@@ -17,7 +17,7 @@ from abc import ABC
 from enum import unique, StrEnum
 
 import pika
-from pika.exceptions import AMQPError
+from pika.exceptions import AMQPError, ChannelClosedByBroker, ChannelWrongStateError
 
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.data.json import JSONify
@@ -248,7 +248,12 @@ class Subscriber(Publisher):
             on_message_callback=self.on_message_callback,
         )
 
-        self.channel.start_consuming()
+        while True:
+            try:
+                self.channel.start_consuming()
+            except (ChannelClosedByBroker, ChannelWrongStateError) as ex:
+                self._logger.warn(f'subscribe: {ex}')
+                continue
 
 
     def on_message_callback(self, ch, method, _properties, body):
