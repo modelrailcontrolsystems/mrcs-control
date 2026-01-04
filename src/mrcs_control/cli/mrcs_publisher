@@ -30,7 +30,7 @@ from json import JSONDecodeError
 from pika.exceptions import AMQPError
 
 from mrcs_control.cli.args.publisher_args import PublisherArgs
-from mrcs_control.messaging.mqclient import Publisher
+from mrcs_control.messaging.mq_client import Publisher
 
 from mrcs_core.data.datum import Datum
 from mrcs_core.data.equipment_identity import EquipmentType, EquipmentIdentifier, EquipmentFilter

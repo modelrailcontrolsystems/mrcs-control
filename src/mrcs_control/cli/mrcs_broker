@@ -26,7 +26,7 @@ from pika.exceptions import AMQPError
 
 from mrcs_control.cli.args.broker_args import BrokerArgs
 from mrcs_control.messaging.broker import Broker
-from mrcs_control.messaging.mqclient import MQManager
+from mrcs_control.messaging.mq_client import MQManager
 
 from mrcs_core.data.json import JSONify
 from mrcs_core.sys.logging import Logging

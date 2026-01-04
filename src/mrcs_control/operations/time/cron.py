@@ -8,7 +8,7 @@ Note that the cron components work in model time, not true time.
 """
 
 from mrcs_control.db.db_client import DbClient
-from mrcs_control.messaging.mqclient import Publisher
+from mrcs_control.messaging.mq_client import Publisher
 from mrcs_control.operations.operation_mode import OperationMode, OperationService
 from mrcs_control.operations.time.persistent_cronjob import PersistentCronjob
 from mrcs_control.sync.interval_timer import IntervalTimer
