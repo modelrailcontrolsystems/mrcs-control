@@ -30,26 +30,17 @@ class Crontab(SubscriberNode):
 
 
     @classmethod
-    def routing_key(cls):
+    def routing_keys(cls):
         source = EquipmentFilter.all()
         target = EquipmentFilter(EquipmentType.CRN, None, None)
 
-        return SubscriptionRoutingKey(source, target)
+        return (SubscriptionRoutingKey(source, target), )
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, ops: OperationService):
         super().__init__(ops)
-
-
-    # ----------------------------------------------------------------------------------------------------------------
-
-    def callback(self, message: Message):
-        cronjob = PersistentCronjob.construct_from_message(message)
-        cronjob.save()
-
-        self.logger.info(f'callback: {cronjob}')
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -73,6 +64,15 @@ class Crontab(SubscriberNode):
         self.mq_client.connect()
 
         try:
-            self.mq_client.subscribe(self.routing_key())
+            self.mq_client.subscribe(*self.routing_keys())
         except KeyboardInterrupt:
             return
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def handle(self, message: Message):
+        cronjob = PersistentCronjob.construct_from_message(message)
+        cronjob.save()
+
+        self.logger.info(f'callback: {cronjob}')

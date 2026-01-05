@@ -15,6 +15,7 @@ https://stackoverflow.com/questions/15150207/connection-in-rabbitmq-server-auto-
 
 from abc import ABC
 from enum import unique, StrEnum
+from typing import Callable
 
 import pika
 from pika.exceptions import AMQPError, ChannelWrongStateError
@@ -203,20 +204,20 @@ class MQSubscriber(MQPublisher):
     """
 
     @classmethod
-    def construct_sub(cls, exchange_name: MQMode, identity: EquipmentIdentifier, callback):
+    def construct_sub(cls, exchange_name: MQMode, identity: EquipmentIdentifier, handle: Callable):
         queue = '.'.join([exchange_name, identity.as_json()])
 
-        return cls(exchange_name, identity, queue, callback)
+        return cls(exchange_name, identity, queue, handle)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, exchange_name, identity, queue, callback):
+    def __init__(self, exchange_name, identity, queue, handle: Callable):
         super().__init__(exchange_name)
 
         self.__identity = identity                      # EquipmentIdentifier
         self.__queue = queue                            # string
-        self.__callback = callback                      # string
+        self.__handle = handle                          # string
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -231,12 +232,11 @@ class MQSubscriber(MQPublisher):
         if self.queue is None:
             raise RuntimeError('subscribe: no queue')
 
-        if self.callback is None:
-            raise RuntimeError('subscribe: no callback')
+        if self.handle is None:
+            raise RuntimeError('subscribe: no handler')
 
         if not routing_keys:
             raise RuntimeError('subscribe: no routing keys')
-
 
         while True:
             try:
@@ -251,7 +251,7 @@ class MQSubscriber(MQPublisher):
 
                 self.channel.basic_consume(
                     queue=self.queue,
-                    on_message_callback=self.on_message_callback,
+                    on_message_callback=self.callback,
                 )
 
                 self.channel.start_consuming()
@@ -261,12 +261,12 @@ class MQSubscriber(MQPublisher):
                 self._logger.warn('subscribe: connection re-established')
 
 
-    def on_message_callback(self, ch, method, _properties, body):
+    def callback(self, ch, method, _properties, body):
         routing_key = PublicationRoutingKey.construct_from_jdict(method.routing_key)
         if routing_key.source == self.identity:
             return                                          # do not send message to self
 
-        self.callback(Message.construct_from_callback(routing_key, body))
+        self.handle(Message.construct_from_callback(routing_key, body))
 
         ch.basic_ack(delivery_tag=method.delivery_tag)      # ACK will not take place if callback raises an exception
 
@@ -284,8 +284,8 @@ class MQSubscriber(MQPublisher):
 
 
     @property
-    def callback(self):
-        return self.__callback
+    def handle(self):
+        return self.__handle
 
 
     # ----------------------------------------------------------------------------------------------------------------
