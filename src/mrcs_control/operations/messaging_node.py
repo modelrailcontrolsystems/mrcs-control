@@ -94,13 +94,13 @@ class SubscriberNode(MessagingNode, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, ops: OperationService):
-        super().__init__(ops, MQSubscriber.construct_sub(ops.mq_mode, self.identity(), self.callback))
+        super().__init__(ops, MQSubscriber.construct_sub(ops.mq_mode, self.identity(), self.handle))
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     @abstractmethod
-    def routing_key(self) -> SubscriptionRoutingKey:
+    def routing_keys(self) -> list[SubscriptionRoutingKey]:
         pass
 
 
@@ -110,12 +110,12 @@ class SubscriberNode(MessagingNode, ABC):
 
 
     @abstractmethod
-    def callback(self, message: Message):
+    def handle(self, message: Message):
         pass
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'{self.__class__.__name__}:{{identity:{self.identity()}, routing_key:{self.routing_key()}, '
+        return (f'{self.__class__.__name__}:{{identity:{self.identity()}, routing_keys:{self.routing_keys()}, '
                 f'ops:{self.ops}, mq_client:{self.mq_client}}}')

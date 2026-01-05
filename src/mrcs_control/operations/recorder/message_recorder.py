@@ -30,23 +30,14 @@ class MessageRecorder(SubscriberNode):
 
 
     @classmethod
-    def routing_key(cls):
-        return SubscriptionRoutingKey(EquipmentFilter.all(), EquipmentFilter.all())
+    def routing_keys(cls):
+        return (SubscriptionRoutingKey(EquipmentFilter.all(), EquipmentFilter.all()), )
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, ops: OperationService):
         super().__init__(ops)
-
-
-    # ----------------------------------------------------------------------------------------------------------------
-
-    def callback(self, message: Message):
-        message = PersistentMessage.widen(message)
-        message.save()
-
-        self.logger.info(f'callback: {message}')
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -70,6 +61,15 @@ class MessageRecorder(SubscriberNode):
         self.mq_client.connect()
 
         try:
-            self.mq_client.subscribe(self.routing_key())
+            self.mq_client.subscribe(*self.routing_keys())
         except KeyboardInterrupt:
             return
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def handle(self, message: Message):
+        message = PersistentMessage.widen(message)
+        message.save()
+
+        self.logger.info(f'callback: {message}')
