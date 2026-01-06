@@ -33,7 +33,6 @@ from mrcs_core.data.json import JSONify
 from mrcs_core.sys.logging import Logging
 
 
-# TODO: find out why it does not get the first message on startup - needs second message?
 # --------------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
