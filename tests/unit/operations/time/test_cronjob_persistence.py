@@ -60,7 +60,6 @@ class TestCronjobPersistence(unittest.TestCase):
         job = PersistentCronjob.find_next(ISODatetime.now())
         self.assertEqual(job, job1)
 
-        # TODO: check that the OLDEST job is retrieved first
 
     def test_delete(self):
         PersistentCronjob.recreate_tables()
