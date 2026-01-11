@@ -19,7 +19,7 @@ class PublisherArgs(MultimodeControlArgs):
         super().__init__(description)
 
         self._parser.add_argument('-s', '--source_serial', action='store', type=int, default=1,
-                                  help='TST source serial number (default 1)')
+                                  help='ITS source serial number (default 1)')
 
         self._parser.add_argument('-e', '--target_equipment', action='store', type=str,
                                   help='target equipment type (default *)')
