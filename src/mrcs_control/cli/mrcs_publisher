@@ -17,7 +17,7 @@ mrcs_publisher [-h] [-i INDENT] [-v] [--version] [-t] [-s SOURCE_SERIAL]
 [-e TARGET_EQUIPMENT] [-b TARGET_BLOCK] [-n TARGET_SERIAL] [-m MESSAGE_BODY]
 
 EXAMPLES
-mrcs_publisher -t -v -e MPU -b 1 -n 2
+mrcs_publisher -t -v -e OMP -b 1 -n 2
 
 RESOURCES
 """

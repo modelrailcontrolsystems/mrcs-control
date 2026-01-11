@@ -36,13 +36,13 @@ class TestMessage(unittest.TestCase):
     def test_construct_from_jdict(self):
         obj1 = PersistentMessage.construct_from_jdict(self.__jdict1)
         self.assertEqual('PersistentMessage:{routing_key:PublicationRoutingKey:{source:EquipmentIdentifier:'
-                         '{equipment_type:TST, sector_number:1, serial_number:2}, '
-                         'target:EquipmentFilter:{equipment_type:MPU, sector_number:1, serial_number:100}}, '
+                         '{equipment_type:ITS, sector_number:1, serial_number:2}, '
+                         'target:EquipmentFilter:{equipment_type:OMP, sector_number:1, serial_number:100}}, '
                          'body:hello}', str(obj1))
 
     def test_jdict(self):
         obj1 = PersistentMessage.construct_from_jdict(self.__jdict3)
-        self.assertEqual({'routing': 'TST.001.002.MPU.001.100', 'body': (1, 2)}, obj1.as_jdict())
+        self.assertEqual({'routing': 'ITS.001.002.OMP.001.100', 'body': (1, 2)}, obj1.as_jdict())
 
     def test_eq(self):
         obj1 = PersistentMessage.construct_from_jdict(self.__jdict1)
@@ -66,11 +66,11 @@ class TestMessage(unittest.TestCase):
 
     def test_as_db(self):
         obj1 = PersistentMessage.construct_from_jdict(self.__jdict1)
-        self.assertEqual(('TST.001.002.MPU.001.100', '"hello"'), obj1.as_db_insert())
+        self.assertEqual(('ITS.001.002.OMP.001.100', '"hello"'), obj1.as_db_insert())
 
     def test_as_json(self):
         obj1 = PersistentMessage.construct_from_jdict(self.__jdict1)
-        self.assertEqual('{"routing": "TST.001.002.MPU.001.100", "body": "hello"}', JSONify.dumps(obj1))
+        self.assertEqual('{"routing": "ITS.001.002.OMP.001.100", "body": "hello"}', JSONify.dumps(obj1))
 
 
 if __name__ == "__main_":
