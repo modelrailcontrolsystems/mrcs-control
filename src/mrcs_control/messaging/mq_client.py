@@ -95,7 +95,7 @@ class MQClient(ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return f'Client:{{channel:{self.channel}}}'
+        return f'MQClient:{{channel:{self.channel}}}'
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -130,7 +130,7 @@ class MQManager(MQClient):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return f'Manager:{{channel:{self.channel}}}'
+        return f'MQManager:{{channel:{self.channel}}}'
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -169,12 +169,15 @@ class MQPublisher(MQClient):
 
         while True:
             try:
+                properties = pika.BasicProperties(
+                    content_type='application/json',
+                    delivery_mode=pika.DeliveryMode.Persistent)
+
                 self.channel.basic_publish(
                     exchange=self.exchange_name,
                     routing_key=message.routing_key.as_json(),
                     body=JSONify.dumps(message.body),
-                    properties=pika.BasicProperties(delivery_mode=pika.DeliveryMode.Persistent)
-                )
+                    properties=properties)
                 break
 
             except AMQPError:
@@ -193,7 +196,7 @@ class MQPublisher(MQClient):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return f'Publisher:{{exchange_name:{self.exchange_name}, channel:{self.channel}}}'
+        return f'MQPublisher:{{exchange_name:{self.exchange_name}}}'
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -212,7 +215,7 @@ class MQSubscriber(MQPublisher):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, exchange_name, identity, queue, handle: Callable):
+    def __init__(self, exchange_name, identity: EquipmentIdentifier, queue, handle: Callable):
         super().__init__(exchange_name)
 
         self.__identity = identity                      # EquipmentIdentifier
@@ -226,17 +229,13 @@ class MQSubscriber(MQPublisher):
         if self.channel is None:
             raise RuntimeError('subscribe: no channel')
 
-        if self.identity is None:
-            raise RuntimeError('subscribe: no identity')
-
         if self.queue is None:
             raise RuntimeError('subscribe: no queue')
 
-        if self.handle is None:
-            raise RuntimeError('subscribe: no handler')
-
         if not routing_keys:
             raise RuntimeError('subscribe: no routing keys')
+
+        self._logger.info(f'*** subscribe - routing_keys:{[str(key) for key in routing_keys]}')
 
         while True:
             try:
@@ -291,5 +290,5 @@ class MQSubscriber(MQPublisher):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'Subscriber:{{exchange_name:{self.exchange_name}, identity:{self.identity}, queue:{self.queue}, '
+        return (f'MQSubscriber:{{exchange_name:{self.exchange_name}, identity:{self.identity}, queue:{self.queue}, '
                 f'channel:{self.channel}}}')

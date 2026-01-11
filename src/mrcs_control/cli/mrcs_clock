@@ -57,6 +57,7 @@ from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging
 
 
+# TODO: whatever changes the clock conf, it should message this so that the API can do a ws broadcast
 # --------------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':

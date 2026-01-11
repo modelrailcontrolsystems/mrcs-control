@@ -80,7 +80,7 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
-        source = EquipmentIdentifier(EquipmentType.TST, None, args.source_serial)
+        source = EquipmentIdentifier(EquipmentType.ITS, None, args.source_serial)
         routing_key = PublicationRoutingKey(source, target)
 
         publisher = MQPublisher.construct_pub(args.mode.value.mq_mode)

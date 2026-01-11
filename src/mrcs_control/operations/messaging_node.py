@@ -117,5 +117,6 @@ class SubscriberNode(MessagingNode, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'{self.__class__.__name__}:{{identity:{self.identity()}, routing_keys:{self.routing_keys()}, '
+        routing_keys = [str(key) for key in self.routing_keys()]
+        return (f'{self.__class__.__name__}:{{identity:{self.identity()}, routing_keys:{routing_keys}, '
                 f'ops:{self.ops}, mq_client:{self.mq_client}}}')
