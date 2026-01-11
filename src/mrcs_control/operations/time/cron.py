@@ -30,7 +30,7 @@ class Cron(PublisherNode):
 
     @classmethod
     def identity(cls):
-        return EquipmentIdentifier(EquipmentType.CRN, None, 1)
+        return EquipmentIdentifier(EquipmentType.ICO, None, 1)
 
 
     # ----------------------------------------------------------------------------------------------------------------

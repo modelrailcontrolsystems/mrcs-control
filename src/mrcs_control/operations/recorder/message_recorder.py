@@ -26,7 +26,7 @@ class MessageRecorder(SubscriberNode):
 
     @classmethod
     def identity(cls):
-        return EquipmentIdentifier(EquipmentType.MLG, None, 1)
+        return EquipmentIdentifier(EquipmentType.IML, None, 1)
 
 
     @classmethod

@@ -38,7 +38,7 @@ class TestCronjobPersistence(unittest.TestCase):
     def test_insert(self):
         PersistentCronjob.recreate_tables()
 
-        target = EquipmentIdentifier(EquipmentType.SCH, None, 1)
+        target = EquipmentIdentifier(EquipmentType.OSC, None, 1)
         job = PersistentCronjob(None, target, 'abc', ISODatetime.now())
         id = job.save()
         self.assertEqual(id, 1)
@@ -47,12 +47,12 @@ class TestCronjobPersistence(unittest.TestCase):
     def test_find(self):
         PersistentCronjob.recreate_tables()
 
-        target = EquipmentIdentifier(EquipmentType.SCH, None, 1)
+        target = EquipmentIdentifier(EquipmentType.OSC, None, 1)
         job1 = PersistentCronjob(None, target, 'abc', ISODatetime.now())
         job1.save()
         time.sleep(1)
 
-        target = EquipmentIdentifier(EquipmentType.SCH, None, 1)
+        target = EquipmentIdentifier(EquipmentType.OSC, None, 1)
         job2 = PersistentCronjob(None, target, 'abd', ISODatetime.now())
         job2.save()
         time.sleep(1)
@@ -64,12 +64,12 @@ class TestCronjobPersistence(unittest.TestCase):
     def test_delete(self):
         PersistentCronjob.recreate_tables()
 
-        target = EquipmentIdentifier(EquipmentType.SCH, None, 1)
+        target = EquipmentIdentifier(EquipmentType.OSC, None, 1)
         job1 = PersistentCronjob(None, target, 'abc', ISODatetime.now())
         job1.save()
         time.sleep(1)
 
-        target = EquipmentIdentifier(EquipmentType.SCH, None, 1)
+        target = EquipmentIdentifier(EquipmentType.OSC, None, 1)
         job2 = PersistentCronjob(None, target, 'abd', ISODatetime.now())
         job2.save()
         time.sleep(1)
