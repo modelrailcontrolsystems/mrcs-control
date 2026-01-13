@@ -32,7 +32,7 @@ from mrcs_core.sys.logging import Logging
 
 class MQClientAsync(object):
     URL = 'amqp://127.0.0.1:5672/%2F'
-    EXCHANGE_TYPE = ExchangeType.topic      # TODO: use this enum throughout
+    EXCHANGE_TYPE = ExchangeType.topic
     PUBLISH_INTERVAL = 1
     ROUTING_KEY = 'ITS.*.001.IAP.*.001'
 
