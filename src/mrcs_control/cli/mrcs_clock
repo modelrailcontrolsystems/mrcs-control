@@ -52,7 +52,7 @@ from mrcs_control.cli.args.clock_args import ClockArgs
 
 from mrcs_core.data.json import JSONify
 from mrcs_core.operations.time.clock import Clock
-from mrcs_core.operations.time.persistent_iso_datetime import PersistentISODatetime
+from mrcs_core.operations.time.clock_iso_datetime import ClockISODatetime
 from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging
 
@@ -104,11 +104,11 @@ if __name__ == '__main__':
             clock.save(Host)
 
         if args.reload:
-            if not PersistentISODatetime.exists(Host):
+            if not ClockISODatetime.exists(Host):
                 logger.error('no stored time exists.')
                 exit(1)
 
-            stored = PersistentISODatetime.load(Host)
+            stored = ClockISODatetime.load(Host)
             clock.reload(stored)
             clock.save(Host)
 

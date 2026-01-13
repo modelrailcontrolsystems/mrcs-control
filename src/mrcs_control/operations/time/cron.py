@@ -17,7 +17,7 @@ from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey
 from mrcs_core.operations.time.clock import Clock
-from mrcs_core.operations.time.persistent_iso_datetime import PersistentISODatetime
+from mrcs_core.operations.time.clock_iso_datetime import ClockISODatetime
 from mrcs_core.sys.host import Host
 
 
@@ -53,7 +53,7 @@ class Cron(PublisherNode):
         self.mq_client.connect()
 
         if not save_model_time:
-            PersistentISODatetime.delete(Host)
+            ClockISODatetime.delete(Host)
 
         clock = Clock.load(Host)
         timer = IntervalTimer(clock.tick_interval)
