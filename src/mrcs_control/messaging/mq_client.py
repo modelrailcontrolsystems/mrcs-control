@@ -19,6 +19,7 @@ from typing import Callable
 
 import pika
 from pika.exceptions import AMQPError, ChannelWrongStateError
+from pika.exchange_type import ExchangeType
 
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.data.json import JSONify
@@ -140,9 +141,6 @@ class MQPublisher(MQClient):
     A RabbitMQ peer that can act as a publisher only
     """
 
-    __EXCHANGE_TYPE = 'topic'
-
-
     @classmethod
     def construct_pub(cls, exchange_name: MQMode):
         return cls(exchange_name)
@@ -160,7 +158,7 @@ class MQPublisher(MQClient):
 
     def connect(self):
         super().connect()
-        self.channel.exchange_declare(exchange=self.exchange_name, exchange_type=self.__EXCHANGE_TYPE, durable=True)
+        self.channel.exchange_declare(exchange=self.exchange_name, exchange_type=ExchangeType.topic, durable=True)
 
 
     def publish(self, message: Message):
