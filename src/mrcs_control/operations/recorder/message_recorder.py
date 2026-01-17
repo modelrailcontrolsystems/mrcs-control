@@ -13,6 +13,7 @@ from mrcs_control.operations.recorder.message_record import PersistentMessageRec
 from mrcs_control.operations.recorder.persistent_message import PersistentMessage
 
 from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentFilter, EquipmentType
+from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
 
@@ -26,11 +27,11 @@ class MessageRecorder(SubscriberNode):
 
     @classmethod
     def identity(cls):
-        return EquipmentIdentifier(EquipmentType.IML, None, 1)
+        return EquipmentIdentifier(EquipmentType.MLG, None, 1)
 
 
     @classmethod
-    def routing_keys(cls):
+    def subscription_routing_keys(cls):
         return (SubscriptionRoutingKey(EquipmentFilter.all(), EquipmentFilter.all()), )
 
 
@@ -61,7 +62,7 @@ class MessageRecorder(SubscriberNode):
         self.mq_client.connect()
 
         try:
-            self.mq_client.subscribe(*self.routing_keys())
+            self.mq_client.subscribe(*self.subscription_routing_keys())
         except KeyboardInterrupt:
             return
 
@@ -69,7 +70,8 @@ class MessageRecorder(SubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def handle(self, message: Message):
+        self.logger.info(f'handle: {JSONify.as_jdict(message)}')
+
         message = PersistentMessage.widen(message)
         message.save()
 
-        self.logger.info(f'callback: {message}')

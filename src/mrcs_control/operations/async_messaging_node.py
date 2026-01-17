@@ -58,7 +58,7 @@ class AsyncMessagingNode(ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return f'{self.__class__.__name__}:{{identity:{self.identity()}, ops:{self.ops}, mq_client:{self.mq_client}}}'
+        return f'{self.__class__.__name__}:{{ops:{self.ops}, mq_client:{self.mq_client}}}'
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -88,7 +88,7 @@ class AsyncSubscriberNode(AsyncMessagingNode, ABC):
 
     @classmethod
     @abstractmethod
-    def routing_keys(cls) -> list[SubscriptionRoutingKey]:
+    def subscription_routing_keys(cls) -> list[SubscriptionRoutingKey]:
         pass
 
 
@@ -101,7 +101,7 @@ class AsyncSubscriberNode(AsyncMessagingNode, ABC):
 
     def __init__(self, ops: OperationService):
         super().__init__(ops, MQAsyncSubscriber.construct_sub(ops.mq_mode, self.identity(), self.handle,
-                                                              *self.routing_keys()))
+                                                              *self.subscription_routing_keys()))
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -114,4 +114,4 @@ class AsyncSubscriberNode(AsyncMessagingNode, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return f'{self.__class__.__name__}:{{identity:{self.identity()}, ops:{self.ops}, mq_client:{self.mq_client}}}'
+        return f'{self.__class__.__name__}:{{ ops:{self.ops}, mq_client:{self.mq_client}}}'

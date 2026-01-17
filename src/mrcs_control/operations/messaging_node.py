@@ -58,7 +58,7 @@ class MessagingNode(ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return f'{self.__class__.__name__}:{{identity:{self.identity()}, ops:{self.ops}, mq_client:{self.mq_client}}}'
+        return f'{self.__class__.__name__}:{{ops:{self.ops}, mq_client:{self.mq_client}}}'
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -100,7 +100,7 @@ class SubscriberNode(MessagingNode, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @abstractmethod
-    def routing_keys(self) -> list[SubscriptionRoutingKey]:
+    def subscription_routing_keys(self) -> list[SubscriptionRoutingKey]:
         pass
 
 
@@ -117,6 +117,6 @@ class SubscriberNode(MessagingNode, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        routing_keys = [str(key) for key in self.routing_keys()]
-        return (f'{self.__class__.__name__}:{{identity:{self.identity()}, routing_keys:{routing_keys}, '
+        routing_keys = [str(key) for key in self.subscription_routing_keys()]
+        return (f'{self.__class__.__name__}:{{routing_keys:{routing_keys}, '
                 f'ops:{self.ops}, mq_client:{self.mq_client}}}')

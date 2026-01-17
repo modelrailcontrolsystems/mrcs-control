@@ -21,6 +21,7 @@ EXAMPLES
 mrcs_crontab --verbose --subscribe --test
 
 SEE ALSO
+mrcs_clock_manager
 mrcs_cron
 """
 

@@ -4,7 +4,7 @@ Created on 11 Jan 2026
 @author: jpmckinney, lukebakken, David Taylor, Bruno Beloff (bbeloff@me.com)
 
 test:
-./mrcs_publisher -vti4 -t IAP -n 1 -m '{"event_id": "abc", "on": "1930-01-12T13:10:00.000"}'
+./mrcs_publisher -vti4 -t API -n 1 -m '{"event_id": "abc", "on": "1930-01-12T13:10:00.000"}'
 
 https://stackoverflow.com/questions/70889479/how-to-use-pika-with-fastapis-asyncio-loop
 https://github.com/pika/pika/blob/main/examples/asynchronous_publisher_example.py
@@ -34,7 +34,7 @@ class MQClientAsync(object):
     URL = 'amqp://127.0.0.1:5672/%2F'
     EXCHANGE_TYPE = ExchangeType.topic
     PUBLISH_INTERVAL = 1
-    ROUTING_KEY = 'ITS.*.001.IAP.*.001'
+    ROUTING_KEY = 'TST.*.001.API.*.001'
 
 
     # ----------------------------------------------------------------------------------------------------------------

@@ -18,6 +18,7 @@ EXAMPLES
 mrcs_cron --verbose --run-save --test
 
 SEE ALSO
+mrcs_clock_manager
 mrcs_crontab
 """
 

@@ -35,7 +35,7 @@ class TestMessagePersistence(unittest.TestCase):
         PersistentMessageRecord.recreate_tables()
 
         obj1 = PersistentMessage.construct_from_jdict(
-            json.loads('{"routing": "ITS.001.002.OMP.001.100", "body": "hello"}'))
+            json.loads('{"routing": "TST.001.002.MPU.001.100", "body": "hello"}'))
         obj1.save()
 
         records = list(PersistentMessageRecord.find_latest(limit=10))
