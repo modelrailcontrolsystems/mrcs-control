@@ -46,7 +46,7 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
-        cron = Cron.construct(args.mode)
+        cron = Cron(args.mode.value)
         logger.info(f'cron: {cron}')
 
         if args.clean:

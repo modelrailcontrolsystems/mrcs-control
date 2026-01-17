@@ -21,7 +21,9 @@ class BrokerArgs(MultimodeControlArgs):
         group.add_argument('-e', '--exchange', action='store_true', help='manage exchanges')
         group.add_argument('-q', '--queue', action='store_true', help='manage queues')
 
-        self._parser.add_argument('-d', '--delete', action='store', type=str, help='delete')
+        group = self._parser.add_mutually_exclusive_group(required=False)
+        group.add_argument('-d', '--delete', action='store', type=str, help='delete ITEM')
+        group.add_argument('-z', '--erase', action='store_true', help='delete all')
 
         self._args = self._parser.parse_args()
 
@@ -43,8 +45,13 @@ class BrokerArgs(MultimodeControlArgs):
         return self._args.delete
 
 
+    @property
+    def erase(self):
+        return self._args.erase
+
+
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
         return (f'BrokerArgs:{{test:{self.test}, exchange:{self.exchange}, queue:{self.queue}, delete:{self.delete}, '
-                f'indent:{self.indent}, verbose:{self.verbose}}}')
+                f'erase:{self.erase}, indent:{self.indent}, verbose:{self.verbose}}}')

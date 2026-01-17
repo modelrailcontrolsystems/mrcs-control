@@ -26,15 +26,12 @@ class Crontab(SubscriberNode):
 
     @classmethod
     def identity(cls):
-        return EquipmentIdentifier(EquipmentType.ICO, None, 1)
+        return EquipmentIdentifier(EquipmentType.ICO, None, 1)  # crontab=1 cron=2
 
 
     @classmethod
     def routing_keys(cls):
-        source = EquipmentFilter.all()
-        target = EquipmentFilter(EquipmentType.ICO, None, None)
-
-        return (SubscriptionRoutingKey(source, target), )
+        return (SubscriptionRoutingKey(EquipmentFilter.all(), cls.identity()), )
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -72,7 +69,8 @@ class Crontab(SubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def handle(self, message: Message):
+        self.logger.info(f'callback - message: {message}')
+
         cronjob = PersistentCronjob.construct_from_message(message)
         cronjob.save()
 
-        self.logger.info(f'callback: {cronjob}')
