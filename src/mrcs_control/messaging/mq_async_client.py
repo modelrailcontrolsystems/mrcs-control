@@ -13,7 +13,6 @@ https://stackoverflow.com/questions/15150207/connection-in-rabbitmq-server-auto-
 """
 
 import functools
-import json
 
 from abc import ABC, abstractmethod
 from typing import Callable
@@ -187,13 +186,12 @@ class MQAsyncPublisher(MQAsyncClient):
     def setup_exchange(self, exchange_name):
         self.logger.info(f'setup_exchange - exchange_name:{exchange_name}')
 
-        cb = functools.partial(self.on_exchange_declare_ok, userdata=exchange_name)
         self.channel.exchange_declare(exchange=exchange_name, exchange_type=ExchangeType.topic, durable=True,
-                                      callback=cb)
+                                      callback=self.on_exchange_declare_ok)
 
 
-    def on_exchange_declare_ok(self, _unused_frame, userdata):
-        self.logger.info(f'on_exchange_declare_ok - userdata:{userdata}')
+    def on_exchange_declare_ok(self, _unused_frame):
+        self.logger.info(f'on_exchange_declare_ok')
         self.start_publishing()
 
 
@@ -229,32 +227,30 @@ class MQAsyncSubscriber(MQAsyncPublisher):
 
     @classmethod
     def construct_sub(cls, exchange_name: MQMode, identity: EquipmentIdentifier, handle: Callable,
-                      routing_key: RoutingKey):
+                      *routing_keys: RoutingKey):
         queue = '.'.join([exchange_name, identity.as_json()])
 
-        return cls(exchange_name, identity, queue, handle, routing_key)
+        return cls(exchange_name, identity, queue, handle, *routing_keys)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, exchange_name, identity: EquipmentIdentifier, queue, client_callback: Callable,
-                 routing_key: RoutingKey):
+                 *routing_keys: RoutingKey):
         super().__init__(exchange_name)
-
-        # TODO: support multiple routing_keys?
 
         self.__identity = identity                          # EquipmentIdentifier
         self.__queue = queue                                # string
         self.__client_callback = client_callback            # string
-        self.__routing_key = routing_key                    # RoutingKey
+        self.__routing_keys = routing_keys                  # list of RoutingKey
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     # subscribing is initiated with connect()
 
-    def on_exchange_declare_ok(self, _unused_frame, userdata):
-        self.logger.info(f'on_exchange_declare_ok - userdata:{userdata}')
+    def on_exchange_declare_ok(self, _unused_frame):
+        self.logger.info(f'on_exchange_declare_ok')
         self.setup_queue(self.queue)
 
 
@@ -264,15 +260,22 @@ class MQAsyncSubscriber(MQAsyncPublisher):
 
 
     def on_queue_declare_ok(self, _unused_frame):
-        self.logger.info(f'on_queue_declare_ok - exchange_name:{self.exchange_name}, queue_name:{self.queue}, '
-                         f'routing_key:{self.routing_key}')
-        self.channel.queue_bind(self.queue, self.exchange_name, routing_key=JSONify.dumps(self.routing_key),
-                                callback=self.on_bind_ok)
+        self.logger.info(f'on_queue_declare_ok - exchange_name:{self.exchange_name}, queue_name:{self.queue}')
+
+        last_index = len(self.routing_keys) - 1
+        for i, routing_key in enumerate(self.routing_keys):
+            cb = functools.partial(self.on_bind_ok, start=i == last_index)
+            self.channel.queue_bind(self.queue, self.exchange_name, routing_key=JSONify.as_jdict(routing_key),
+                                    callback=cb)
 
 
-    def on_bind_ok(self, _unused_frame):
+    def on_bind_ok(self, _unused_frame, start):
         self.logger.info(f'on_bind_ok')
-        self.start_consuming()
+
+        if start:
+            self.logger.info(f'on_bind_ok - starting')
+            self.start_publishing()
+            self.start_consuming()
 
 
     def start_consuming(self):
@@ -302,7 +305,7 @@ class MQAsyncSubscriber(MQAsyncPublisher):
     def on_message(self, _channel, delivery, _props, payload):
         self.logger.info(f'on_message - delivery_tag:{delivery.delivery_tag}')
 
-        routing_key = SubscriptionRoutingKey.construct_from_jdict(json.loads(json.dumps(delivery.routing_key)))
+        routing_key = SubscriptionRoutingKey.construct_from_jdict(delivery.routing_key)
 
         if routing_key.source == self.identity:
             return                                          # do not send message to self
@@ -331,12 +334,13 @@ class MQAsyncSubscriber(MQAsyncPublisher):
 
 
     @property
-    def routing_key(self):
-        return self.__routing_key
+    def routing_keys(self):
+        return self.__routing_keys
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
+        routing_keys = [str(key) for key in self.routing_keys]
         return (f'MQAsyncSubscriber:{{exchange_name:{self.exchange_name}, identity:{self.identity}, '
-                f'queue:{self.queue}, channel:{self.channel}, routing_key:{self.routing_key}}}')
+                f'queue:{self.queue}, channel:{self.channel}, routing_keys:{routing_keys}}}')

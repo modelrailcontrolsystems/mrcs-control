@@ -7,15 +7,17 @@ Message-based Cron - this component raises events
 Note that the cron components work in model time, not true time.
 """
 
+import asyncio
+
 from mrcs_control.db.db_client import DbClient
-from mrcs_control.operations.messaging_node import PublisherNode
+from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
 from mrcs_control.operations.operation_mode import OperationService
 from mrcs_control.operations.time.persistent_cronjob import PersistentCronjob
-from mrcs_control.sync.interval_timer import IntervalTimer
+from mrcs_control.sync.interval_timer import AsyncIntervalTimer
 
-from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType
+from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType, EquipmentFilter
 from mrcs_core.messaging.message import Message
-from mrcs_core.messaging.routing_key import PublicationRoutingKey
+from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
 from mrcs_core.operations.time.clock import Clock
 from mrcs_core.operations.time.clock_iso_datetime import ClockISODatetime
 from mrcs_core.sys.host import Host
@@ -23,20 +25,28 @@ from mrcs_core.sys.host import Host
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class Cron(PublisherNode):
+class Cron(AsyncSubscriberNode):
     """
     raises events
     """
 
     @classmethod
     def identity(cls):
-        return EquipmentIdentifier(EquipmentType.ICO, None, 1)
+        return EquipmentIdentifier(EquipmentType.ICO, None, 2)
+
+
+    @classmethod
+    def routing_keys(cls):
+        return (SubscriptionRoutingKey(EquipmentFilter.all(), cls.identity()), )
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, ops: OperationService):
         super().__init__(ops)
+
+        self.__clock = None
+        self.__timer = None
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -50,18 +60,37 @@ class Cron(PublisherNode):
         DbClient.set_client_db_mode(self.ops.db_mode)
         PersistentCronjob.create_tables()
 
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
         self.mq_client.connect()
 
+        loop.create_task(self.test_task_1()),
+        loop.run_forever()
+
+
+    async def test_task_1(self):
+        self.logger.info('hello started')
+
+        self.__timer = AsyncIntervalTimer(2.0)
+
+        while True:
+            await self.timer.next()
+            self.logger.info('hello')
+
+
+    async def monitor_clock(self, save_model_time):
         if not save_model_time:
             ClockISODatetime.delete(Host)
 
-        clock = Clock.load(Host)
-        timer = IntervalTimer(clock.tick_interval)
+        self.__clock = Clock.load(Host)
+        self.__timer = AsyncIntervalTimer(self.clock.tick_interval)
         prev_time = None
 
-        while timer.true(interval=clock.tick_interval):
-            clock = Clock.load(Host)
-            now = clock.now()
+        while True:
+            await self.timer.next()
+            # clock = Clock.load(Host)  # TODO: only reload when messaged to do so
+            now = self.clock.now()
 
             if now == prev_time:
                 continue
@@ -82,3 +111,29 @@ class Cron(PublisherNode):
                 PersistentCronjob.delete(job.id)
 
                 self.logger.info(f'run - published: {message}')
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def handle(self, message: Message):
+        self.logger.info(f'handle - message:{message}')
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    @property
+    def clock(self):
+        return self.__clock
+
+
+    @property
+    def timer(self):
+        return self.__timer
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def __str__(self, *args, **kwargs):
+        return (f'Cron:{{identity:{self.identity()}, clock:{self.clock}, timer:{self.timer}, '
+                f'ops:{self.ops}, mq_client:{self.mq_client}}}')
+

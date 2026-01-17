@@ -3,6 +3,8 @@ Created on 1 Nov 2025
 
 @author: Bruno Beloff (bbeloff@me.com)
 
+Deprecated - replaced with MQAsyncClient
+
 * Client - an abstract RabbitMQ client
 * Manager - a Client that can perform broker management tasks
 * Publisher - a RabbitMQ peer that can act as a publisher only
@@ -159,6 +161,7 @@ class MQPublisher(MQClient):
     def connect(self):
         super().connect()
         self.channel.exchange_declare(exchange=self.exchange_name, exchange_type=ExchangeType.topic, durable=True)
+        print(f'connect - channel:{self.channel}')
 
 
     def publish(self, message: Message):
@@ -260,6 +263,7 @@ class MQSubscriber(MQPublisher):
 
     def callback(self, ch, method, _properties, body):
         routing_key = PublicationRoutingKey.construct_from_jdict(method.routing_key)
+
         if routing_key.source == self.identity:
             return                                          # do not send message to self
 

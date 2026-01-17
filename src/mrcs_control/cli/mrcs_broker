@@ -9,15 +9,15 @@ source repo: mrcs_control
 
 DESCRIPTION
 A tool to manage message broker exchanges and queues.
+It is essential to delete a queue if the routing key has changed - the queue is durable, and so are its routing keys!
+No process may be attached to the broker when deleting takes place.
 Note that exchanges cannot be deleted if any queues exist for that exchange - delete the queues first.
 
 SYNOPSIS
-mrcs_broker [-h] [-i INDENT] [-v] [--version] [-t] (-e | -q) [-d DELETE]
+mrcs_broker [-h] [-i INDENT] [-v] [--version] [-t] (-e | -q) [-d DELETE | -z]
 
 EXAMPLES
-mrcs_broker -t -e -v -i4 -d mrcs.test
-
-RESOURCES
+mrcs_broker -t -v -i4 -e -d mrcs.test.ICO.*.002
 """
 
 import sys
@@ -37,6 +37,10 @@ from mrcs_core.sys.logging import Logging
 def find_filtered():
     items = broker.list_exchanges() if args.exchange else broker.list_queues()
     return args.mode.value.broker_filter(items)
+
+
+def delete(item):
+    manager.exchange_delete(item) if args.exchange else manager.queue_delete(item)
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -69,11 +73,14 @@ if __name__ == '__main__':
             manager = MQManager()
             manager.connect()
 
-            if args.exchange:
-                manager.exchange_delete(args.delete)
+            delete(args.delete)
 
-            if args.queue:
-                manager.queue_delete(args.delete)
+        if args.erase:
+            manager = MQManager()
+            manager.connect()
+
+            for item in find_filtered():
+                delete(item.name)
 
         filtered_items = find_filtered()
         print(JSONify.dumps(filtered_items, indent=args.indent))
