@@ -12,10 +12,12 @@ import asyncio
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
 from mrcs_control.operations.operation_mode import OperationService
+from mrcs_control.operations.time.clock_manager import ClockManager
 from mrcs_control.operations.time.persistent_cronjob import PersistentCronjob
 from mrcs_control.sync.interval_timer import AsyncIntervalTimer
 
 from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType, EquipmentFilter
+from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
 from mrcs_core.operations.time.clock import Clock
@@ -32,12 +34,12 @@ class Cron(AsyncSubscriberNode):
 
     @classmethod
     def identity(cls):
-        return EquipmentIdentifier(EquipmentType.ICO, None, 2)
+        return EquipmentIdentifier(EquipmentType.CRN, None, 2)
 
 
     @classmethod
-    def routing_keys(cls):
-        return (SubscriptionRoutingKey(EquipmentFilter.all(), cls.identity()), )
+    def subscription_routing_keys(cls):
+        return (SubscriptionRoutingKey(ClockManager.identity(), EquipmentFilter.all()), )
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -65,18 +67,18 @@ class Cron(AsyncSubscriberNode):
 
         self.mq_client.connect()
 
-        loop.create_task(self.test_task_1()),
+        loop.create_task(self.monitor_clock(save_model_time)),
         loop.run_forever()
 
 
-    async def test_task_1(self):
-        self.logger.info('hello started')
-
-        self.__timer = AsyncIntervalTimer(2.0)
-
-        while True:
-            await self.timer.next()
-            self.logger.info('hello')
+    # async def test_task_1(self):
+    #     self.logger.info('hello started')
+    #
+    #     self.__timer = AsyncIntervalTimer(2.0)
+    #
+    #     while True:
+    #         await self.timer.next()
+    #         self.logger.info('hello')
 
 
     async def monitor_clock(self, save_model_time):
@@ -89,7 +91,6 @@ class Cron(AsyncSubscriberNode):
 
         while True:
             await self.timer.next()
-            # clock = Clock.load(Host)  # TODO: only reload when messaged to do so
             now = self.clock.now()
 
             if now == prev_time:
@@ -110,13 +111,16 @@ class Cron(AsyncSubscriberNode):
                 self.mq_client.publish(message)
                 PersistentCronjob.delete(job.id)
 
-                self.logger.info(f'run - published: {message}')
+                self.logger.info(f'run - published: {JSONify.as_jdict(message)}')
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def handle(self, message: Message):
-        self.logger.info(f'handle - message:{message}')
+        self.logger.info(f'handle - message:{JSONify.as_jdict(message)}')
+
+        self.__clock = Clock.construct_from_jdict(message.body)
+        self.timer.interval = self.clock.tick_interval
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -134,6 +138,5 @@ class Cron(AsyncSubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'Cron:{{identity:{self.identity()}, clock:{self.clock}, timer:{self.timer}, '
-                f'ops:{self.ops}, mq_client:{self.mq_client}}}')
+        return f'Cron:{{clock:{self.clock}, timer:{self.timer}, ops:{self.ops}, mq_client:{self.mq_client}}}'
 

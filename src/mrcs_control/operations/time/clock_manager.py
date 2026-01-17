@@ -1,37 +1,43 @@
 """
-Created on 31 Dec 2025
+Created on 17 Jan 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-Message-based Cron - this component accepts event schedules
+Message-based Cron - this component raises events
 Note that the cron components work in model time, not true time.
 """
 
-from mrcs_control.db.db_client import DbClient
 from mrcs_control.operations.messaging_node import SubscriberNode
 from mrcs_control.operations.operation_mode import OperationService
-from mrcs_control.operations.time.persistent_cronjob import PersistentCronjob
 
-from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentFilter, EquipmentType
+from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType, EquipmentFilter
+from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
-from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
+from mrcs_core.messaging.routing_key import SubscriptionRoutingKey, PublicationRoutingKey
+from mrcs_core.operations.time.clock import Clock
+from mrcs_core.sys.host import Host
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class Crontab(SubscriberNode):
+class ClockManager(SubscriberNode):
     """
-    accepts event schedules
+    raises events
     """
 
     @classmethod
     def identity(cls):
-        return EquipmentIdentifier(EquipmentType.CRN, None, 3)
+        return EquipmentIdentifier(EquipmentType.CRN, None, 1)
 
 
     @classmethod
     def subscription_routing_keys(cls):
         return (SubscriptionRoutingKey(EquipmentFilter.all(), cls.identity()), )
+
+
+    @classmethod
+    def publication_routing_key(cls):
+        return PublicationRoutingKey(cls.identity(), EquipmentFilter.all())
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -42,22 +48,7 @@ class Crontab(SubscriberNode):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def clean(self):
-        DbClient.set_client_db_mode(self.ops.db_mode)
-        PersistentCronjob.recreate_tables()
-
-
-    def find_all(self):
-        DbClient.set_client_db_mode(self.ops.db_mode)
-        PersistentCronjob.create_tables()
-
-        return PersistentCronjob.find_all()
-
-
     def subscribe(self):
-        DbClient.set_client_db_mode(self.ops.db_mode)
-        PersistentCronjob.create_tables()
-
         self.mq_client.connect()
 
         try:
@@ -69,8 +60,19 @@ class Crontab(SubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def handle(self, message: Message):
-        self.logger.info(f'callback - message: {message}')
+        self.logger.info(f'handle - message:{JSONify.as_jdict(message)}')
 
-        cronjob = PersistentCronjob.construct_from_message(message)
-        cronjob.save()
+        try:
+            new_conf = Clock.construct_from_jdict(message.body)
+        except TypeError as ex:
+            self.logger.error(f'ex:{ex}')
+            return
 
+        if new_conf == Clock.load(Host):
+            return
+
+        new_conf.save(Host)
+
+        broadcast = Message(self.publication_routing_key(), message.body)
+        self.logger.info(f'handle - broadcast:{broadcast}')
+        self.mq_client.publish(broadcast)

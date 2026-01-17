@@ -26,7 +26,7 @@ from mrcs_control.messaging.mq_client import MQMode
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
-from mrcs_core.messaging.routing_key import RoutingKey, SubscriptionRoutingKey
+from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
 from mrcs_core.sys.logging import Logging
 
 
@@ -227,22 +227,22 @@ class MQAsyncSubscriber(MQAsyncPublisher):
 
     @classmethod
     def construct_sub(cls, exchange_name: MQMode, identity: EquipmentIdentifier, handle: Callable,
-                      *routing_keys: RoutingKey):
+                      *subscription_routing_keys: SubscriptionRoutingKey):
         queue = '.'.join([exchange_name, identity.as_json()])
 
-        return cls(exchange_name, identity, queue, handle, *routing_keys)
+        return cls(exchange_name, identity, queue, handle, *subscription_routing_keys)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, exchange_name, identity: EquipmentIdentifier, queue, client_callback: Callable,
-                 *routing_keys: RoutingKey):
+                 *subscription_routing_keys: SubscriptionRoutingKey):
         super().__init__(exchange_name)
 
-        self.__identity = identity                          # EquipmentIdentifier
-        self.__queue = queue                                # string
-        self.__client_callback = client_callback            # string
-        self.__routing_keys = routing_keys                  # list of RoutingKey
+        self.__identity = identity                                          # EquipmentIdentifier
+        self.__queue = queue                                                # string
+        self.__client_callback = client_callback                            # string
+        self.__subscription_routing_keys = subscription_routing_keys        # list of RoutingKey
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -262,8 +262,8 @@ class MQAsyncSubscriber(MQAsyncPublisher):
     def on_queue_declare_ok(self, _unused_frame):
         self.logger.info(f'on_queue_declare_ok - exchange_name:{self.exchange_name}, queue_name:{self.queue}')
 
-        last_index = len(self.routing_keys) - 1
-        for i, routing_key in enumerate(self.routing_keys):
+        last_index = len(self.subscription_routing_keys) - 1
+        for i, routing_key in enumerate(self.subscription_routing_keys):
             cb = functools.partial(self.on_bind_ok, start=i == last_index)
             self.channel.queue_bind(self.queue, self.exchange_name, routing_key=JSONify.as_jdict(routing_key),
                                     callback=cb)
@@ -334,13 +334,13 @@ class MQAsyncSubscriber(MQAsyncPublisher):
 
 
     @property
-    def routing_keys(self):
-        return self.__routing_keys
+    def subscription_routing_keys(self):
+        return self.__subscription_routing_keys
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        routing_keys = [str(key) for key in self.routing_keys]
+        routing_keys = [str(key) for key in self.subscription_routing_keys]
         return (f'MQAsyncSubscriber:{{exchange_name:{self.exchange_name}, identity:{self.identity}, '
                 f'queue:{self.queue}, channel:{self.channel}, routing_keys:{routing_keys}}}')

@@ -13,6 +13,7 @@ Requires MRCS repos:
 ### Services
 
 The following services should be running continuously:
+* `mrcs_clock_manager --verbose --subscribe --test &`
 * `mrcs_cron --verbose --run-save --test &`
 * `mrcs_crontab --verbose --subscribe --test &`
 * `mrcs_recorder --verbose --subscribe --test &`

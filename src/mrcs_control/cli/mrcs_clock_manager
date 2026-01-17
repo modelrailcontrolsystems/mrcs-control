@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+
+"""
+Created on 17 Jan 2026
+
+@author: Bruno Beloff (bbeloff@me.com)
+
+source repo: mrcs_control
+
+DESCRIPTION
+A service to manage the model time clock configuration
+Note that in --run mode, the utility runs forever.
+
+SYNOPSIS
+usage: mrcs_clock_manager [-h] [-i INDENT] [-v] [--version] [-t] (-n | -s)
+
+EXAMPLES
+mrcs_clock_manager --verbose --subscribe --test
+
+SEE ALSO
+mrcs_cron
+mrcs_crontab
+"""
+
+import sys
+
+from mrcs_control.cli.args.clock_manager_args import ClockManagerArgs
+from mrcs_control.operations.time.clock_manager import ClockManager
+
+from mrcs_core.data.json import JSONify
+from mrcs_core.operations.time.clock import Clock
+from mrcs_core.sys.host import Host
+from mrcs_core.sys.logging import Logging
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    args = ClockManagerArgs('a service to manage the model time clock configuration')
+
+    Logging.config('mrcs_clock_manager', verbose=args.verbose)
+    logger = Logging.getLogger()
+    logger.info(f'args: {args}')
+    logger.info(f'mode: {args.mode.value}')
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    try:
+        manager = ClockManager(args.mode.value)
+        logger.info(f'manager: {manager}')
+
+        if args.conf:
+            conf = Clock.load(Host)
+            print(JSONify.dumps(conf))
+            exit(0)
+
+        if args.now:
+            conf = Clock.load(Host)
+            print(JSONify.dumps(conf.now()))
+            exit(0)
+
+        if args.subscribe:
+            manager.subscribe()
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    except KeyboardInterrupt:
+        print(file=sys.stderr)

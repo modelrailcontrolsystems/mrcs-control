@@ -22,24 +22,24 @@ from mrcs_core.messaging.routing_key import PublicationRoutingKey
 
 class TestMessageWiden(unittest.TestCase):
     def test_construct(self):
-        source = EquipmentIdentifier.construct_from_jdict('SBO.01.02')
-        target = EquipmentFilter.construct_from_jdict('OMP.*.*')
+        source = EquipmentIdentifier.construct_from_jdict('BOS.01.02')
+        target = EquipmentFilter.construct_from_jdict('MPU.*.*')
         rk = PublicationRoutingKey(source, target)
         obj1 = Message(rk, 'hello')
         self.assertEqual('Message:{routing_key:PublicationRoutingKey:'
-                         '{source:EquipmentIdentifier:{equipment_type:SBO, sector_number:1, serial_number:2}, '
-                         'target:EquipmentFilter:{equipment_type:OMP, sector_number:None, serial_number:None}}, '
+                         '{source:EquipmentIdentifier:{equipment_type:BOS, sector_number:1, serial_number:2}, '
+                         'target:EquipmentFilter:{equipment_type:MPU, sector_number:None, serial_number:None}}, '
                          'body:hello}', str(obj1))
 
     def test_widen(self):
-        source = EquipmentIdentifier.construct_from_jdict('SBO.01.02')
-        target = EquipmentFilter.construct_from_jdict('OMP.*.*')
+        source = EquipmentIdentifier.construct_from_jdict('BOS.01.02')
+        target = EquipmentFilter.construct_from_jdict('MPU.*.*')
         rk = PublicationRoutingKey(source, target)
         obj1 = Message(rk, 'hello')
         obj2 = PersistentMessage.widen(obj1)
         self.assertEqual('PersistentMessage:{routing_key:PublicationRoutingKey:'
-                         '{source:EquipmentIdentifier:{equipment_type:SBO, sector_number:1, serial_number:2}, '
-                         'target:EquipmentFilter:{equipment_type:OMP, sector_number:None, serial_number:None}}, '
+                         '{source:EquipmentIdentifier:{equipment_type:BOS, sector_number:1, serial_number:2}, '
+                         'target:EquipmentFilter:{equipment_type:MPU, sector_number:None, serial_number:None}}, '
                          'body:hello}', str(obj2))
 
 

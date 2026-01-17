@@ -17,7 +17,7 @@ SYNOPSIS
 mrcs_broker [-h] [-i INDENT] [-v] [--version] [-t] (-e | -q) [-d DELETE | -z]
 
 EXAMPLES
-mrcs_broker -t -v -i4 -e -d mrcs.test.ICO.*.002
+mrcs_broker -t -v -i4 -e -d mrcs.test.CRN.*.002
 """
 
 import sys
