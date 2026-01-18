@@ -17,8 +17,9 @@ class RecorderArgs(MultimodeControlArgs):
     def __init__(self, description):
         super().__init__(description)
 
+        self._parser.add_argument('-c', '--clean', action='store_true', help='discard existing messages')
+
         group = self._parser.add_mutually_exclusive_group(required=True)
-        group.add_argument('-c', '--clean', action='store_true', help='discard existing messages')
         group.add_argument('-r', '--report', action='store', type=int, help='report latest N messages')
         group.add_argument('-s', '--subscribe', action='store_true', help='subscribe to messages')
 

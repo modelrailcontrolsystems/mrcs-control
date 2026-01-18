@@ -3,8 +3,6 @@ Created on 1 Nov 2025
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-Deprecated - replaced with MQAsyncClient
-
 * Client - an abstract RabbitMQ client
 * Manager - a Client that can perform broker management tasks
 * Publisher - a RabbitMQ peer that can act as a publisher only
@@ -56,7 +54,7 @@ class MQClient(ABC):
 
     def __init__(self):
         self.__channel = None
-        self._logger = Logging.getLogger()
+        self.__logger = Logging.getLogger()
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -81,7 +79,7 @@ class MQClient(ABC):
             return False
 
         except AMQPError as ex:
-            self._logger.warn(f'close: {ex.__class__.__name__}:{ex}')
+            self.logger.warn(f'close: {ex.__class__.__name__}:{ex}')
             return False
 
         finally:
@@ -93,6 +91,11 @@ class MQClient(ABC):
     @property
     def channel(self):
         return self.__channel
+
+
+    @property
+    def logger(self):
+        return self.__logger
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -161,7 +164,7 @@ class MQPublisher(MQClient):
     def connect(self):
         super().connect()
         self.channel.exchange_declare(exchange=self.exchange_name, exchange_type=ExchangeType.topic, durable=True)
-        print(f'connect - channel:{self.channel}')
+        self.logger.debug(f'connect - channel:{self.channel}')
 
 
     def publish(self, message: Message):
@@ -184,7 +187,7 @@ class MQPublisher(MQClient):
             except AMQPError:
                 self.close()
                 self.connect()
-                self._logger.warn('publish: connection re-established')
+                self.logger.warn('publish: connection re-established')
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -208,18 +211,18 @@ class MQSubscriber(MQPublisher):
     """
 
     @classmethod
-    def construct_sub(cls, exchange_name: MQMode, identity: EquipmentIdentifier, handle: Callable):
-        queue = '.'.join([exchange_name, identity.as_json()])
+    def construct_sub(cls, exchange_name: MQMode, id: EquipmentIdentifier, handle: Callable):
+        queue = '.'.join([exchange_name, id.as_json()])
 
-        return cls(exchange_name, identity, queue, handle)
+        return cls(exchange_name, id, queue, handle)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, exchange_name, identity: EquipmentIdentifier, queue, handle: Callable):
+    def __init__(self, exchange_name, id: EquipmentIdentifier, queue, handle: Callable):
         super().__init__(exchange_name)
 
-        self.__identity = identity                      # EquipmentIdentifier
+        self.__id = id                                  # EquipmentIdentifier
         self.__queue = queue                            # string
         self.__handle = handle                          # string
 
@@ -236,7 +239,7 @@ class MQSubscriber(MQPublisher):
         if not routing_keys:
             raise RuntimeError('subscribe: no routing keys')
 
-        self._logger.info(f'*** subscribe - routing_keys:{[str(key) for key in routing_keys]}')
+        self.logger.info(f'*** subscribe - routing_keys:{[str(key) for key in routing_keys]}')
 
         while True:
             try:
@@ -258,13 +261,13 @@ class MQSubscriber(MQPublisher):
             except AMQPError:
                 self.close()
                 self.connect()
-                self._logger.warn('subscribe: connection re-established')
+                self.logger.warn('subscribe: connection re-established')
 
 
     def callback(self, ch, method, _properties, body):
         routing_key = PublicationRoutingKey.construct_from_jdict(method.routing_key)
 
-        if routing_key.source == self.identity:
+        if routing_key.source == self.id:
             return                                          # do not send message to self
 
         self.handle(Message.construct_from_callback(routing_key, body))
@@ -275,8 +278,8 @@ class MQSubscriber(MQPublisher):
     # ----------------------------------------------------------------------------------------------------------------
 
     @property
-    def identity(self):
-        return self.__identity
+    def id(self):
+        return self.__id
 
 
     @property
@@ -292,5 +295,5 @@ class MQSubscriber(MQPublisher):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'MQSubscriber:{{exchange_name:{self.exchange_name}, identity:{self.identity}, queue:{self.queue}, '
+        return (f'MQSubscriber:{{exchange_name:{self.exchange_name}, id:{self.id}, queue:{self.queue}, '
                 f'channel:{self.channel}}}')

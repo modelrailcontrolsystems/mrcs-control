@@ -3,8 +3,9 @@ Created on 17 Jan 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-Message-based Cron - this component raises events
-Note that the cron components work in model time, not true time.
+An authority for clock configuration
+Provides a single point in the system where the clock configuration is persisted and - when changed -
+the change is broadcasted
 """
 
 from mrcs_control.operations.messaging_node import SubscriberNode
@@ -22,22 +23,22 @@ from mrcs_core.sys.host import Host
 
 class ClockManager(SubscriberNode):
     """
-    raises events
+    an authority for clock configuration
     """
 
     @classmethod
-    def identity(cls):
+    def id(cls):
         return EquipmentIdentifier(EquipmentType.CRN, None, 1)
 
 
     @classmethod
     def subscription_routing_keys(cls):
-        return (SubscriptionRoutingKey(EquipmentFilter.all(), cls.identity()), )
+        return (SubscriptionRoutingKey(EquipmentFilter.all(), cls.id()), )
 
 
     @classmethod
     def publication_routing_key(cls):
-        return PublicationRoutingKey(cls.identity(), EquipmentFilter.all())
+        return PublicationRoutingKey(cls.id(), EquipmentFilter.all())
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -60,7 +61,7 @@ class ClockManager(SubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def handle(self, message: Message):
-        self.logger.info(f'handle - message:{JSONify.as_jdict(message)}')
+        self.logger.info(f'handle -  in:{JSONify.as_jdict(message)}')
 
         try:
             new_conf = Clock.construct_from_jdict(message.body)
@@ -74,5 +75,5 @@ class ClockManager(SubscriberNode):
         new_conf.save(Host)
 
         broadcast = Message(self.publication_routing_key(), message.body)
-        self.logger.info(f'handle - broadcast:{broadcast}')
+        self.logger.info(f'handle - out:{JSONify.as_jdict(broadcast)}')
         self.mq_client.publish(broadcast)
