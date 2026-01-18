@@ -25,13 +25,13 @@ class Crontab(SubscriberNode):
     """
 
     @classmethod
-    def identity(cls):
+    def id(cls):
         return EquipmentIdentifier(EquipmentType.CRN, None, 3)
 
 
     @classmethod
     def subscription_routing_keys(cls):
-        return (SubscriptionRoutingKey(EquipmentFilter.all(), cls.identity()), )
+        return (SubscriptionRoutingKey(EquipmentFilter.all(), cls.id()), )
 
 
     # ----------------------------------------------------------------------------------------------------------------

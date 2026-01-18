@@ -14,10 +14,10 @@ Recorder components follow system time, not model time.
 Note that in --subscribe mode, the utility runs forever.
 
 SYNOPSIS
-mrcs_recorder [-h] [-i INDENT] [-v] [--version] [-t] (-c | -r REPORT | -s)
+mrcs_recorder [-h] [-i INDENT] [-v] [--version] [-t] [-c] (-r REPORT | -s)
 
 EXAMPLES
-mrcs_recorder --verbose --subscribe --test
+mrcs_recorder --verbose --test --clean --subscribe
 
 RESOURCES
 """

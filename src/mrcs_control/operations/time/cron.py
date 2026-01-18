@@ -33,13 +33,13 @@ class Cron(AsyncSubscriberNode):
     """
 
     @classmethod
-    def identity(cls):
+    def id(cls):
         return EquipmentIdentifier(EquipmentType.CRN, None, 2)
 
 
     @classmethod
     def subscription_routing_keys(cls):
-        return (SubscriptionRoutingKey(ClockManager.identity(), EquipmentFilter.all()), )
+        return (SubscriptionRoutingKey(EquipmentFilter.all(), ClockManager.id()), )
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -65,20 +65,10 @@ class Cron(AsyncSubscriberNode):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
 
-        self.mq_client.connect()
+        self.connect()
 
         loop.create_task(self.monitor_clock(save_model_time)),
         loop.run_forever()
-
-
-    # async def test_task_1(self):
-    #     self.logger.info('hello started')
-    #
-    #     self.__timer = AsyncIntervalTimer(2.0)
-    #
-    #     while True:
-    #         await self.timer.next()
-    #         self.logger.info('hello')
 
 
     async def monitor_clock(self, save_model_time):
@@ -106,9 +96,9 @@ class Cron(AsyncSubscriberNode):
                 if not job:
                     break
 
-                routing = PublicationRoutingKey(self.identity(), job.target)
+                routing = PublicationRoutingKey(self.id(), job.target)
                 message = Message(routing, job)
-                self.mq_client.publish(message)
+                self.publish(message)
                 PersistentCronjob.delete(job.id)
 
                 self.logger.info(f'run - published: {JSONify.as_jdict(message)}')

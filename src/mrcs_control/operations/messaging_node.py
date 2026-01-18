@@ -3,7 +3,7 @@ Created on 4 Jan 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-Abstract messaging nodes
+Abstract blocking messaging nodes
 """
 
 from abc import ABC, abstractmethod
@@ -21,12 +21,12 @@ from mrcs_core.sys.logging import Logging
 
 class MessagingNode(ABC):
     """
-    An abstract messaging node
+    An abstract blocking messaging node
     """
 
     @classmethod
     @abstractmethod
-    def identity(cls) -> EquipmentIdentifier:
+    def id(cls) -> EquipmentIdentifier:
         pass
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -65,7 +65,7 @@ class MessagingNode(ABC):
 
 class PublisherNode(MessagingNode, ABC):
     """
-    A messaging node that can publish
+    a messaging node that can publish
     """
 
     @classmethod
@@ -83,7 +83,7 @@ class PublisherNode(MessagingNode, ABC):
 
 class SubscriberNode(MessagingNode, ABC):
     """
-    A messaging node that can publish and subscribe
+    a blocking messaging node that can publish and subscribe
     """
 
     @classmethod
@@ -94,7 +94,7 @@ class SubscriberNode(MessagingNode, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, ops: OperationService):
-        super().__init__(ops, MQSubscriber.construct_sub(ops.mq_mode, self.identity(), self.handle))
+        super().__init__(ops, MQSubscriber.construct_sub(ops.mq_mode, self.id(), self.handle))
 
 
     # ----------------------------------------------------------------------------------------------------------------

@@ -3,13 +3,13 @@ Created on 4 Jan 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-Abstract messaging nodes
+Abstract async messaging nodes
 """
 
 from abc import ABC, abstractmethod
 
-from mrcs_control.messaging.mq_async_client import MQAsyncClient, MQAsyncSubscriber, MQAsyncPublisher
-from mrcs_control.operations.operation_mode import OperationMode, OperationService
+from mrcs_control.messaging.mq_async_client import MQAsyncSubscriber, MQAsyncPublisher
+from mrcs_control.operations.operation_mode import OperationService
 
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.messaging.message import Message
@@ -21,21 +21,27 @@ from mrcs_core.sys.logging import Logging
 
 class AsyncMessagingNode(ABC):
     """
-    An abstract messaging node
+    An abstract async messaging node
     """
 
     @classmethod
     @abstractmethod
-    def identity(cls) -> EquipmentIdentifier:
+    def id(cls) -> EquipmentIdentifier:
         pass
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, ops: OperationService, mq_client: MQAsyncClient):
+    def __init__(self, ops: OperationService, mq_client):
         self.__ops = ops
         self.__mq_client = mq_client
 
         self.__logger = Logging.getLogger()
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def connect(self):
+        self.mq_client.connect()
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -65,25 +71,24 @@ class AsyncMessagingNode(ABC):
 
 class AsyncPublisherNode(AsyncMessagingNode, ABC):
     """
-    A messaging node that can publish
+    an async messaging node that can publish
     """
 
-    @classmethod
-    def construct(cls, ops_mode: OperationMode):
-        return cls(ops_mode.value)
+    def __init__(self, ops: OperationService):
+        super().__init__(ops, MQAsyncPublisher.construct_pub(ops.mq_mode))
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, ops: OperationService):
-        super().__init__(ops, MQAsyncPublisher.construct_pub(ops.mq_mode))
+    def publish(self, message: Message):
+        self.mq_client.publish(message)
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
 class AsyncSubscriberNode(AsyncMessagingNode, ABC):
     """
-    A messaging node that can publish and subscribe
+    an async messaging node that can publish and subscribe
     """
 
     @classmethod
@@ -92,15 +97,10 @@ class AsyncSubscriberNode(AsyncMessagingNode, ABC):
         pass
 
 
-    @classmethod
-    def construct(cls, ops_mode: OperationMode):
-        return cls(ops_mode.value)
-
-
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, ops: OperationService):
-        super().__init__(ops, MQAsyncSubscriber.construct_sub(ops.mq_mode, self.identity(), self.handle,
+        super().__init__(ops, MQAsyncSubscriber.construct_sub(ops.mq_mode, self.id(), self.handle,
                                                               *self.subscription_routing_keys()))
 
 
@@ -111,7 +111,5 @@ class AsyncSubscriberNode(AsyncMessagingNode, ABC):
         pass
 
 
-    # ----------------------------------------------------------------------------------------------------------------
-
-    def __str__(self, *args, **kwargs):
-        return f'{self.__class__.__name__}:{{ ops:{self.ops}, mq_client:{self.mq_client}}}'
+    def publish(self, message: Message):
+        self.mq_client.publish(message)
