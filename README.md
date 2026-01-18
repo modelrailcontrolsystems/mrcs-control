@@ -44,10 +44,10 @@ channel.queue_delete(queue='queue-name')
 def rest_queue_list ...
 `
 
-
 #### Monitoring
 `
 rabbitmqctl list_queues name messages_ready messages_unacknowledged
 `
+
 ---
 
