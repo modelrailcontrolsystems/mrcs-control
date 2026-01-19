@@ -12,6 +12,9 @@ Requires MRCS repos:
 
 ### Services
 
+Before running services, optionally clear the messaging queues (in case of incorrect routings):
+* `mrcs_broker --verbose --queue --erase --test &`
+
 The following services should be running continuously:
 * `mrcs_clock_manager --verbose --subscribe --test &`
 * `mrcs_cron --verbose --run-save --test &`
