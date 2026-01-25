@@ -10,6 +10,7 @@ the change is broadcasted.
 
 from mrcs_control.operations.messaging_node import SubscriberNode
 from mrcs_control.operations.operation_mode import OperationService
+from mrcs_control.operations.time.cron import CRN
 
 from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType, EquipmentFilter
 from mrcs_core.data.json import JSONify
@@ -28,7 +29,7 @@ class ClockManagerNode(SubscriberNode):
 
     @classmethod
     def id(cls):
-        return EquipmentIdentifier(EquipmentType.CRN, None, 1)
+        return EquipmentIdentifier(EquipmentType.CRN, None, CRN.ClockManager)
 
 
     @classmethod

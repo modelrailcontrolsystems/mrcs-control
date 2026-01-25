@@ -14,6 +14,7 @@ from mrcs_control.db.db_client import DbClient
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
 from mrcs_control.operations.operation_mode import OperationService
 from mrcs_control.operations.time.clock_manager_node import ClockManagerNode
+from mrcs_control.operations.time.cron import CRN
 from mrcs_control.operations.time.persistent_cronjob import PersistentCronjob
 from mrcs_control.sys.interval_timer import AsyncIntervalTimer
 
@@ -35,7 +36,7 @@ class CronNode(AsyncSubscriberNode):
 
     @classmethod
     def id(cls):
-        return EquipmentIdentifier(EquipmentType.CRN, None, 2)
+        return EquipmentIdentifier(EquipmentType.CRN, None, CRN.Cron)
 
 
     @classmethod
