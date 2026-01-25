@@ -57,10 +57,12 @@ class CronNode(AsyncSubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def handle_startup(self):
+        self.logger.info('handle_startup')
         self.async_loop.create_task(self.monitor_clock())
 
 
     def handle_message(self, message: Message):
+        self.logger.info(f'handle_message: {JSONify.as_jdict(message)}')
         self.__clock = Clock.construct_from_jdict(message.body)
         self.timer.interval = self.clock.tick_interval
 
