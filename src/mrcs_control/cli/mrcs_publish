@@ -13,11 +13,11 @@ Message bodies are read from stdin or from the --message argument. Messages are 
 routing specified by command-line arguments.
 
 SYNOPSIS
-mrcs_publisher [-h] [-i INDENT] [-v] [--version] [-t] [-s SOURCE_SERIAL]
+mrcs_publish [-h] [-i INDENT] [-v] [--version] [-t] [-s SOURCE_SERIAL]
 [-e TARGET_EQUIPMENT] [-b TARGET_BLOCK] [-n TARGET_SERIAL] [-m MESSAGE_BODY]
 
 EXAMPLES
-mrcs_publisher -t -v -e MPU -b 1 -n 2
+mrcs_publish -t -v -e MPU -b 1 -n 2
 
 RESOURCES
 """
@@ -29,7 +29,7 @@ from json import JSONDecodeError
 
 from pika.exceptions import AMQPError
 
-from mrcs_control.cli.args.publisher_args import PublisherArgs
+from mrcs_control.cli.args.publish_args import PublishArgs
 from mrcs_control.messaging.mq_client import MQPublisher
 
 from mrcs_core.data.datum import Datum
@@ -63,9 +63,9 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    args = PublisherArgs('a tool for publishing messages')
+    args = PublishArgs('a tool for publishing messages')
 
-    Logging.config('mrcs_publisher', verbose=args.verbose)
+    Logging.config('mrcs_publish', verbose=args.verbose)
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')
@@ -76,6 +76,8 @@ if __name__ == '__main__':
         logger.error(ve)
         exit(2)
 
+
+    # TODO: create publisher node - blocking, until delivery confirmation?
 
     # ----------------------------------------------------------------------------------------------------------------
 

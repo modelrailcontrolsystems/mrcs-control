@@ -25,9 +25,9 @@ class TestMessageWiden(unittest.TestCase):
         source = EquipmentIdentifier.construct_from_jdict('BOS.01.02')
         target = EquipmentFilter.construct_from_jdict('MPU.*.*')
         rk = PublicationRoutingKey(source, target)
-        obj1 = Message(rk, 'hello')
-        self.assertEqual('Message:{routing_key:PublicationRoutingKey:'
-                         '{source:EquipmentIdentifier:{equipment_type:BOS, sector_number:1, serial_number:2}, '
+        obj1 = Message(rk, 'hello', origin='12345678')
+        self.assertEqual('Message:{origin:12345678, routing_key:PublicationRoutingKey:{'
+                         'source:EquipmentIdentifier:{equipment_type:BOS, sector_number:1, serial_number:2}, '
                          'target:EquipmentFilter:{equipment_type:MPU, sector_number:None, serial_number:None}}, '
                          'body:hello}', str(obj1))
 
@@ -35,12 +35,14 @@ class TestMessageWiden(unittest.TestCase):
         source = EquipmentIdentifier.construct_from_jdict('BOS.01.02')
         target = EquipmentFilter.construct_from_jdict('MPU.*.*')
         rk = PublicationRoutingKey(source, target)
-        obj1 = Message(rk, 'hello')
+        obj1 = Message(rk, 'hello', origin='12345678')
         obj2 = PersistentMessage.widen(obj1)
-        self.assertEqual('PersistentMessage:{routing_key:PublicationRoutingKey:'
-                         '{source:EquipmentIdentifier:{equipment_type:BOS, sector_number:1, serial_number:2}, '
+        print(obj2)
+        self.assertEqual('PersistentMessage:{origin:12345678, routing_key:PublicationRoutingKey:{'
+                         'source:EquipmentIdentifier:{equipment_type:BOS, sector_number:1, serial_number:2}, '
                          'target:EquipmentFilter:{equipment_type:MPU, sector_number:None, serial_number:None}}, '
-                         'body:hello}', str(obj2))
+                         'body:hello}',
+                         str(obj2))
 
 
 if __name__ == "__main_":

@@ -66,7 +66,9 @@ class MessagePersistence(PersistentObject, ABC):
             CREATE TABLE IF NOT EXISTS {table} (
             id INTEGER PRIMARY KEY, 
             rec TIMESTAMP NOT NULL DEFAULT(datetime('subsec')), 
-            routing TEXT NOT NULL, 
+            origin TEXT NOT NULL, 
+            source TEXT NOT NULL, 
+            target TEXT NOT NULL, 
             body TEXT NOT NULL 
         )'''
         client.execute(sql)
@@ -77,7 +79,13 @@ class MessagePersistence(PersistentObject, ABC):
         sql = f'CREATE INDEX IF NOT EXISTS {table}_rec ON {table}(rec)'
         client.execute(sql)
 
-        sql = f'CREATE INDEX IF NOT EXISTS {table}_routing ON {table}(routing)'
+        sql = f'CREATE INDEX IF NOT EXISTS {table}_origin ON {table}(origin)'
+        client.execute(sql)
+
+        sql = f'CREATE INDEX IF NOT EXISTS {table}_source ON {table}(source)'
+        client.execute(sql)
+
+        sql = f'CREATE INDEX IF NOT EXISTS {table}_target ON {table}(target)'
         client.execute(sql)
 
 
@@ -91,7 +99,13 @@ class MessagePersistence(PersistentObject, ABC):
         sql = f'DROP INDEX IF EXISTS {table}_rec'
         client.execute(sql)
 
-        sql = f'DROP INDEX IF EXISTS {table}_routing'
+        sql = f'DROP INDEX IF EXISTS {table}_origin'
+        client.execute(sql)
+
+        sql = f'DROP INDEX IF EXISTS {table}_source'
+        client.execute(sql)
+
+        sql = f'DROP INDEX IF EXISTS {table}_target'
         client.execute(sql)
 
         sql = f'DROP TABLE IF EXISTS {table}'
@@ -121,7 +135,7 @@ class MessagePersistence(PersistentObject, ABC):
         table = cls.table()
 
         client.begin()
-        sql = f'INSERT INTO {table} (routing, body) VALUES (?,?)'
+        sql = f'INSERT INTO {table} (origin, source, target, body) VALUES (?, ?, ?, ?)'
         client.execute(sql, data=entry.as_db_insert())
 
         sql = 'SELECT last_insert_rowid()'
@@ -139,7 +153,7 @@ class MessagePersistence(PersistentObject, ABC):
         table = cls.table()
 
         client.begin()
-        sql = f'INSERT INTO {table} (rec, routing, body) VALUES (?,?,?)'
+        sql = f'INSERT INTO {table} (rec, origin, source, target, body) VALUES (?, ?, ?, ?, ?)'
         client.execute(sql, data=(rec,) + entry.as_db_insert())
 
         sql = 'SELECT last_insert_rowid()'

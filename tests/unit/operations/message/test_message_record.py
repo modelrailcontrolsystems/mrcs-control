@@ -12,7 +12,7 @@ https://www.jetbrains.com/help/pycharm/creating-tests.html
 import json
 import unittest
 
-from mrcs_control.operations.recorder.message_record import PersistentMessageRecord
+from mrcs_control.operations.recorder.persistent_message_record import PersistentMessageRecord
 
 from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentFilter
 from mrcs_core.data.iso_datetime import ISODatetime
@@ -31,8 +31,8 @@ class TestMessageRecord(unittest.TestCase):
         source = EquipmentIdentifier.construct_from_jdict('BOS.01.02')
         target = EquipmentFilter.construct_from_jdict('MPU.*.*')
         rk = PublicationRoutingKey(source, target)
-        obj1 = MessageRecord(1, dt, rk, 'hello')
-        self.assertEqual('MessageRecord:{uid:1, rec:ISODatetime:{2025-08-26T02:23:45.678+01:00}, '
+        obj1 = MessageRecord(1, dt, rk, 'hello', '12345678')
+        self.assertEqual('MessageRecord:{uid:1, rec:ISODatetime:{2025-08-26T02:23:45.678+01:00}, origin:12345678, '
                          'routing_key:PublicationRoutingKey:{source:EquipmentIdentifier:{equipment_type:BOS, '
                          'sector_number:1, serial_number:2}, target:EquipmentFilter:{equipment_type:MPU, '
                          'sector_number:None, serial_number:None}}, body:hello}', str(obj1))
@@ -41,8 +41,9 @@ class TestMessageRecord(unittest.TestCase):
         self.maxDiff = None
 
         obj1 = MessageRecord.construct_from_jdict(json.loads('{"uid": 1, "rec": "2025-08-26T02:23:45.678+01:00", '
-                                                             '"routing": "BOS.001.002.MPU.*.*", "body": "hello"}'))
-        self.assertEqual('MessageRecord:{uid:1, rec:ISODatetime:{2025-08-26T02:23:45.678+01:00}, '
+                                                             '"origin": "12345678", "routing": "BOS.001.002.MPU.*.*", '
+                                                             '"body": "hello"}'))
+        self.assertEqual('MessageRecord:{uid:1, rec:ISODatetime:{2025-08-26T02:23:45.678+01:00}, origin:12345678, '
                          'routing_key:PublicationRoutingKey:{source:EquipmentIdentifier:{equipment_type:BOS, '
                          'sector_number:1, serial_number:2}, target:EquipmentFilter:{equipment_type:MPU, '
                          'sector_number:None, serial_number:None}}, body:hello}', str(obj1))
@@ -50,29 +51,36 @@ class TestMessageRecord(unittest.TestCase):
     def test_construct_from_db(self):
         self.maxDiff = None
 
-        obj1 = PersistentMessageRecord.construct_from_db(1, '2025-08-26 01:23:45.678',
-                                                         'BOS.001.002.MPU.*.*', '"hello"')
+        obj1 = PersistentMessageRecord.construct_from_db(1, '2025-08-26 01:23:45.678', '12345678',
+                                                         'BOS.001.002', 'MPU.*.*', '"hello"')
+
         self.assertEqual('PersistentMessageRecord:{uid:1, rec:ISODatetime:{2025-08-26T02:23:45.678+01:00}, '
-                         'routing_key:PublicationRoutingKey:{source:EquipmentIdentifier:{equipment_type:BOS, '
-                         'sector_number:1, serial_number:2}, target:EquipmentFilter:{equipment_type:MPU, '
-                         'sector_number:None, serial_number:None}}, body:hello}', str(obj1))
+                         'origin:12345678, routing_key:PublicationRoutingKey:{source:EquipmentIdentifier:{'
+                         'equipment_type:BOS, sector_number:1, serial_number:2}, '
+                         'target:EquipmentFilter:{equipment_type:MPU, sector_number:None, serial_number:None}}, '
+                         'body:hello}', str(obj1))
 
     def test_eq(self):
         obj1 = MessageRecord.construct_from_jdict(json.loads('{"uid": 1, "rec": "2025-08-26T02:23:45.678+01:00", '
+                                                             '"origin": "12345678", '
                                                              '"routing": "BOS.001.002.MPU.*.*", "body": "hello"}'))
         obj2 = MessageRecord.construct_from_jdict(json.loads('{"uid": 1, "rec": "2025-08-26T02:23:45.678+01:00", '
+                                                             '"origin": "12345678", '
                                                              '"routing": "BOS.001.002.MPU.*.*", "body": "hello"}'))
         self.assertEqual(True, obj1 == obj2)
 
     def test_neq(self):
         obj1 = MessageRecord.construct_from_jdict(json.loads('{"uid": 1, "rec": "2025-08-26T02:23:45.678+01:00", '
+                                                             '"origin": "12345678", '
                                                              '"routing": "BOS.001.002.MPU.*.*", "body": "hello"}'))
         obj2 = MessageRecord.construct_from_jdict(json.loads('{"uid": 1, "rec": "2025-08-26T02:23:45.678+01:00", '
+                                                             '"origin": "12345678", '
                                                              '"routing": "BOS.001.002.MPU.*.*", "body": "hello!"}'))
         self.assertEqual(False, obj1 == obj2)
 
     def test_lt(self):
         obj1 = MessageRecord.construct_from_jdict(json.loads('{"uid": 1, "rec": "2025-08-26T02:23:45.678+01:00", '
+                                                             '"origin": "12345678", '
                                                              '"routing": "BOS.001.002.MPU.*.*", "body": "hello"}'))
         obj2 = MessageRecord.construct_from_jdict(json.loads('{"uid": 2, "rec": "2025-08-26T02:23:45.678+01:00", '
                                                              '"routing": "BOS.001.002.MPU.*.*", "body": "hello"}'))
@@ -80,16 +88,19 @@ class TestMessageRecord(unittest.TestCase):
 
     def test_nlt(self):
         obj1 = MessageRecord.construct_from_jdict(json.loads('{"uid": 2, "rec": "2025-08-26T02:23:45.678+01:00", '
+                                                             '"origin": "12345678", '
                                                              '"routing": "BOS.001.002.MPU.*.*", "body": "hello"}'))
         obj2 = MessageRecord.construct_from_jdict(json.loads('{"uid": 1, "rec": "2025-08-26T02:23:45.678+01:00", '
+                                                             '"origin": "12345678", '
                                                              '"routing": "BOS.001.002.MPU.*.*", "body": "hello"}'))
         self.assertEqual(False, obj1 < obj2)
 
     def test_as_json(self):
         obj1 = MessageRecord.construct_from_jdict(json.loads('{"uid": 1, "rec": "2025-08-26T02:23:45.678+01:00", '
+                                                             '"origin": "12345678", '
                                                              '"routing": "BOS.001.002.MPU.*.*", "body": "hello"}'))
-        self.assertEqual('{"uid": 1, "rec": "2025-08-26T02:23:45.678+01:00", "routing": "BOS.001.002.MPU.*.*", '
-                         '"body": "hello"}', JSONify.dumps(obj1))
+        self.assertEqual('{"uid": 1, "rec": "2025-08-26T02:23:45.678+01:00", "origin": "12345678", '
+                         '"routing": "BOS.001.002.MPU.*.*", "body": "hello"}', JSONify.dumps(obj1))
 
 
 if __name__ == "__main_":

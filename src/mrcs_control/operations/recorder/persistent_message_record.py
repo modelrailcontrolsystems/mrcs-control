@@ -19,6 +19,7 @@ import json
 
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.operations.recorder.message_persistence import MessagePersistence
+from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentFilter
 
 from mrcs_core.data.iso_datetime import ISODatetime
 from mrcs_core.operations.recorder.message_record import MessageRecord
@@ -33,19 +34,23 @@ class PersistentMessageRecord(MessageRecord, MessagePersistence, PersistentObjec
     """
 
     @classmethod
-    def construct_from_db(cls, uid_field, rec_field, routing_key_field, body_field):
+    def construct_from_db(cls, uid_field, rec_field, origin_field, source_field, target_field, body_field):
         uid = int(uid_field)
         rec = ISODatetime.construct_from_db(rec_field)
-        routing_key = PublicationRoutingKey.construct_from_db(routing_key_field)
+
+        source = EquipmentIdentifier.construct_from_jdict(source_field)
+        target = EquipmentFilter.construct_from_jdict(target_field)
+        routing_key = PublicationRoutingKey(source, target)
+
         body = json.loads(body_field)
 
-        return cls(uid, rec, routing_key, body)
+        return cls(uid, rec, routing_key, body, origin_field)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, uid: int, rec: ISODatetime, routing_key: RoutingKey, body):
-        super().__init__(uid, rec, routing_key, body)
+    def __init__(self, uid: int, rec: ISODatetime, routing_key: RoutingKey, body, origin):
+        super().__init__(uid, rec, routing_key, body, origin)
 
 
     # ----------------------------------------------------------------------------------------------------------------

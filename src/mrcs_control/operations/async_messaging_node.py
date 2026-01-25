@@ -4,7 +4,11 @@ Created on 4 Jan 2026
 @author: Bruno Beloff (bbeloff@me.com)
 
 Abstract async messaging nodes
+
+The AsyncMessagingNode class provides asyncio loop utilities to support concrete node operations.
 """
+
+import asyncio
 
 from abc import ABC, abstractmethod
 
@@ -44,6 +48,10 @@ class AsyncMessagingNode(ABC):
         self.mq_client.connect()
 
 
+    def handle_startup(self):
+        pass
+
+
     # ----------------------------------------------------------------------------------------------------------------
 
     @property
@@ -75,7 +83,8 @@ class AsyncPublisherNode(AsyncMessagingNode, ABC):
     """
 
     def __init__(self, ops: OperationService):
-        super().__init__(ops, MQAsyncPublisher.construct_pub(ops.mq_mode))
+        publisher = MQAsyncPublisher.construct_pub(ops.mq_mode, on_startup_complete=self.handle_startup)
+        super().__init__(ops, publisher)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -100,16 +109,41 @@ class AsyncSubscriberNode(AsyncMessagingNode, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, ops: OperationService):
-        super().__init__(ops, MQAsyncSubscriber.construct_sub(ops.mq_mode, self.id(), self.handle,
-                                                              *self.subscription_routing_keys()))
+        subscriber = MQAsyncSubscriber.construct_sub(ops.mq_mode, self.id(), self.handle_message,
+                                                     *self.subscription_routing_keys(),
+                                                     on_startup_complete=self.handle_startup)
+        super().__init__(ops, subscriber)
+        self.__async_loop = None
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     @abstractmethod
-    def handle(self, message: Message):
+    def handle_message(self, message: Message):
         pass
 
 
-    def publish(self, message: Message):
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def run(self, *args):
+        self.__async_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.async_loop)
+        self.connect()
+        self.async_loop.run_forever()
+
+
+    async def halt(self):
+        self.async_loop.stop()
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    async def publish(self, message: Message):
         self.mq_client.publish(message)
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    @property
+    def async_loop(self):
+        return self.__async_loop

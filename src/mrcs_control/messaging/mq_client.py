@@ -179,8 +179,8 @@ class MQPublisher(MQClient):
 
                 self.channel.basic_publish(
                     exchange=self.exchange_name,
-                    routing_key=message.routing_key.as_json(),
-                    body=JSONify.dumps(message.body),
+                    routing_key=JSONify.as_jdict(message.routing_key),
+                    body=JSONify.dumps(message.payload),
                     properties=properties)
                 break
 
@@ -211,20 +211,20 @@ class MQSubscriber(MQPublisher):
     """
 
     @classmethod
-    def construct_sub(cls, exchange_name: MQMode, id: EquipmentIdentifier, handle: Callable):
+    def construct_sub(cls, exchange_name: MQMode, id: EquipmentIdentifier, on_message: Callable):
         queue = '.'.join([exchange_name, id.as_json()])
 
-        return cls(exchange_name, id, queue, handle)
+        return cls(exchange_name, id, queue, on_message)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, exchange_name, id: EquipmentIdentifier, queue, handle: Callable):
+    def __init__(self, exchange_name, id: EquipmentIdentifier, queue, on_message: Callable):
         super().__init__(exchange_name)
 
-        self.__id = id                                  # EquipmentIdentifier
-        self.__queue = queue                            # string
-        self.__handle = handle                          # string
+        self.__id = id
+        self.__queue = queue
+        self.__on_message = on_message
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -239,8 +239,6 @@ class MQSubscriber(MQPublisher):
         if not routing_keys:
             raise RuntimeError('subscribe: no routing keys')
 
-        self.logger.info(f'*** subscribe - routing_keys:{[str(key) for key in routing_keys]}')
-
         while True:
             try:
                 self.channel.queue_declare(self.queue, durable=True, exclusive=False)  # durables may not be exclusive
@@ -254,7 +252,7 @@ class MQSubscriber(MQPublisher):
 
                 self.channel.basic_consume(
                     queue=self.queue,
-                    on_message_callback=self.callback,
+                    on_message_callback=self.on_consume,
                 )
 
                 self.channel.start_consuming()
@@ -264,13 +262,15 @@ class MQSubscriber(MQPublisher):
                 self.logger.warn('subscribe: connection re-established')
 
 
-    def callback(self, ch, method, _properties, body):
+    def on_consume(self, ch, method, _properties, payload):
         routing_key = PublicationRoutingKey.construct_from_jdict(method.routing_key)
 
         if routing_key.source == self.id:
             return                                          # do not send message to self
 
-        self.handle(Message.construct_from_callback(routing_key, body))
+        message = Message.construct_from_callback(routing_key, payload)
+
+        self.on_message_message(message)
 
         ch.basic_ack(delivery_tag=method.delivery_tag)      # ACK will not take place if callback raises an exception
 
@@ -288,8 +288,8 @@ class MQSubscriber(MQPublisher):
 
 
     @property
-    def handle(self):
-        return self.__handle
+    def on_message_message(self):
+        return self.__on_message
 
 
     # ----------------------------------------------------------------------------------------------------------------

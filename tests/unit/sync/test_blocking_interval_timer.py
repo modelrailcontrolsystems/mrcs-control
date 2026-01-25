@@ -11,7 +11,7 @@ https://www.jetbrains.com/help/pycharm/creating-tests.html
 import time
 import unittest
 
-from mrcs_control.sync.interval_timer import BlockingIntervalTimer
+from mrcs_control.sys.interval_timer import BlockingIntervalTimer
 
 
 # --------------------------------------------------------------------------------------------------------------------

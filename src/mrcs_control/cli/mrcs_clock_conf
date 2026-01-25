@@ -1,0 +1,97 @@
+#!/usr/bin/env python3
+
+"""
+Created on 19 Jan 2026
+
+@author: Bruno Beloff (bbeloff@me.com)
+
+source repo: mrcs_control
+
+DESCRIPTION
+A tool for managing the model time clock.
+* Clock speed is a simple multiplier, a value of 1 indicates that the clock will run at natural speed
+* Any combination of time offsets can be used - the default value for each is the current datetime
+* Deleting the clock configuration will return the clock to natural time
+The timezone of model time is the same timezone as the host processor.
+
+Similar functionality is available from the mrcs_cli/mrcs_time utility. To clarify:
+
+mrcs_cli/mrcs_time
+* Intended for use when the system is running
+* Mimics the functionality of the Web UI
+* Requires the API server and mrcs_control/mrcs_clock_manager to be running in order to operate
+
+mrcs_control/mrcs_clock
+* Intended for use during system startup, under systemd control
+* Requires the mrcs_control/mrcs_clock_manager to be running in order to operate correctly
+
+SYNOPSIS
+mrcs_clock [-h] [-i INDENT] [-v] [--version] (-n | -c | -s | -r | -d)
+[-sr] [-ss SPEED] [-sy YEAR] [-sm MONTH] [-sd DAY] [-sh HOUR] [-si MINUTE]
+
+EXAMPLES
+mrcs_clock_conf -i4 -s -sr -ss 4 -sy 1930 -sm 1 -sd 2 -sh 6 --test
+mrcs_clock -n
+
+SEE ALSO
+mrcs_clock_manager
+mrcs_cli/mrcs_time
+"""
+
+import sys
+
+from mrcs_control.cli.args.clock_conf_args import ClockConfArgs
+from mrcs_control.cli.internal.clock_conf_node import ClockConfNode
+
+from mrcs_core.data.json import JSONify
+from mrcs_core.operations.time.clock import Clock
+from mrcs_core.sys.host import Host
+from mrcs_core.sys.logging import Logging
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    args = ClockConfArgs('a tool for managing the model time clock')
+
+    Logging.config('mrcs_clock', verbose=args.verbose)
+    logger = Logging.getLogger()
+    logger.info(f'args: {args}')
+
+    clock_conf_node = ClockConfNode(args.mode.value)
+    logger.info(f'clock_conf_node: {clock_conf_node}')
+
+    clock = Clock.load(Host)
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    try:
+        if args.now:
+            print(JSONify.dumps(clock.now()))
+            exit(0)
+
+        if args.conf:
+            print(JSONify.dumps(clock))
+            exit(0)
+
+        if args.set:
+            clock = Clock.set(args.set_running, args.set_speed, args.set_year, args.set_month, args.set_day,
+                              args.set_hour, minute=args.set_minute)
+            clock_conf_node.run(clock)
+            print(JSONify.dumps(clock.now()))
+            exit(0)
+
+        if args.reload:
+            exit(0)
+
+        if args.delete:
+            exit(0)
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    except KeyboardInterrupt:
+        print(file=sys.stderr)

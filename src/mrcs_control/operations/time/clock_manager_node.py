@@ -3,9 +3,9 @@ Created on 17 Jan 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-An authority for clock configuration
-Provides a single point in the system where the clock configuration is persisted and - when changed -
-the change is broadcasted
+A SubscriberNode that provides the authority for clock configuration
+This is a single point in the system where the clock configuration is persisted and - when changed -
+the change is broadcasted.
 """
 
 from mrcs_control.operations.messaging_node import SubscriberNode
@@ -21,7 +21,7 @@ from mrcs_core.sys.host import Host
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class ClockManager(SubscriberNode):
+class ClockManagerNode(SubscriberNode):
     """
     an authority for clock configuration
     """
@@ -33,18 +33,39 @@ class ClockManager(SubscriberNode):
 
     @classmethod
     def subscription_routing_keys(cls):
-        return (SubscriptionRoutingKey(EquipmentFilter.all(), cls.id()), )
+        return (SubscriptionRoutingKey(EquipmentFilter.any(), cls.id()), )
 
 
     @classmethod
     def publication_routing_key(cls):
-        return PublicationRoutingKey(cls.id(), EquipmentFilter.all())
+        return PublicationRoutingKey(cls.id(), EquipmentFilter.any())
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, ops: OperationService):
         super().__init__(ops)
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def handle_message(self, incoming: Message):
+        self.logger.info(f'handle_message - incoming:{JSONify.as_jdict(incoming)}')
+
+        try:
+            new_conf = Clock.construct_from_jdict(incoming.body)
+        except TypeError as ex:
+            self.logger.error(f'ex:{ex}')
+            return
+
+        if new_conf == Clock.load(Host):
+            return
+
+        new_conf.save(Host)
+
+        outgoing = Message(self.publication_routing_key(), incoming.body, origin=incoming.origin)
+        self.logger.info(f'handle - outgoing:{JSONify.as_jdict(outgoing)}')
+        self.mq_client.publish(outgoing)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -56,24 +77,3 @@ class ClockManager(SubscriberNode):
             self.mq_client.subscribe(*self.subscription_routing_keys())
         except KeyboardInterrupt:
             return
-
-
-    # ----------------------------------------------------------------------------------------------------------------
-
-    def handle(self, message: Message):
-        self.logger.info(f'handle -  in:{JSONify.as_jdict(message)}')
-
-        try:
-            new_conf = Clock.construct_from_jdict(message.body)
-        except TypeError as ex:
-            self.logger.error(f'ex:{ex}')
-            return
-
-        if new_conf == Clock.load(Host):
-            return
-
-        new_conf.save(Host)
-
-        broadcast = Message(self.publication_routing_key(), message.body)
-        self.logger.info(f'handle - out:{JSONify.as_jdict(broadcast)}')
-        self.mq_client.publish(broadcast)

@@ -28,7 +28,7 @@ class PersistentMessage(Message, MessagePersistence, PersistentObject):
 
     @classmethod
     def widen(cls, message: Message):
-        return cls(*message.__dict__.values())
+        return cls(message.routing_key, message.body, message.origin)
 
 
     @classmethod
@@ -38,8 +38,8 @@ class PersistentMessage(Message, MessagePersistence, PersistentObject):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, routing_key: RoutingKey, body):
-        super().__init__(routing_key, body)
+    def __init__(self, routing_key: RoutingKey, body, origin):
+        super().__init__(routing_key, body, origin=origin)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -51,7 +51,8 @@ class PersistentMessage(Message, MessagePersistence, PersistentObject):
     # ----------------------------------------------------------------------------------------------------------------
 
     def as_db_insert(self):
-        return self.routing_key.as_json(), JSONify.dumps(self.body)
+        return (self.origin, JSONify.as_jdict(self.routing_key.source), JSONify.as_jdict(self.routing_key.target),
+                JSONify.dumps(self.body))
 
 
     def as_db_update(self):
