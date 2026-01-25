@@ -17,15 +17,21 @@ class CronArgs(MultimodeControlArgs):
     def __init__(self, description):
         super().__init__(description)
 
+        self._parser.add_argument('-c', '--clean', action='store_true', help='discard existing schedule')
+
         group = self._parser.add_mutually_exclusive_group(required=True)
-        group.add_argument('-c', '--clean', action='store_true', help='discard existing schedule')
         group.add_argument('-r', '--run', action='store_true', help='run the cron')
-        group.add_argument('-s', '--run-save', action='store_true', help='run the cron with model time save on')
+        group.add_argument('-s', '--run-save', action='store_true', help='run the cron with model-time save on')
 
         self._args = self._parser.parse_args()
 
 
     # ----------------------------------------------------------------------------------------------------------------
+
+    @property
+    def save_model_time(self):
+        return self.run_save
+
 
     @property
     def clean(self):

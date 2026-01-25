@@ -37,14 +37,17 @@ class MQAsyncClient(ABC):
     An abstract RabbitMQ client
     """
 
-    __HOST = '127.0.0.1'            # do not use 'localhost' - IPv4 issues
+    __HOST = '127.0.0.1'  # do not use 'localhost' - IPv4 issues
     __PORT = 5672
 
     __URL = f'amqp://{__HOST}:{__PORT}/'
 
+
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self):
+    def __init__(self, on_startup_complete: Callable | None = None):
+        self.__on_startup_complete = on_startup_complete
+
         self.__connection = None
         self._channel = None
         self.__stopping = False
@@ -88,7 +91,8 @@ class MQAsyncClient(ABC):
 
 
     @abstractmethod
-    def on_channel_open(self, channel):
+    def on_channel_open(self, channel):  # TODO: need to call back from here before publishing?
+        self.logger.debug(f'on_channel_open')
         pass
 
 
@@ -100,11 +104,16 @@ class MQAsyncClient(ABC):
     def on_channel_closed(self, _channel, reason):
         self.logger.debug(f'on_channel_closed - reason:{reason}')
         self._channel = None
-        if not self.stopping:
+        if not self.stopping:           # TODO: fix stopping
             self.connection.close()
 
 
     # ----------------------------------------------------------------------------------------------------------------
+
+    @property
+    def on_startup_complete(self):
+        return self.__on_startup_complete
+
 
     @property
     def connection(self):
@@ -133,17 +142,18 @@ class MQAsyncPublisher(MQAsyncClient):
     A RabbitMQ peer that can act as a publisher only
     """
 
+
     @classmethod
-    def construct_pub(cls, exchange_name: MQMode):
-        return cls(exchange_name)
+    def construct_pub(cls, exchange_name: MQMode, on_startup_complete: Callable | None = None):
+        return cls(exchange_name, on_startup_complete=on_startup_complete)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, exchange_name):
-        super().__init__()
+    def __init__(self, exchange_name, on_startup_complete: Callable | None = None):
+        super().__init__(on_startup_complete=on_startup_complete)
 
-        self.__exchange_name = exchange_name                      # string
+        self.__exchange_name = exchange_name
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -162,8 +172,8 @@ class MQAsyncPublisher(MQAsyncClient):
             delivery_mode=pika.DeliveryMode.Persistent)
 
         self.channel.basic_publish(exchange=self.exchange_name,
-                                   routing_key=message.routing_key.as_json(),
-                                   body=JSONify.dumps(message.body),
+                                   routing_key=JSONify.as_jdict(message.routing_key),
+                                   body=JSONify.dumps(message.payload),
                                    properties=properties)
 
 
@@ -209,7 +219,7 @@ class MQAsyncPublisher(MQAsyncClient):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return f'MQAsyncPublisher:{{exchange_name:{self.exchange_name}}}'
+        return f'{self.__class__.__name__}:{{exchange_name:{self.exchange_name}}}'
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -220,23 +230,25 @@ class MQAsyncSubscriber(MQAsyncPublisher):
     """
 
     @classmethod
-    def construct_sub(cls, exchange_name: MQMode, id: EquipmentIdentifier, handle: Callable,
-                      *subscription_routing_keys: SubscriptionRoutingKey):
+    def construct_sub(cls, exchange_name: MQMode, id: EquipmentIdentifier, on_message: Callable,
+                      *subscription_routing_keys: SubscriptionRoutingKey,
+                      on_startup_complete: Callable | None = None):
         queue = '.'.join([exchange_name, id.as_json()])
 
-        return cls(exchange_name, id, queue, handle, *subscription_routing_keys)
+        return cls(exchange_name, id, queue, on_message,
+                   *subscription_routing_keys, on_startup_complete=on_startup_complete)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, exchange_name, id: EquipmentIdentifier, queue, client_callback: Callable,
-                 *subscription_routing_keys: SubscriptionRoutingKey):
-        super().__init__(exchange_name)
+    def __init__(self, exchange_name, id: EquipmentIdentifier, queue, on_message: Callable,
+                 *subscription_routing_keys: SubscriptionRoutingKey, on_startup_complete: Callable | None = None):
+        super().__init__(exchange_name, on_startup_complete=on_startup_complete)
 
-        self.__id = id                                                      # EquipmentIdentifier
-        self.__queue = queue                                                # string
-        self.__client_callback = client_callback                            # string
-        self.__subscription_routing_keys = subscription_routing_keys        # list of RoutingKey
+        self.__id = id
+        self.__queue = queue
+        self.__on_message = on_message
+        self.__subscription_routing_keys = subscription_routing_keys
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -276,7 +288,10 @@ class MQAsyncSubscriber(MQAsyncPublisher):
         self.logger.debug(f'start_consuming')
 
         self.add_on_cancel_callback()
-        self.channel.basic_consume(self.queue, self.on_message)
+        self.channel.basic_consume(self.queue, self.on_consume)
+
+        if self.on_startup_complete is not None:
+            self.on_startup_complete()
 
 
     def add_on_cancel_callback(self):
@@ -296,16 +311,16 @@ class MQAsyncSubscriber(MQAsyncPublisher):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def on_message(self, _channel, delivery, _props, payload):
-        self.logger.debug(f'on_message - delivery_tag:{delivery.delivery_tag}')
+    def on_consume(self, _channel, delivery, _props, payload):
+        self.logger.info(f'on_consume - delivery_tag:{delivery.delivery_tag}')
 
         routing_key = SubscriptionRoutingKey.construct_from_jdict(delivery.routing_key)
 
         if routing_key.source == self.id:
-            return                                          # do not send message to self
+            return  # do not send message to self
 
         message = Message.construct_from_callback(routing_key, payload)
-        self.client_callback(message)
+        self.on_message(message)
 
         self.acknowledge_message(delivery.delivery_tag)
 
@@ -323,8 +338,8 @@ class MQAsyncSubscriber(MQAsyncPublisher):
 
 
     @property
-    def client_callback(self):
-        return self.__client_callback
+    def on_message(self):
+        return self.__on_message
 
 
     @property
@@ -335,6 +350,6 @@ class MQAsyncSubscriber(MQAsyncPublisher):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        routing_keys = [str(key) for key in self.subscription_routing_keys]
-        return (f'MQAsyncSubscriber:{{exchange_name:{self.exchange_name}, id:{self.id}, '
+        routing_keys = [JSONify.as_jdict(key) for key in self.subscription_routing_keys]
+        return (f'{self.__class__.__name__}:{{exchange_name:{self.exchange_name}, id:{self.id}, '
                 f'queue:{self.queue}, channel:{self.channel}, routing_keys:{routing_keys}}}')

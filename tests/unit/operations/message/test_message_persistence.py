@@ -12,7 +12,7 @@ https://www.jetbrains.com/help/pycharm/creating-tests.html
 import json
 import unittest
 
-from mrcs_control.operations.recorder.message_record import PersistentMessageRecord
+from mrcs_control.operations.recorder.persistent_message_record import PersistentMessageRecord
 from mrcs_control.operations.recorder.persistent_message import PersistentMessage
 
 from setup import Setup
@@ -35,7 +35,7 @@ class TestMessagePersistence(unittest.TestCase):
         PersistentMessageRecord.recreate_tables()
 
         obj1 = PersistentMessage.construct_from_jdict(
-            json.loads('{"routing": "TST.001.002.MPU.001.100", "body": "hello"}'))
+            json.loads('{"origin":"12345678", "routing": "TST.001.002.MPU.001.100", "body": "hello"}'))
         obj1.save()
 
         records = list(PersistentMessageRecord.find_latest(limit=10))

@@ -2,6 +2,8 @@
 Created on 11 Jul 2016
 
 @author: Bruno Beloff (bbeloff@me.com)
+
+Provides equally-spaced intervals. Available in both blocking and async flavours.
 """
 
 import asyncio

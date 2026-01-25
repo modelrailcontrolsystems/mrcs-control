@@ -61,7 +61,7 @@ class MQClientAsync(object):
 
         self._connection = None
         self._channel = None
-        self._stopping = False      # TODO: handle this properly
+        self._stopping = False
         self._consumer_tag = None
         self._consuming = False
 
@@ -105,13 +105,9 @@ class MQClientAsync(object):
     def on_connection_open_error(self, _unused_connection, err):
         self.logger.debug(f'on_connection_open_error - err:{err}')
 
-    # TODO: may need close_connection()
-
     def on_connection_closed(self, _unused_connection, reason):
         self.logger.debug(f'on_connection_closed - reason:{reason}')
         self._channel = None
-
-    # TODO: may need reconnect()
 
     def on_channel_open(self, channel):
         self.logger.debug(f'on_channel_open - channel:{channel}')
@@ -159,7 +155,7 @@ class MQClientAsync(object):
 
     def on_bind_ok(self, _unused_frame):
         self.logger.debug(f'on_bind_ok')
-        # self.start_publishing()       # TODO: refactor to two client subtypes?
+        # self.start_publishing()
         self.start_consuming()
 
 
@@ -211,8 +207,8 @@ class MQClientAsync(object):
             delivery_mode=pika.DeliveryMode.Persistent)
 
         self._channel.basic_publish(exchange=self.exchange_name,
-                                    routing_key=message.routing_key.as_json(),
-                                    body=JSONify.dumps(message.body),
+                                    routing_key=JSONify.as_jdict(message.routing_key),
+                                    body=JSONify.dumps(message.payload),
                                     properties=properties)
 
         self.logger.debug(f'publish_message - published')

@@ -12,7 +12,7 @@ https://www.jetbrains.com/help/pycharm/creating-tests.html
 import time
 import unittest
 
-from mrcs_control.sync.interval_timer import AsyncIntervalTimer
+from mrcs_control.sys.interval_timer import AsyncIntervalTimer
 
 
 # --------------------------------------------------------------------------------------------------------------------

@@ -3,8 +3,11 @@ Created on 31 Dec 2025
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-Message-based Cron - this component accepts event schedules
+An SubscriberNode that provides a crontab service - this component accepts event schedules
 Note that the cron components work in model time, not true time.
+
+Test with:
+mrcs_publisher -vti4 -t CRN -n 3 -m '{"event_id": "abc", "on": "1930-01-02T06:25:00.000+00:00"}'
 """
 
 from mrcs_control.db.db_client import DbClient
@@ -19,7 +22,7 @@ from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class Crontab(SubscriberNode):
+class CrontabNode(SubscriberNode):
     """
     accepts event schedules
     """
@@ -31,13 +34,20 @@ class Crontab(SubscriberNode):
 
     @classmethod
     def subscription_routing_keys(cls):
-        return (SubscriptionRoutingKey(EquipmentFilter.all(), cls.id()), )
+        return (SubscriptionRoutingKey(EquipmentFilter.any(), cls.id()), )
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, ops: OperationService):
         super().__init__(ops)
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def handle_message(self, message: Message):
+        cronjob = PersistentCronjob.construct_from_message(message)
+        cronjob.save()
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -64,13 +74,3 @@ class Crontab(SubscriberNode):
             self.mq_client.subscribe(*self.subscription_routing_keys())
         except KeyboardInterrupt:
             return
-
-
-    # ----------------------------------------------------------------------------------------------------------------
-
-    def handle(self, message: Message):
-        self.logger.info(f'callback - message: {message}')
-
-        cronjob = PersistentCronjob.construct_from_message(message)
-        cronjob.save()
-

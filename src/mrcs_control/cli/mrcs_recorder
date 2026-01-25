@@ -18,14 +18,12 @@ mrcs_recorder [-h] [-i INDENT] [-v] [--version] [-t] [-c] (-r REPORT | -s)
 
 EXAMPLES
 mrcs_recorder --verbose --test --clean --subscribe
-
-RESOURCES
 """
 
 import sys
 
 from mrcs_control.cli.args.recorder_args import RecorderArgs
-from mrcs_control.operations.recorder.message_recorder import MessageRecorder
+from mrcs_control.operations.recorder.message_recorder_node import MessageRecorderNode
 
 from mrcs_core.data.json import JSONify
 from mrcs_core.sys.logging import Logging
@@ -48,20 +46,20 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
-        recorder = MessageRecorder.construct(args.mode)
-        logger.info(f'recorder: {recorder}')
+        recorder_node = MessageRecorderNode.construct(args.mode)
+        logger.info(f'recorder_node: {recorder_node}')
 
         if args.clean:
-            recorder.clean()
+            recorder_node.clean()
 
         if args.report is not None:
-            records = list(recorder.find_latest(args.report))
+            records = list(recorder_node.find_latest(args.report))
             print(JSONify.dumps(records, indent=args.indent))
 
             logger.info(f'found {len(records)} items.')
 
         if args.subscribe:
-            recorder.subscribe()
+            recorder_node.subscribe()
 
 
     # ----------------------------------------------------------------------------------------------------------------

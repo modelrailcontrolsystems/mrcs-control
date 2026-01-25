@@ -12,6 +12,7 @@ from mrcs_control.messaging.mq_client import MQPublisher, MQSubscriber, MQClient
 from mrcs_control.operations.operation_mode import OperationMode, OperationService
 
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
+from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
 from mrcs_core.sys.logging import Logging
@@ -94,7 +95,7 @@ class SubscriberNode(MessagingNode, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, ops: OperationService):
-        super().__init__(ops, MQSubscriber.construct_sub(ops.mq_mode, self.id(), self.handle))
+        super().__init__(ops, MQSubscriber.construct_sub(ops.mq_mode, self.id(), self.handle_message))
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -110,13 +111,13 @@ class SubscriberNode(MessagingNode, ABC):
 
 
     @abstractmethod
-    def handle(self, message: Message):
+    def handle_message(self, message: Message):
         pass
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        routing_keys = [str(key) for key in self.subscription_routing_keys()]
+        routing_keys = [JSONify.as_jdict(key) for key in self.subscription_routing_keys()]
         return (f'{self.__class__.__name__}:{{routing_keys:{routing_keys}, '
                 f'ops:{self.ops}, mq_client:{self.mq_client}}}')
