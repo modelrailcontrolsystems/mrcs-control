@@ -16,6 +16,7 @@ from mrcs_control.operations.operation_mode import OperationService
 from mrcs_control.operations.time.persistent_cronjob import PersistentCronjob
 
 from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentFilter, EquipmentType
+from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
 
@@ -46,6 +47,7 @@ class CrontabNode(SubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def handle_message(self, message: Message):
+        self.logger.info(f'handle_message: {JSONify.as_jdict(message)}')
         cronjob = PersistentCronjob.construct_from_message(message)
         cronjob.save()
 
