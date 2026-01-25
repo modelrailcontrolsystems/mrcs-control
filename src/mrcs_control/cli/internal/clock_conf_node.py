@@ -10,6 +10,7 @@ Implements a single-shot interlock that waits for the clock manager to respond.
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
 from mrcs_control.operations.operation_mode import OperationService
 from mrcs_control.operations.time.clock_manager_node import ClockManagerNode
+from mrcs_control.operations.time.cron import CRN
 
 from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType, EquipmentFilter
 from mrcs_core.messaging.message import Message
@@ -26,7 +27,7 @@ class ClockConfNode(AsyncSubscriberNode):
 
     @classmethod
     def id(cls):
-        return EquipmentIdentifier(EquipmentType.CRN, None, 4)
+        return EquipmentIdentifier(EquipmentType.CRN, None, CRN.ClockConf)
 
 
     @classmethod

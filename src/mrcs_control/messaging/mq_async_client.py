@@ -91,7 +91,7 @@ class MQAsyncClient(ABC):
 
 
     @abstractmethod
-    def on_channel_open(self, channel):  # TODO: need to call back from here before publishing?
+    def on_channel_open(self, channel):
         self.logger.debug(f'on_channel_open')
         pass
 
