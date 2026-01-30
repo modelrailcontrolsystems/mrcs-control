@@ -60,6 +60,8 @@ class MQClient(ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     def connect(self):
+        self.logger.debug('connect')
+
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(host=self.__DEFAULT_HOST),
         )
@@ -68,14 +70,12 @@ class MQClient(ABC):
 
 
     def close(self):
-        try:
-            if self.channel is None:
-                return False
+        self.logger.debug('close')
 
+        try:
             self.channel.close()
             return True
-
-        except ChannelWrongStateError:
+        except (AttributeError, ChannelWrongStateError):
             return False
 
         except AMQPError as ex:
@@ -120,6 +120,8 @@ class MQManager(MQClient):
     # ----------------------------------------------------------------------------------------------------------------
 
     def exchange_delete(self, exchange):
+        self.logger.debug(f'exchange_delete:{exchange}')
+
         if self.channel is None:
             raise RuntimeError('exchange_delete: no channel')
 
@@ -127,6 +129,8 @@ class MQManager(MQClient):
 
 
     def queue_delete(self, queue):
+        self.logger.debug(f'queue_delete:{queue}')
+
         if self.channel is None:
             raise RuntimeError('queue_delete: no channel')
 
@@ -162,14 +166,15 @@ class MQPublisher(MQClient):
     # ----------------------------------------------------------------------------------------------------------------
 
     def connect(self):
+        self.logger.debug(f'connect')
+
         super().connect()
         self.channel.exchange_declare(exchange=self.exchange_name, exchange_type=ExchangeType.topic, durable=True)
         self.logger.debug(f'connect - channel:{self.channel}')
 
 
     def publish(self, message: Message):
-        if self.channel is None:
-            raise RuntimeError('publish: no channel')
+        self.logger.debug(f'publish - message:{message}')
 
         while True:
             try:
@@ -184,10 +189,12 @@ class MQPublisher(MQClient):
                     properties=properties)
                 break
 
-            except AMQPError:
+            except (AttributeError, AMQPError):
+                self.logger.warn('* B * remaking connection')
                 self.close()
                 self.connect()
-                self.logger.warn('publish: connection re-established')
+
+                self.logger.warn('* B * connection re-established')
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -230,6 +237,8 @@ class MQSubscriber(MQPublisher):
     # ----------------------------------------------------------------------------------------------------------------
 
     def subscribe(self, *routing_keys: RoutingKey):
+        self.logger.debug('subscribe')
+
         if self.channel is None:
             raise RuntimeError('subscribe: no channel')
 
@@ -263,6 +272,8 @@ class MQSubscriber(MQPublisher):
 
 
     def on_consume(self, ch, method, _properties, payload):
+        self.logger.debug(f'on_consume - payload:{str(payload)}')
+
         routing_key = PublicationRoutingKey.construct_from_jdict(method.routing_key)
 
         if routing_key.source == self.id:

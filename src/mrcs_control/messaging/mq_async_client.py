@@ -12,6 +12,7 @@ https://github.com/aiidateam/aiida-core/issues/1142
 https://stackoverflow.com/questions/15150207/connection-in-rabbitmq-server-auto-lost-after-600s
 """
 
+import asyncio
 import functools
 
 from abc import ABC, abstractmethod
@@ -19,6 +20,7 @@ from typing import Callable
 
 import pika
 from pika.adapters.asyncio_connection import AsyncioConnection
+from pika.exceptions import AMQPError, ChannelWrongStateError
 from pika.exchange_type import ExchangeType
 
 from mrcs_control.messaging.mq_client import MQMode
@@ -50,7 +52,7 @@ class MQAsyncClient(ABC):
 
         self.__connection = None
         self._channel = None
-        self.__stopping = False
+        self._is_connected = False
 
         self.__logger = Logging.getLogger()
 
@@ -60,7 +62,7 @@ class MQAsyncClient(ABC):
     def connect(self):
         self.logger.debug(f'connect - url:{self.__URL}')
 
-        return AsyncioConnection(
+        AsyncioConnection(
             parameters=pika.URLParameters(self.__URL),
             on_open_callback=self.on_connection_open,
             on_open_error_callback=self.on_connection_open_error,
@@ -68,8 +70,20 @@ class MQAsyncClient(ABC):
 
 
     def close(self):
-        # TODO: implement close?
-        pass
+        try:
+            self.channel.close()
+        except (AttributeError, ChannelWrongStateError):
+            pass
+
+        finally:
+            self._channel = None
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    async def connection_is_available(self):
+        while not self._is_connected:
+            await asyncio.sleep(0.1)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -92,9 +106,7 @@ class MQAsyncClient(ABC):
 
     @abstractmethod
     def on_channel_open(self, channel):
-        self.logger.debug(f'on_channel_open')
         pass
-
 
     def add_on_channel_close_callback(self):
         self.logger.debug(f'add_on_channel_close_callback')
@@ -104,14 +116,14 @@ class MQAsyncClient(ABC):
     def on_channel_closed(self, _channel, reason):
         self.logger.debug(f'on_channel_closed - reason:{reason}')
         self._channel = None
-        if not self.stopping:           # TODO: fix stopping
-            self.connection.close()
+        self.connection.close()
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     @property
     def on_startup_complete(self):
+        self._is_connected = True
         return self.__on_startup_complete
 
 
@@ -123,11 +135,6 @@ class MQAsyncClient(ABC):
     @property
     def channel(self):
         return self._channel
-
-
-    @property
-    def stopping(self):
-        return self.__stopping
 
 
     @property
@@ -158,23 +165,29 @@ class MQAsyncPublisher(MQAsyncClient):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def publish(self, message: Message):
+    async def publish(self, message: Message):
         self.logger.debug(f'publish - message:{message}')
+        while True:
+            try:
+                properties = pika.BasicProperties(
+                    content_type='application/json',
+                    delivery_mode=pika.DeliveryMode.Persistent)
 
-        if self.channel is None:
-            raise RuntimeError('publish: no channel')
+                self.channel.basic_publish(
+                    exchange=self.exchange_name,
+                    routing_key=JSONify.as_jdict(message.routing_key),
+                    body=JSONify.dumps(message.payload),
+                    properties=properties)
+                break
 
-        if not self.channel.is_open:
-            raise RuntimeError('publish: channel is not open')
+            except (AttributeError, AMQPError):
+                self.logger.warn('* A * remaking connection')
+                self._is_connected = False
+                self.close()
+                self.connect()
+                await self.connection_is_available()
+                self.logger.warn('* A * connection re-established')
 
-        properties = pika.BasicProperties(
-            content_type='application/json',
-            delivery_mode=pika.DeliveryMode.Persistent)
-
-        self.channel.basic_publish(exchange=self.exchange_name,
-                                   routing_key=JSONify.as_jdict(message.routing_key),
-                                   body=JSONify.dumps(message.payload),
-                                   properties=properties)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -202,6 +215,7 @@ class MQAsyncPublisher(MQAsyncClient):
     def start_publishing(self):
         self.logger.debug(f'start_publishing')
         self.channel.confirm_delivery(self.on_delivery_confirmation)
+        self._is_connected = True
 
 
     def on_delivery_confirmation(self, method_frame):
@@ -219,7 +233,7 @@ class MQAsyncPublisher(MQAsyncClient):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return f'{self.__class__.__name__}:{{exchange_name:{self.exchange_name}}}'
+        return f'{self.__class__.__name__}:{{exchange_name:{self.exchange_name}, is_connected:{self._is_connected}}}'
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -312,7 +326,7 @@ class MQAsyncSubscriber(MQAsyncPublisher):
     # ----------------------------------------------------------------------------------------------------------------
 
     def on_consume(self, _channel, delivery, _props, payload):
-        self.logger.info(f'on_consume - delivery_tag:{delivery.delivery_tag}')
+        self.logger.debug(f'on_consume - delivery_tag:{delivery.delivery_tag}')
 
         routing_key = SubscriptionRoutingKey.construct_from_jdict(delivery.routing_key)
 
@@ -351,5 +365,5 @@ class MQAsyncSubscriber(MQAsyncPublisher):
 
     def __str__(self, *args, **kwargs):
         routing_keys = [JSONify.as_jdict(key) for key in self.subscription_routing_keys]
-        return (f'{self.__class__.__name__}:{{exchange_name:{self.exchange_name}, id:{self.id}, '
-                f'queue:{self.queue}, channel:{self.channel}, routing_keys:{routing_keys}}}')
+        return (f'{self.__class__.__name__}:{{exchange_name:{self.exchange_name}, is_connected:{self._is_connected}, '
+                f'id:{self.id}, queue:{self.queue}, channel:{self.channel}, routing_keys:{routing_keys}}}')
