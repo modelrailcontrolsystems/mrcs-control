@@ -54,6 +54,13 @@ class AsyncMessagingNode(ABC):
 
     # ----------------------------------------------------------------------------------------------------------------
 
+    async def connection_is_available(self):
+        await self.mq_client.connection_is_available()
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+
     @property
     def ops(self):
         return self.__ops
@@ -89,8 +96,8 @@ class AsyncPublisherNode(AsyncMessagingNode, ABC):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def publish(self, message: Message):
-        self.mq_client.publish(message)
+    async def publish(self, message: Message):
+        await self.mq_client.publish(message)
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -139,7 +146,7 @@ class AsyncSubscriberNode(AsyncMessagingNode, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     async def publish(self, message: Message):
-        self.mq_client.publish(message)
+        await self.mq_client.publish(message)
 
 
     # ----------------------------------------------------------------------------------------------------------------
