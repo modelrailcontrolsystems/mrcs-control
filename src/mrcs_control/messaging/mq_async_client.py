@@ -115,6 +115,7 @@ class MQAsyncClient(ABC):
 
     def on_channel_closed(self, _channel, reason):
         self.logger.debug(f'on_channel_closed - reason:{reason}')
+
         self._channel = None
         self.connection.close()
 
@@ -167,6 +168,7 @@ class MQAsyncPublisher(MQAsyncClient):
 
     async def publish(self, message: Message):
         self.logger.debug(f'publish - message:{message}')
+
         while True:
             try:
                 properties = pika.BasicProperties(
@@ -214,6 +216,7 @@ class MQAsyncPublisher(MQAsyncClient):
 
     def start_publishing(self):
         self.logger.debug(f'start_publishing')
+
         self.channel.confirm_delivery(self.on_delivery_confirmation)
         self._is_connected = True
 
@@ -329,7 +332,6 @@ class MQAsyncSubscriber(MQAsyncPublisher):
         self.logger.debug(f'on_consume - delivery_tag:{delivery.delivery_tag}')
 
         routing_key = SubscriptionRoutingKey.construct_from_jdict(delivery.routing_key)
-
         if routing_key.source == self.id:
             return  # do not send message to self
 
