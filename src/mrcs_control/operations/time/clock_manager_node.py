@@ -56,8 +56,8 @@ class ClockManagerNode(SubscriberNode):
 
         try:
             clock = Clock.construct_from_jdict(incoming.body)
-        except (TypeError, ValueError):
-            self.logger.warning(f'invalid message body:{incoming.body}')
+        except Exception as ex:
+            self.logger.warning(f'{ex}: invalid message body:{incoming.body}')
             return
 
         if clock == Clock.load(Host):
