@@ -12,7 +12,7 @@ A service to raise cron events according to model time
 Note that in --run mode, the utility runs forever.
 
 SYNOPSIS
-mrcs_cron [-h] [-i INDENT] [-v] [--version] [-t] (-c | -r | -s)
+mrcs_cron [-h] [-i INDENT] [-v] [--version] [-t] [-c] (-r | -s)
 
 EXAMPLES
 mrcs_cron --verbose --run-save --test
@@ -26,7 +26,7 @@ import sys
 
 from mrcs_control.cli.args.cron_args import CronArgs
 from mrcs_control.operations.time.cron_node import CronNode
-
+from mrcs_core.data.json import JSONify
 from mrcs_core.sys.logging import Logging
 
 
@@ -43,7 +43,6 @@ if __name__ == '__main__':
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')
 
-
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
@@ -52,6 +51,11 @@ if __name__ == '__main__':
 
         if args.clean:
             cron.clean()
+
+        if args.list:
+            jobs = cron.list()
+            print(JSONify.dumps(list(jobs), indent=args.indent))
+            logger.info(f'found {len(jobs)} items.')
 
         if args.run or args.run_save:
             cron.run()

@@ -11,7 +11,6 @@ import logging
 import os
 
 from mrcs_control.operations.operation_mode import OperationMode
-
 from mrcs_core.sys.logging import Logging
 
 

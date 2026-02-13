@@ -29,7 +29,6 @@ import sys
 
 from mrcs_control.cli.args.crontab_args import CrontabArgs
 from mrcs_control.operations.time.crontab_node import CrontabNode
-
 from mrcs_core.data.json import JSONify
 from mrcs_core.sys.logging import Logging
 
@@ -47,7 +46,6 @@ if __name__ == '__main__':
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')
 
-
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
@@ -58,11 +56,10 @@ if __name__ == '__main__':
             crontab.clean()
             exit(0)
 
-        if args.report:
-            records = list(crontab.find_all())
-            print(JSONify.dumps(records, indent=args.indent))
-
-            logger.info(f'found {len(records)} items.')
+        if args.list:
+            jobs = list(crontab.find_all())
+            print(JSONify.dumps(jobs, indent=args.indent))
+            logger.info(f'found {len(jobs)} items.')
             exit(0)
 
         if args.subscribe:
