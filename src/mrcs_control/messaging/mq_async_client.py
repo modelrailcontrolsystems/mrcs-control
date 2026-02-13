@@ -287,7 +287,6 @@ class MQAsyncSubscriber(MQAsyncPublisher):
         last_index = len(self.subscription_routing_keys) - 1
         for i, routing_key in enumerate(self.subscription_routing_keys):
             cb = functools.partial(self.on_bind_ok, start=i == last_index)
-            print(f'routing_key:{JSONify.as_jdict(routing_key)}')
             self.channel.queue_bind(self.queue, self.exchange_name, routing_key=JSONify.as_jdict(routing_key),
                                     callback=cb)
 
