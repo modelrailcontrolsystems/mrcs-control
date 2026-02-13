@@ -53,8 +53,8 @@ class CrontabNode(SubscriberNode):
 
         try:
             cronjob = PersistentCronjob.construct_from_message(message)
-        except Exception as ex:
-            self.logger.warning(f'{ex}: invalid message body:{message.body}')
+        except Exception:
+            self.logger.warning(f'invalid message body:{message.body}')
             return
 
         cronjob.save()
