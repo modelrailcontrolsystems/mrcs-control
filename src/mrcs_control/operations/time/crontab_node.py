@@ -29,6 +29,7 @@ class CrontabNode(SubscriberNode):
     accepts event schedules
     """
 
+
     @classmethod
     def id(cls):
         return EquipmentIdentifier(EquipmentType.CRN, None, CRN.Crontab)
@@ -36,7 +37,7 @@ class CrontabNode(SubscriberNode):
 
     @classmethod
     def subscription_routing_keys(cls):
-        return (SubscriptionRoutingKey(EquipmentFilter.any(), cls.id()), )
+        return (SubscriptionRoutingKey(EquipmentFilter.any(), cls.id()),)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -49,7 +50,13 @@ class CrontabNode(SubscriberNode):
 
     def handle_message(self, message: Message):
         self.logger.info(f'handle_message: {JSONify.as_jdict(message)}')
-        cronjob = PersistentCronjob.construct_from_message(message)
+
+        try:
+            cronjob = PersistentCronjob.construct_from_message(message)
+        except (AttributeError, TypeError, ValueError):
+            self.logger.warning(f'invalid message:{message}')
+            return
+
         cronjob.save()
 
 

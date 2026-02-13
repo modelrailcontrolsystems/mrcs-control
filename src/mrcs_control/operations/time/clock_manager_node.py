@@ -27,6 +27,7 @@ class ClockManagerNode(SubscriberNode):
     an authority for clock configuration
     """
 
+
     @classmethod
     def id(cls):
         return EquipmentIdentifier(EquipmentType.CRN, None, CRN.ClockManager)
@@ -34,7 +35,7 @@ class ClockManagerNode(SubscriberNode):
 
     @classmethod
     def subscription_routing_keys(cls):
-        return (SubscriptionRoutingKey(EquipmentFilter.any(), cls.id()), )
+        return (SubscriptionRoutingKey(EquipmentFilter.any(), cls.id()),)
 
 
     @classmethod
@@ -54,15 +55,15 @@ class ClockManagerNode(SubscriberNode):
         self.logger.info(f'handle_message - incoming:{JSONify.as_jdict(incoming)}')
 
         try:
-            new_conf = Clock.construct_from_jdict(incoming.body)
-        except TypeError as ex:
-            self.logger.error(f'ex:{ex}')
+            clock = Clock.construct_from_jdict(incoming.body)
+        except (TypeError, ValueError):
+            self.logger.warning(f'invalid message body:{incoming.body}')
             return
 
-        if new_conf == Clock.load(Host):
+        if clock == Clock.load(Host):
             return
 
-        new_conf.save(Host)
+        clock.save(Host)
 
         outgoing = Message(self.publication_routing_key(), incoming.body, origin=incoming.origin)
         self.logger.info(f'handle - outgoing:{JSONify.as_jdict(outgoing)}')
