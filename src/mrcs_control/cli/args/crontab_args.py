@@ -14,12 +14,13 @@ from mrcs_control.cli.args.multimode_control_args import MultimodeControlArgs
 class CrontabArgs(MultimodeControlArgs):
     """unix command line handler"""
 
+
     def __init__(self, description):
         super().__init__(description)
 
         group = self._parser.add_mutually_exclusive_group(required=True)
         group.add_argument('-c', '--clean', action='store_true', help='discard existing schedule')
-        group.add_argument('-r', '--report', action='store_true', help='report existing scheduled events')
+        group.add_argument('-l', '--list', action='store_true', help='list outstanding cron jobs')
         group.add_argument('-s', '--subscribe', action='store_true', help='subscribe to schedule requests')
 
         self._args = self._parser.parse_args()
@@ -33,8 +34,8 @@ class CrontabArgs(MultimodeControlArgs):
 
 
     @property
-    def report(self):
-        return self._args.report
+    def list(self):
+        return self._args.list
 
 
     @property
@@ -45,5 +46,5 @@ class CrontabArgs(MultimodeControlArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'CrontabArgs:{{test:{self.test}, clean:{self.clean}, report:{self.report}, '
+        return (f'CrontabArgs:{{test:{self.test}, clean:{self.clean}, list:{self.list}, '
                 f'subscribe:{self.subscribe}, indent:{self.indent}, verbose:{self.verbose}}}')

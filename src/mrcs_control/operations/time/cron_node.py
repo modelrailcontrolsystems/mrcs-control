@@ -34,6 +34,7 @@ class CronNode(AsyncSubscriberNode):
     raises events
     """
 
+
     @classmethod
     def id(cls):
         return EquipmentIdentifier(EquipmentType.CRN, None, CRN.Cron)
@@ -41,7 +42,7 @@ class CronNode(AsyncSubscriberNode):
 
     @classmethod
     def subscription_routing_keys(cls):
-        return (SubscriptionRoutingKey(EquipmentFilter.any(), ClockManagerNode.id()), )
+        return (SubscriptionRoutingKey(EquipmentFilter.any(), ClockManagerNode.id()),)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -73,6 +74,11 @@ class CronNode(AsyncSubscriberNode):
     def clean(self):
         DbClient.set_client_db_mode(self.ops.db_mode)
         PersistentCronjob.recreate_tables()
+
+
+    def list(self):
+        DbClient.set_client_db_mode(self.ops.db_mode)
+        return PersistentCronjob.find_all()
 
 
     def run(self):

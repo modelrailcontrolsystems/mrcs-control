@@ -14,12 +14,14 @@ from mrcs_control.cli.args.multimode_control_args import MultimodeControlArgs
 class CronArgs(MultimodeControlArgs):
     """unix command line handler"""
 
+
     def __init__(self, description):
         super().__init__(description)
 
         self._parser.add_argument('-c', '--clean', action='store_true', help='discard existing schedule')
 
-        group = self._parser.add_mutually_exclusive_group(required=True)
+        group = self._parser.add_mutually_exclusive_group(required=False)
+        group.add_argument('-l', '--list', action='store_true', help='list outstanding cron jobs')
         group.add_argument('-r', '--run', action='store_true', help='run the cron')
         group.add_argument('-s', '--run-save', action='store_true', help='run the cron with model-time save on')
 
@@ -29,13 +31,18 @@ class CronArgs(MultimodeControlArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     @property
-    def save_model_time(self):
-        return self.run_save
+    def clean(self):
+        return self._args.clean
 
 
     @property
-    def clean(self):
-        return self._args.clean
+    def list(self):
+        return self._args.list
+
+
+    @property
+    def save_model_time(self):
+        return self.run_save
 
 
     @property
@@ -51,5 +58,5 @@ class CronArgs(MultimodeControlArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'CronArgs:{{test:{self.test}, clean:{self.clean}, run:{self.run}, run_save:{self.run_save}, '
-                f'indent:{self.indent}, verbose:{self.verbose}}}')
+        return (f'CronArgs:{{test:{self.test}, clean:{self.clean}, list:{self.list}, run:{self.run}, '
+                f'run_save:{self.run_save}, indent:{self.indent}, verbose:{self.verbose}}}')
