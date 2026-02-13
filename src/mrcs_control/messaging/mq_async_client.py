@@ -14,7 +14,6 @@ https://stackoverflow.com/questions/15150207/connection-in-rabbitmq-server-auto-
 
 import asyncio
 import functools
-
 from abc import ABC, abstractmethod
 from typing import Callable
 
@@ -24,7 +23,6 @@ from pika.exceptions import AMQPError, ChannelWrongStateError
 from pika.exchange_type import ExchangeType
 
 from mrcs_control.messaging.mq_client import MQMode
-
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
@@ -107,6 +105,7 @@ class MQAsyncClient(ABC):
     @abstractmethod
     def on_channel_open(self, channel):
         pass
+
 
     def add_on_channel_close_callback(self):
         self.logger.debug(f'add_on_channel_close_callback')
@@ -191,7 +190,6 @@ class MQAsyncPublisher(MQAsyncClient):
                 self.logger.warn('* A * connection re-established')
 
 
-
     # ----------------------------------------------------------------------------------------------------------------
 
     def on_channel_open(self, channel):
@@ -246,6 +244,7 @@ class MQAsyncSubscriber(MQAsyncPublisher):
     A RabbitMQ peer that can act as a publisher or subscriber
     """
 
+
     @classmethod
     def construct_sub(cls, exchange_name: MQMode, id: EquipmentIdentifier, on_message: Callable,
                       *subscription_routing_keys: SubscriptionRoutingKey,
@@ -288,6 +287,7 @@ class MQAsyncSubscriber(MQAsyncPublisher):
         last_index = len(self.subscription_routing_keys) - 1
         for i, routing_key in enumerate(self.subscription_routing_keys):
             cb = functools.partial(self.on_bind_ok, start=i == last_index)
+            print(f'routing_key:{JSONify.as_jdict(routing_key)}')
             self.channel.queue_bind(self.queue, self.exchange_name, routing_key=JSONify.as_jdict(routing_key),
                                     callback=cb)
 

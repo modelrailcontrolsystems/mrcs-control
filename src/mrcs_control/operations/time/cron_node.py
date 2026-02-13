@@ -42,7 +42,7 @@ class CronNode(AsyncSubscriberNode):
 
     @classmethod
     def subscription_routing_keys(cls):
-        return (SubscriptionRoutingKey(EquipmentFilter.any(), ClockManagerNode.id()),)
+        return (SubscriptionRoutingKey(ClockManagerNode.id(), EquipmentFilter.any()),)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -65,7 +65,14 @@ class CronNode(AsyncSubscriberNode):
 
     def handle_message(self, message: Message):
         self.logger.info(f'handle_message: {JSONify.as_jdict(message)}')
-        self.__clock = Clock.construct_from_jdict(message.body)
+
+        try:
+            clock = Clock.construct_from_jdict(message.body)
+        except (TypeError, ValueError):
+            self.logger.warning(f'invalid message body:{message.body}')
+            return
+
+        self.__clock = clock
         self.timer.interval = self.clock.tick_interval
 
 
