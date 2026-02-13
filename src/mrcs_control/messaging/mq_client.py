@@ -14,7 +14,7 @@ https://stackoverflow.com/questions/15150207/connection-in-rabbitmq-server-auto-
 """
 
 from abc import ABC
-from enum import unique, StrEnum
+from enum import StrEnum, unique
 from typing import Callable
 
 import pika
@@ -25,7 +25,7 @@ from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.data.json import JSONify
 from mrcs_core.data.meta_enum import MetaEnum
 from mrcs_core.messaging.message import Message
-from mrcs_core.messaging.routing_key import RoutingKey, PublicationRoutingKey
+from mrcs_core.messaging.routing_key import PublicationRoutingKey, RoutingKey
 from mrcs_core.sys.logging import Logging
 
 
@@ -48,7 +48,8 @@ class MQClient(ABC):
     An abstract RabbitMQ client
     """
 
-    __DEFAULT_HOST = '127.0.0.1'                # do not use localhost - IPv6 issues
+    __DEFAULT_HOST = '127.0.0.1'  # do not use localhost - IPv6 issues
+
 
     # ----------------------------------------------------------------------------------------------------------------
 
@@ -111,6 +112,7 @@ class MQManager(MQClient):
     A Client that can perform broker management tasks
     """
 
+
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self):
@@ -150,6 +152,7 @@ class MQPublisher(MQClient):
     A RabbitMQ peer that can act as a publisher only
     """
 
+
     @classmethod
     def construct_pub(cls, exchange_name: MQMode):
         return cls(exchange_name)
@@ -160,7 +163,7 @@ class MQPublisher(MQClient):
     def __init__(self, exchange_name):
         super().__init__()
 
-        self.__exchange_name = exchange_name                      # string
+        self.__exchange_name = exchange_name  # string
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -176,6 +179,18 @@ class MQPublisher(MQClient):
     def publish(self, message: Message):
         self.logger.debug(f'publish - message:{message}')
 
+        try:
+            routing_key = JSONify.as_jdict(message.routing_key)
+        except Exception:
+            self.logger.warn(f'publish - invalid routing_key:{message.routing_key}')
+            return
+
+        try:
+            body = JSONify.dumps(message.payload)
+        except Exception:
+            self.logger.warn(f'publish - invalid body:{message.payload}')
+            return
+
         while True:
             try:
                 properties = pika.BasicProperties(
@@ -184,8 +199,8 @@ class MQPublisher(MQClient):
 
                 self.channel.basic_publish(
                     exchange=self.exchange_name,
-                    routing_key=JSONify.as_jdict(message.routing_key),
-                    body=JSONify.dumps(message.payload),
+                    routing_key=routing_key,
+                    body=body,
                     properties=properties)
                 break
 
@@ -216,6 +231,7 @@ class MQSubscriber(MQPublisher):
     """
     A RabbitMQ peer that can act as a publisher and subscriber
     """
+
 
     @classmethod
     def construct_sub(cls, exchange_name: MQMode, id: EquipmentIdentifier, on_message: Callable):
@@ -274,16 +290,20 @@ class MQSubscriber(MQPublisher):
     def on_consume(self, ch, method, _properties, payload):
         self.logger.debug(f'on_consume - payload:{str(payload)}')
 
-        routing_key = PublicationRoutingKey.construct_from_jdict(method.routing_key)
+        try:
+            routing_key = PublicationRoutingKey.construct_from_jdict(method.routing_key)
+        except Exception:
+            self.logger.warn(f'on_consume - invalid routing_key:{method.routing_key}')
+            return
 
         if routing_key.source == self.id:
-            return                                          # do not send message to self
+            return  # do not send message to self
 
         message = Message.construct_from_callback(routing_key, payload)
 
         self.on_message_message(message)
 
-        ch.basic_ack(delivery_tag=method.delivery_tag)      # ACK will not take place if callback raises an exception
+        ch.basic_ack(delivery_tag=method.delivery_tag)  # ACK will not take place if callback raises an exception
 
 
     # ----------------------------------------------------------------------------------------------------------------

@@ -26,7 +26,7 @@ from mrcs_control.messaging.mq_client import MQMode
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
-from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
+from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
 from mrcs_core.sys.logging import Logging
 
 
@@ -168,6 +168,18 @@ class MQAsyncPublisher(MQAsyncClient):
     async def publish(self, message: Message):
         self.logger.debug(f'publish - message:{message}')
 
+        try:
+            routing_key = JSONify.as_jdict(message.routing_key)
+        except Exception:
+            self.logger.warn(f'publish - invalid routing_key:{message.routing_key}')
+            return
+
+        try:
+            body = JSONify.dumps(message.payload)
+        except Exception:
+            self.logger.warn(f'publish - invalid body:{message.payload}')
+            return
+
         while True:
             try:
                 properties = pika.BasicProperties(
@@ -176,8 +188,8 @@ class MQAsyncPublisher(MQAsyncClient):
 
                 self.channel.basic_publish(
                     exchange=self.exchange_name,
-                    routing_key=JSONify.as_jdict(message.routing_key),
-                    body=JSONify.dumps(message.payload),
+                    routing_key=routing_key,
+                    body=body,
                     properties=properties)
                 break
 
@@ -330,7 +342,12 @@ class MQAsyncSubscriber(MQAsyncPublisher):
     def on_consume(self, _channel, delivery, _props, payload):
         self.logger.debug(f'on_consume - delivery_tag:{delivery.delivery_tag}')
 
-        routing_key = SubscriptionRoutingKey.construct_from_jdict(delivery.routing_key)
+        try:
+            routing_key = PublicationRoutingKey.construct_from_jdict(delivery.routing_key)
+        except Exception:
+            self.logger.warn(f'on_consume - invalid routing_key:{delivery.routing_key}')
+            return
+
         if routing_key.source == self.id:
             return  # do not send message to self
 
