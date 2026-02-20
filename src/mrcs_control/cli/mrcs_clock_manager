@@ -17,6 +17,9 @@ usage: mrcs_clock_manager [-h] [-i INDENT] [-v] [--version] [-t] (-n | -s)
 EXAMPLES
 mrcs_clock_manager --verbose --subscribe --test
 
+FILES
+~/MRCS/conf/clock_conf.json
+
 SEE ALSO
 mrcs_cron
 mrcs_crontab
@@ -26,7 +29,6 @@ import sys
 
 from mrcs_control.cli.args.clock_manager_args import ClockManagerArgs
 from mrcs_control.operations.time.clock_manager_node import ClockManagerNode
-
 from mrcs_core.data.json import JSONify
 from mrcs_core.operations.time.clock import Clock
 from mrcs_core.sys.host import Host
@@ -45,7 +47,6 @@ if __name__ == '__main__':
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')
-
 
     # ----------------------------------------------------------------------------------------------------------------
 

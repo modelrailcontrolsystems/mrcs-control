@@ -33,6 +33,9 @@ EXAMPLES
 mrcs_clock_conf -i4 -s -sr -ss 4 -sy 1930 -sm 1 -sd 2 -sh 6 --test
 mrcs_clock -n
 
+FILES
+~/MRCS/conf/clock_conf.json
+
 SEE ALSO
 mrcs_clock_manager
 mrcs_cli/mrcs_time
@@ -42,7 +45,6 @@ import sys
 
 from mrcs_control.cli.args.clock_conf_args import ClockConfArgs
 from mrcs_control.cli.internal.clock_conf_node import ClockConfNode
-
 from mrcs_core.data.json import JSONify
 from mrcs_core.operations.time.clock import Clock
 from mrcs_core.sys.host import Host
@@ -65,7 +67,6 @@ if __name__ == '__main__':
     logger.info(f'clock_conf_node: {clock_conf_node}')
 
     clock = Clock.load(Host)
-
 
     # ----------------------------------------------------------------------------------------------------------------
 
