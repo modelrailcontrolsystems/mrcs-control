@@ -17,6 +17,9 @@ mrcs_cron [-h] [-i INDENT] [-v] [--version] [-t] [-c] (-r | -s)
 EXAMPLES
 mrcs_cron --verbose --run-save --test
 
+FILES
+~/MRCS/conf/model_time.json
+
 SEE ALSO
 mrcs_clock_manager
 mrcs_crontab
