@@ -301,9 +301,12 @@ class MQSubscriber(MQPublisher):
 
         message = Message.construct_from_callback(routing_key, payload)
 
-        self.on_message_message(message)
-
-        ch.basic_ack(delivery_tag=method.delivery_tag)  # ACK will not take place if callback raises an exception
+        try:
+            self.on_message_message(message)
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+        except Exception:
+            self.logger.warn(f'on_consume - exception:{message}')
+            # ch.basic_nack(delivery_tag=method.delivery_tag)   # TODO: enable as required
 
 
     # ----------------------------------------------------------------------------------------------------------------

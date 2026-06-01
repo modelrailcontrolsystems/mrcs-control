@@ -352,9 +352,13 @@ class MQAsyncSubscriber(MQAsyncPublisher):
             return  # do not send message to self
 
         message = Message.construct_from_callback(routing_key, payload)
-        self.on_message(message)
 
-        self.acknowledge_message(delivery.delivery_tag)
+        try:
+            self.on_message(message)
+            self.acknowledge_message(delivery.delivery_tag)
+        except Exception:
+            self.logger.warn(f'on_consume - exception:{message}')
+            # self.channel.basic_nack(delivery_tag=delivery.delivery_tag)   # TODO: enable as required
 
 
     # ----------------------------------------------------------------------------------------------------------------
