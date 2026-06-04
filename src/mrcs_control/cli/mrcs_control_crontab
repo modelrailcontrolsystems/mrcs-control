@@ -15,10 +15,10 @@ Test with:
 cli/mrcs_publisher -vti4 -t CRN -n 3 -m '{"event_id": "abc", "on": "2026-01-03T06:00:00.000"}'
 
 SYNOPSIS
-mrcs_crontab [-h] [-i INDENT] [-v] [--version] [-t] (-c | -r | -s)
+mrcs_control_crontab [-h] [-i INDENT] [-v] [--version] [-t] (-c | -r | -s)
 
 EXAMPLES
-mrcs_crontab --verbose --subscribe --test
+mrcs_control_crontab --verbose --subscribe --test
 
 SEE ALSO
 mrcs_clock_manager
@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     args = CrontabArgs('a service to record cron event schedules according to model time')
 
-    Logging.config('mrcs_crontab', verbose=args.verbose)
+    Logging.config('mrcs_control_crontab', verbose=args.verbose)
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')

@@ -13,27 +13,25 @@ Message bodies are read from stdin or from the --message argument. Messages are 
 routing specified by command-line arguments.
 
 SYNOPSIS
-mrcs_publish [-h] [-i INDENT] [-v] [--version] [-t] [-s SOURCE_SERIAL]
+mrcs_control_publish [-h] [-i INDENT] [-v] [--version] [-t] [-s SOURCE_SERIAL]
 [-e TARGET_EQUIPMENT] [-b TARGET_BLOCK] [-n TARGET_SERIAL] [-m MESSAGE_BODY]
 
 EXAMPLES
-mrcs_publish -t -v -e MPU -b 1 -n 2
+mrcs_control_publish -t -v -e MPU -b 1 -n 2
 
 RESOURCES
 """
 
 import json
 import sys
-
 from json import JSONDecodeError
 
 from pika.exceptions import AMQPError
 
 from mrcs_control.cli.args.publish_args import PublishArgs
 from mrcs_control.messaging.mq_client import MQPublisher
-
 from mrcs_core.data.datum import Datum
-from mrcs_core.data.equipment_identity import EquipmentType, EquipmentIdentifier, EquipmentFilter
+from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey
@@ -44,6 +42,9 @@ from mrcs_core.sys.logging import Logging
 
 def publish_message(body):
     try:
+        if not publisher:
+            raise RuntimeError('publisher not set')
+
         message = Message(routing_key, json.loads(body))
         publisher.publish(message)
 
@@ -59,13 +60,13 @@ def publish_message(body):
 
 if __name__ == '__main__':
 
-    publisher = None
+    publisher: MQPublisher | None = None
 
     # ----------------------------------------------------------------------------------------------------------------
 
     args = PublishArgs('a tool for publishing messages')
 
-    Logging.config('mrcs_publish', verbose=args.verbose)
+    Logging.config('mrcs_control_publish', verbose=args.verbose)
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')
@@ -84,6 +85,7 @@ if __name__ == '__main__':
 
         publisher = MQPublisher.construct_pub(args.mode.value.mq_mode)
 
+        # noinspection PyUnresolvedReferences
         publisher.connect()
         logger.info(f'publisher: {publisher}')
 

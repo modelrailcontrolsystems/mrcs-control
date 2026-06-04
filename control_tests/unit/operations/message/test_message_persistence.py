@@ -12,24 +12,26 @@ https://www.jetbrains.com/help/pycharm/creating-tests.html
 import json
 import unittest
 
-from mrcs_control.operations.recorder.persistent_message_record import PersistentMessageRecord
 from mrcs_control.operations.recorder.persistent_message import PersistentMessage
-
+from mrcs_control.operations.recorder.persistent_message_record import PersistentMessageRecord
 from setup import Setup
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
 class TestMessagePersistence(unittest.TestCase):
+
     @classmethod
     def setUpClass(cls):
         Setup.dbSetup()
+
 
     def test_recreate(self):
         PersistentMessageRecord.recreate_tables()
 
         records = list(PersistentMessageRecord.find_latest(limit=10))
         self.assertEqual(len(records), 0)
+
 
     def test_construct(self):
         PersistentMessageRecord.recreate_tables()
@@ -45,5 +47,5 @@ class TestMessagePersistence(unittest.TestCase):
         self.assertEqual(obj2.body, obj1.body)
 
 
-if __name__ == "__main_":
+if __name__ == "__main__":
     unittest.main()

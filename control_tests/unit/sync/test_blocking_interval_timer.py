@@ -17,9 +17,11 @@ from mrcs_control.sys.interval_timer import BlockingIntervalTimer
 # --------------------------------------------------------------------------------------------------------------------
 
 class TestBlockingIntervalTimer(unittest.TestCase):
+
     def test_construct(self):
         obj1 = BlockingIntervalTimer(1.5)
         self.assertEqual('BlockingIntervalTimer:{interval:1.500, time_to_next_yield:1.500}', str(obj1))
+
 
     def test_true(self):
         start = time.time()
@@ -30,6 +32,7 @@ class TestBlockingIntervalTimer(unittest.TestCase):
 
         self.assertTrue(response)
         self.assertEqual(1.5, period)
+
 
     def test_interval(self):
         start = time.time()
@@ -43,5 +46,5 @@ class TestBlockingIntervalTimer(unittest.TestCase):
         self.assertEqual(2.0, period)
 
 
-if __name__ == "__main_":
+if __name__ == "__main__":
     unittest.main()
