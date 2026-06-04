@@ -11,9 +11,8 @@ https://www.jetbrains.com/help/pycharm/creating-tests.html
 
 import unittest
 
-from mrcs_control.db.db_name import DbName
 from mrcs_control.db.db_client import DbClient
-
+from mrcs_control.db.db_name import DbName
 from setup import Setup
 
 
@@ -27,11 +26,13 @@ class TestDB(unittest.TestCase):
     def setUpClass(cls):
         Setup.dbSetup()
 
+
     def test_instance(self):
         obj1 = DbClient.instance(self.__DATABASE)
         self.assertEqual('Test', obj1.db_name)
         self.assertIsNotNone(obj1.connection)
         self.assertIsNotNone(obj1.cursor)
+
 
     def test_drop_all(self):
         obj1 = DbClient.instance(self.__DATABASE)
@@ -40,11 +41,12 @@ class TestDB(unittest.TestCase):
         self.assertIsNone(obj1.connection)
         self.assertIsNone(obj1.cursor)
 
+
     def test_str(self):
         obj1 = DbClient.instance(self.__DATABASE)
         DbClient.kill_all()
         self.assertEqual('DbClient:{db_mode:test, db_name:Test, connection:None, cursor:None}', str(obj1))
 
 
-if __name__ == "__main_":
+if __name__ == "__main__":
     unittest.main()

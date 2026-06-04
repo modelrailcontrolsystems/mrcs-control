@@ -18,9 +18,11 @@ from mrcs_control.sys.interval_timer import AsyncIntervalTimer
 # --------------------------------------------------------------------------------------------------------------------
 
 class TestAsyncIntervalTimer(unittest.TestCase):
+
     def test_construct(self):
         obj1 = AsyncIntervalTimer(1.5)
         self.assertEqual('AsyncIntervalTimer:{interval:1.500, time_to_next_yield:1.500}', str(obj1))
+
 
     async def test_next(self):
         start = time.time()
@@ -30,6 +32,7 @@ class TestAsyncIntervalTimer(unittest.TestCase):
         period = round(end - start, 1)
 
         self.assertEqual(1.5, period)
+
 
     async def test_interval(self):
         start = time.time()
@@ -42,5 +45,5 @@ class TestAsyncIntervalTimer(unittest.TestCase):
         self.assertEqual(2.0, period)
 
 
-if __name__ == "__main_":
+if __name__ == "__main__":
     unittest.main()

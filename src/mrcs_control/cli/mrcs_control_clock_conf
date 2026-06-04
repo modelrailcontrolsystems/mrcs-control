@@ -26,12 +26,12 @@ mrcs_control/mrcs_clock
 * Requires the mrcs_control/mrcs_clock_manager to be running in order to operate correctly
 
 SYNOPSIS
-mrcs_clock [-h] [-i INDENT] [-v] [--version] (-n | -c | -s | -r | -d)
+mrcs_control_clock_conf [-h] [-i INDENT] [-v] [--version] (-n | -c | -s | -r | -d)
 [-sr] [-ss SPEED] [-sy YEAR] [-sm MONTH] [-sd DAY] [-sh HOUR] [-si MINUTE]
 
 EXAMPLES
-mrcs_clock_conf -i4 -s -sr -ss 4 -sy 1930 -sm 1 -sd 2 -sh 6 --test
-mrcs_clock -n
+mrcs_control_clock_conf -i4 -s -sr -ss 4 -sy 1930 -sm 1 -sd 2 -sh 6 --test
+mrcs_control_clock_conf -n
 
 FILES
 ~/MRCS/conf/clock_conf.json
@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
     args = ClockConfArgs('a tool for managing the model time clock')
 
-    Logging.config('mrcs_clock', verbose=args.verbose)
+    Logging.config('mrcs_control_clock_conf', verbose=args.verbose)
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
 

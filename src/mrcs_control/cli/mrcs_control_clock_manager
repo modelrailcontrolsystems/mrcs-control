@@ -12,10 +12,10 @@ A service to manage the model time clock configuration
 Note that in --run mode, the utility runs forever.
 
 SYNOPSIS
-usage: mrcs_clock_manager [-h] [-i INDENT] [-v] [--version] [-t] (-n | -s)
+usage: mrcs_control_clock_manager [-h] [-i INDENT] [-v] [--version] [-t] (-n | -s)
 
 EXAMPLES
-mrcs_clock_manager --verbose --subscribe --test
+mrcs_control_clock_manager --verbose --subscribe --test
 
 FILES
 ~/MRCS/conf/clock_conf.json
@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
     args = ClockManagerArgs('a service to manage the model time clock configuration')
 
-    Logging.config('mrcs_clock_manager', verbose=args.verbose)
+    Logging.config('mrcs_control_clock_manager', verbose=args.verbose)
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')

@@ -12,8 +12,7 @@ https://www.jetbrains.com/help/pycharm/creating-tests.html
 import unittest
 
 from mrcs_control.operations.recorder.persistent_message import PersistentMessage
-
-from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentFilter
+from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey
 
@@ -21,6 +20,7 @@ from mrcs_core.messaging.routing_key import PublicationRoutingKey
 # --------------------------------------------------------------------------------------------------------------------
 
 class TestMessageWiden(unittest.TestCase):
+
     def test_construct(self):
         source = EquipmentIdentifier.construct_from_jdict('BOS.01.02')
         target = EquipmentFilter.construct_from_jdict('MPU.*.*')
@@ -30,6 +30,7 @@ class TestMessageWiden(unittest.TestCase):
                          'source:EquipmentIdentifier:{equipment_type:BOS, sector_number:1, serial_number:2}, '
                          'target:EquipmentFilter:{equipment_type:MPU, sector_number:None, serial_number:None}}, '
                          'body:hello}', str(obj1))
+
 
     def test_widen(self):
         source = EquipmentIdentifier.construct_from_jdict('BOS.01.02')
@@ -45,5 +46,5 @@ class TestMessageWiden(unittest.TestCase):
                          str(obj2))
 
 
-if __name__ == "__main_":
+if __name__ == "__main__":
     unittest.main()

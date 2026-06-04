@@ -10,12 +10,11 @@ https://www.jetbrains.com/help/pycharm/creating-tests.html
 """
 
 import json
-import os
 import unittest
+from pathlib import Path
 
 from mrcs_control.admin.user.persistent_user import PersistentUser
 from mrcs_control.db.db_client import DbClient, DbMode
-
 from setup import Setup
 
 
@@ -98,13 +97,13 @@ class TestUserPersistence(unittest.TestCase):
     def __setup_db(cls):
         PersistentUser.recreate_tables()
 
-        abs_filename = os.path.join(os.path.dirname(__file__), 'data', 'new_user1.json')
+        abs_filename = Path(__file__).parent / 'data' / 'new_user1.json'
         with open(abs_filename) as fp:
             jdict = json.load(fp)
         obj1 = PersistentUser.construct_from_jdict(jdict)
         obj1 = obj1.save(password='pass')
 
-        abs_filename = os.path.join(os.path.dirname(__file__), 'data', 'new_user2.json')
+        abs_filename = Path(__file__).parent / 'data' / 'new_user2.json'
         with open(abs_filename) as fp:
             jdict = json.load(fp)
         obj2 = PersistentUser.construct_from_jdict(jdict)
@@ -113,5 +112,5 @@ class TestUserPersistence(unittest.TestCase):
         return obj1, obj2
 
 
-if __name__ == "__main_":
+if __name__ == "__main__":
     unittest.main()

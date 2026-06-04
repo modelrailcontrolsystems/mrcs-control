@@ -12,10 +12,10 @@ A service to raise cron events according to model time
 Note that in --run mode, the utility runs forever.
 
 SYNOPSIS
-mrcs_cron [-h] [-i INDENT] [-v] [--version] [-t] [-c] (-r | -s)
+mrcs_control_cron [-h] [-i INDENT] [-v] [--version] [-t] [-c] (-r | -s)
 
 EXAMPLES
-mrcs_cron --verbose --run-save --test
+mrcs_control_cron --verbose --run-save --test
 
 FILES
 ~/MRCS/conf/model_time.json
@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     args = CronArgs('a service to raise cron events according to model time')
 
-    Logging.config('mrcs_cron', verbose=args.verbose)
+    Logging.config('mrcs_control_cron', verbose=args.verbose)
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')

@@ -14,10 +14,10 @@ No process may be attached to the broker when deleting takes place.
 Note that exchanges cannot be deleted if any queues exist for that exchange - delete the queues first.
 
 SYNOPSIS
-mrcs_broker [-h] [-i INDENT] [-v] [--version] [-t] (-e | -q) [-d DELETE | -z]
+mrcs_control_broker [-h] [-i INDENT] [-v] [--version] [-t] (-e | -q) [-d DELETE | -z]
 
 EXAMPLES
-mrcs_broker -t -v -i4 -e -d mrcs.test.CRN.*.002
+mrcs_control_broker -t -v -i4 -e -d mrcs.test.CRN.*.002
 """
 
 import sys
@@ -27,7 +27,6 @@ from pika.exceptions import AMQPError
 from mrcs_control.cli.args.broker_args import BrokerArgs
 from mrcs_control.messaging.broker import Broker
 from mrcs_control.messaging.mq_client import MQManager
-
 from mrcs_core.data.json import JSONify
 from mrcs_core.sys.logging import Logging
 
@@ -40,6 +39,9 @@ def find_filtered():
 
 
 def delete(item):
+    if manager is None:
+        return
+
     manager.exchange_delete(item) if args.exchange else manager.queue_delete(item)
 
 
@@ -53,11 +55,10 @@ if __name__ == '__main__':
 
     args = BrokerArgs('a tool for managing message broker exchanges and queues')
 
-    Logging.config('mrcs_broker', verbose=args.verbose)
+    Logging.config('mrcs_control_broker', verbose=args.verbose)
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')
-
 
     # ----------------------------------------------------------------------------------------------------------------
 
