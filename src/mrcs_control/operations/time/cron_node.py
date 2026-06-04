@@ -10,6 +10,8 @@ Test with:
 mrcs_publisher -vti4 -t CRN -n 3 -m '{"event_id": "abc", "on": "1930-01-02T06:25:00.000+00:00"}'
 """
 
+from datetime import timedelta
+
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
 from mrcs_control.operations.operation_mode import OperationService
@@ -17,8 +19,7 @@ from mrcs_control.operations.time.clock_manager_node import ClockManagerNode
 from mrcs_control.operations.time.cron import CRN
 from mrcs_control.operations.time.persistent_cronjob import PersistentCronjob
 from mrcs_control.sys.interval_timer import AsyncIntervalTimer
-
-from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType, EquipmentFilter
+from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
@@ -34,6 +35,10 @@ class CronNode(AsyncSubscriberNode):
     raises events
     """
 
+    SAVE_INTERVAL = timedelta(minutes=1)
+
+
+    # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
     def id(cls):
@@ -101,6 +106,7 @@ class CronNode(AsyncSubscriberNode):
         self.__clock = Clock.load(Host)
         self.__timer = AsyncIntervalTimer(self.clock.tick_interval)
         prev_time = None
+        saved_time = None
 
         while True:
             await self.timer.next()
@@ -111,7 +117,8 @@ class CronNode(AsyncSubscriberNode):
 
             prev_time = now
 
-            if self.save_model_time:
+            if self.save_model_time and self.__is_save_point(now, saved_time):
+                saved_time = now
                 now.save(Host)
 
             while True:
@@ -125,6 +132,14 @@ class CronNode(AsyncSubscriberNode):
                 PersistentCronjob.delete(job.id)
 
                 self.logger.info(f'run - published: {JSONify.as_jdict(message)}')
+
+
+    @classmethod
+    def __is_save_point(cls, now, saved_time):
+        if saved_time is None:
+            return True
+
+        return now - saved_time >= cls.SAVE_INTERVAL
 
 
     # ----------------------------------------------------------------------------------------------------------------
