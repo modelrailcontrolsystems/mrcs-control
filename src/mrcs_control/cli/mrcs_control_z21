@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+
+"""
+Created on 6 Jun 2026
+
+@author: Bruno Beloff (bbeloff@me.com)
+
+source repo: mrcs_control
+
+DESCRIPTION
+A utility to excercise a Roco Z21 control station
+
+SYNOPSIS
+mrcs_control_z21 [-h] [-i INDENT] [-v] [--version] [-t] [-c] (-r | -s)
+
+EXAMPLES
+mrcs_control_z21 --verbose --run-save --test
+
+FILES
+~/MRCS/conf/z21_conf.json
+
+"""
+
+import asyncio
+import logging
+import sys
+
+from mrcs_control.cli.args.z21_args import Z21Args
+from mrcs_control.dcc.z21.command.station import Z21Station
+from mrcs_core.data.json import JSONable, JSONify
+from mrcs_core.sys.logging import Logging
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+def on_dataset(report: JSONable):
+    print(JSONify.dumps(report))
+
+
+def on_connection_lost(ex: Exception):
+    logger.warning(f'connection lost: {ex}')
+
+
+async def monitor():
+    async with await Z21Station.connect(on_dataset, on_connection_lost, '192.168.1.111') as station:
+        logger.info(f'station: {station}')
+
+        await station.get_system_state()
+
+        while True:
+            await asyncio.sleep(1)
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    args = Z21Args('a utility to excercise a Roco Z21 control station')
+
+    Logging.config('mrcs_control_z21', level=logging.DEBUG)
+    logger = Logging.getLogger()
+    logger.info(f'args: {args}')
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    try:
+        asyncio.run(monitor())
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    except KeyboardInterrupt:
+        print(file=sys.stderr)

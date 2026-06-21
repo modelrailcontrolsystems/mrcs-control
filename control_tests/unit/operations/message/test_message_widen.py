@@ -38,7 +38,6 @@ class TestMessageWiden(unittest.TestCase):
         rk = PublicationRoutingKey(source, target)
         obj1 = Message(rk, 'hello', origin='12345678')
         obj2 = PersistentMessage.widen(obj1)
-        print(obj2)
         self.assertEqual('PersistentMessage:{origin:12345678, routing_key:PublicationRoutingKey:{'
                          'source:EquipmentIdentifier:{equipment_type:BOS, sector_number:1, serial_number:2}, '
                          'target:EquipmentFilter:{equipment_type:MPU, sector_number:None, serial_number:None}}, '
