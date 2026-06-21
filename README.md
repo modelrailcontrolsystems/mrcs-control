@@ -24,6 +24,8 @@ The following services should be running continuously:
 * `mrcs_control_cron --verbose --run-save --test &`
 * `mrcs_control_crontab --verbose --subscribe --test &`
 * `mrcs_control_recorder --verbose --subscribe --test &`
+  
+* `mrcs_api_uvicorn --verbose --reload --test &`
 
 ---
 
