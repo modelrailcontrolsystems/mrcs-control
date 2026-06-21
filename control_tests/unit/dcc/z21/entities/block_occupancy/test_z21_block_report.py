@@ -3,7 +3,7 @@ Created on 13 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-python -m unittest -v dcc/z21/entities/test_loco.py
+python -m unittest -v dcc/z21/entities/block_occupancy/test_z21_block_report.py
 
 https://realpython.com/python-testing/
 https://www.jetbrains.com/help/pycharm/creating-tests.html
