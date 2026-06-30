@@ -6,7 +6,7 @@ Created on 25 Jan 2026
 An enumeration of all the cron node serial numbers
 """
 
-from enum import unique, IntEnum
+from enum import IntEnum, unique
 
 from mrcs_core.data.meta_enum import MetaEnum
 
@@ -23,3 +23,9 @@ class CRN(IntEnum, metaclass=MetaEnum):
     Cron = 2
     Crontab = 3
     ClockConf = 4
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def __str__(self, *args, **kwargs):
+        return f'{self.name}[{self.value}]'
