@@ -3,7 +3,7 @@ Created on 15 Nov 2025
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-python -m unittest -v messaging/test_message.py
+python -m unittest -v unit/messaging/test_message.py
 
 https://realpython.com/python-testing/
 https://www.jetbrains.com/help/pycharm/creating-tests.html
@@ -81,6 +81,8 @@ class TestMessage(unittest.TestCase):
         self.assertEqual('{"origin": "12345678", "routing": "TST.001.002.MPU.001.100", "body": "hello"}',
                          JSONify.dumps(obj1))
 
+
+# --------------------------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
     unittest.main()

@@ -45,7 +45,7 @@ class Z21EquipmentReport(object):
 
 
     @classmethod
-    def __class_for_header(cls, header: Header, x_header: XHeader):
+    def __class_find(cls, header: Header, x_header: XHeader):
         if header == Header.LAN_X:
             return cls.__X_HEADER_MAPPING[x_header]
 
@@ -57,7 +57,7 @@ class Z21EquipmentReport(object):
     @classmethod
     def construct_from_dataset(cls, dataset: Dataset) -> JSONable:
         try:
-            equipment_cls = cls.__class_for_header(dataset.header, dataset.x_header)
+            equipment_cls = cls.__class_find(dataset.header, dataset.x_header)
 
         except KeyError:
             raise TypeError(f'unsupported header:{dataset.header}, x_header:{dataset.x_header}')

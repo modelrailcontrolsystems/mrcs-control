@@ -93,7 +93,7 @@ class XHeader(IntEnum, metaclass=MetaEnum):
 
     LAN_X_UNKNOWN = 0x00
 
-    LAN_X_GET_VERSION__GET_STATUS__SET_TRACK_POWER = 0x21
+    LAN_X_SET_TRACK_POWER = 0x21
     LAN_X_DCC_READ_REGISTER = 0x22
     LAN_X_CV_REGISTER = 0x23
     LAN_X_CV_BYTE = 0x24

@@ -3,7 +3,7 @@ Created on 6 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-python -m unittest -v dcc/z21/command/test_dataset.py
+python -m unittest -v unit/dcc/z21/command/test_dataset.py
 
 https://realpython.com/python-testing/
 https://www.jetbrains.com/help/pycharm/creating-tests.html
@@ -43,6 +43,12 @@ class TestDataset(unittest.TestCase):
         chars = bytes([0x0f, 0x00, 0x40, 0x00, 0xef, 0x00, 0x04, 0x0c, 0xb5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x52])
         obj1 = Dataset.construct_from_bytes(chars)
         self.assertEqual(
-            'XBusDataset:{header:0x0040 [LAN_X], x_header:0x00ef [LAN_X_LOCO_INFO], total_len:15, '
+            'XDataset:{header:0x0040 [LAN_X], x_header:0x00ef [LAN_X_LOCO_INFO], total_len:15, '
             'data:00 04 0c b5 00 00 00 00 00, xor:0x52}',
             str(obj1))
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    unittest.main()

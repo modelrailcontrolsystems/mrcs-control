@@ -3,7 +3,7 @@ Created on 5 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-python -m unittest -v dcc/z21/command/test_header.py
+python -m unittest -v unit/dcc/z21/command/test_header.py
 
 https://realpython.com/python-testing/
 https://www.jetbrains.com/help/pycharm/creating-tests.html
@@ -54,5 +54,7 @@ class TestHeader(unittest.TestCase):
         self.assertEqual(0x00, obj1.value)
 
 
-    if __name__ == "__main__":
-        unittest.main()
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    unittest.main()

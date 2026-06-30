@@ -3,7 +3,7 @@ Created on 13 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-python -m unittest -v dcc/z21/entities/track/test_z21_track_state.py
+python -m unittest -v unit/dcc/z21/entities/track/test_z21_track_state.py
 
 https://realpython.com/python-testing/
 https://www.jetbrains.com/help/pycharm/creating-tests.html
@@ -31,3 +31,9 @@ class TestZ21TrackState(unittest.TestCase):
         obj1 = Dataset.construct_from_bytes(chars)
         obj2 = Z21TrackState.construct_from_dataset(obj1)
         self.assertEqual('TrackState:{mode:POWER_OFF}', str(obj2))
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    unittest.main()

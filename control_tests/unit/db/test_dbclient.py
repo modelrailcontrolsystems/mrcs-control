@@ -3,7 +3,7 @@ Created on 15 Nov 2025
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-python -m unittest -v db/test_db.py
+python -m unittest -v unit/db/test_dbclient.py
 
 https://realpython.com/python-testing/
 https://www.jetbrains.com/help/pycharm/creating-tests.html
@@ -47,6 +47,8 @@ class TestDB(unittest.TestCase):
         DbClient.kill_all()
         self.assertEqual('DbClient:{db_mode:test, db_name:Test, connection:None, cursor:None}', str(obj1))
 
+
+# --------------------------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
     unittest.main()

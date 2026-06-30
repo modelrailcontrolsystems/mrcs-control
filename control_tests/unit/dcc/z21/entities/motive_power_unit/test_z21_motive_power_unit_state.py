@@ -3,7 +3,7 @@ Created on 6 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-python -m unittest -v dcc/z21/entities/motive_power_unit/test_z21_motive_power_unit_state.py
+python -m unittest -v unit/dcc/z21/entities/motive_power_unit/test_z21_motive_power_unit_state.py
 
 https://realpython.com/python-testing/
 https://www.jetbrains.com/help/pycharm/creating-tests.html
@@ -33,3 +33,9 @@ class TestZ21MotivePowerUnitState(unittest.TestCase):
         obj1 = Dataset.construct_from_bytes(chars)
         obj2 = Z21MotivePowerUnitState.construct_from_dataset(obj1)
         self.assertEqual(False, obj2.is_emergency_stop)
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    unittest.main()

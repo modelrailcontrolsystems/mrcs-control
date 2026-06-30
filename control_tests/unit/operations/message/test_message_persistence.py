@@ -3,7 +3,7 @@ Created on 16 Nov 2025
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-python -m unittest -v operations/message/test_message_persistence.py
+python -m unittest -v unit/operations/message/test_message_persistence.py
 
 https://realpython.com/python-testing/
 https://www.jetbrains.com/help/pycharm/creating-tests.html
@@ -46,6 +46,8 @@ class TestMessagePersistence(unittest.TestCase):
         self.assertEqual(obj2.routing_key, obj1.routing_key)
         self.assertEqual(obj2.body, obj1.body)
 
+
+# --------------------------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
     unittest.main()

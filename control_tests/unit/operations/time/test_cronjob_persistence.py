@@ -3,7 +3,7 @@ Created on 1 Jan 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-python -m unittest -v operations/message/test_cronjob_persistence.py
+python -m unittest -v unit/operations/time/test_cronjob_persistence.py
 
 https://realpython.com/python-testing/
 https://www.jetbrains.com/help/pycharm/creating-tests.html
@@ -81,6 +81,8 @@ class TestCronjobPersistence(unittest.TestCase):
         job = PersistentCronjob.find_next(ISODatetime.now())
         self.assertEqual(job, job2)
 
+
+# --------------------------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
     unittest.main()
