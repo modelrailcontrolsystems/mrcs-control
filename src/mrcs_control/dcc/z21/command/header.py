@@ -83,6 +83,10 @@ class Header(IntEnum, metaclass=MetaEnum):
             return cls.LAN_UNKNOWN
 
 
+    def __str__(self, *args, **kwargs):
+        return f'{self.name:}[0x{self.value:02x}]'
+
+
 # --------------------------------------------------------------------------------------------------------------------
 
 @unique
@@ -125,3 +129,9 @@ class XHeader(IntEnum, metaclass=MetaEnum):
             return cls(int_value)
         except ValueError:
             return cls.LAN_X_UNKNOWN
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def __str__(self, *args, **kwargs):
+        return f'{self.name}[0x{self.value:02x}]'

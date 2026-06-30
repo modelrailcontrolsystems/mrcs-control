@@ -41,3 +41,9 @@ class Broadcast(IntEnum, metaclass=MetaEnum):
     CAN_DETECTOR = 0x00080000
     CAN_BOOSTER_SYSTEM_STATE = 0x00020000
     FAST_CLOCK_DATA = 0x00000010
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def __str__(self, *args, **kwargs):
+        return f'{self.name}[0x{self.value:08x}]'
