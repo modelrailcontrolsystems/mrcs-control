@@ -3,7 +3,7 @@ Created on 13 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-python -m unittest -v dcc/z21/entities/control_router/test_z21_control_router_state.py
+python -m unittest -v unit/dcc/z21/entities/control_router/test_z21_control_router_state.py
 
 https://realpython.com/python-testing/
 https://www.jetbrains.com/help/pycharm/creating-tests.html
@@ -51,3 +51,9 @@ class TestZ21ControlRouterState(unittest.TestCase):
         obj1 = Dataset.construct_from_bytes(chars)
         obj2 = Z21ControlRouterState.construct_from_dataset(obj1)
         self.assertEqual(False, obj2.is_programming_mode)
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    unittest.main()

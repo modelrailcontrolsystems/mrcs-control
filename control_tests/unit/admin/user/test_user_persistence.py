@@ -3,7 +3,7 @@ Created on 29 Nov 2025
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-python -m unittest -v mrcs-core/tests/unit/admin/user/test_user_persistence.py
+python -m unittest -v unit/admin/user/test_user_persistence.py
 
 https://realpython.com/python-testing/
 https://www.jetbrains.com/help/pycharm/creating-tests.html
@@ -111,6 +111,8 @@ class TestUserPersistence(unittest.TestCase):
 
         return obj1, obj2
 
+
+# --------------------------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
     unittest.main()

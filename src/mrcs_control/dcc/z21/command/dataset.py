@@ -28,11 +28,11 @@ class Dataset(object):
 
 
     @classmethod
-    def construct_from_bytes(cls, chars: bytes) -> Dataset | XBusDataset:
+    def construct_from_bytes(cls, chars: bytes) -> Dataset | XDataset:
         if len(chars) < 4:
             raise ValueError(f'Dataset requires at least 4 bytes, got:{chars.hex(" ")}')
 
-        total_len, header_int = struct.unpack("<HH", chars[:4])
+        total_len, header_int = struct.unpack('<HH', chars[:4])
 
         if len(chars) != total_len:
             raise ValueError(f'Dataset length does not match header, specified:{total_len} got:{chars.hex(" ")}')
@@ -40,19 +40,14 @@ class Dataset(object):
         header = Header.construct(header_int)
         data = chars[4:total_len]
 
-        return XBusDataset.construct(header, data) if header == Header.LAN_X else Dataset(header, data)
-
-
-    @classmethod
-    def construct_from_int(cls, header: Header, int_value: int):
-        return Dataset(header, struct.pack("<I", int_value))
+        return XDataset.construct_from_response(header, data) if header == Header.LAN_X else Dataset(header, data)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, header: Header, data: bytes = b''):
-        self.__header = header
-        self.__data = data
+        self._header = header
+        self._data = data
 
 
     def __eq__(self, other):
@@ -72,7 +67,7 @@ class Dataset(object):
 
     @property
     def header(self):
-        return self.__header
+        return self._header
 
 
     @property
@@ -82,7 +77,7 @@ class Dataset(object):
 
     @property
     def data(self):
-        return self.__data
+        return self._data
 
 
     @property
@@ -99,22 +94,36 @@ class Dataset(object):
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class XBusDataset(Dataset):
+class XDataset(Dataset):
     """
     The unit of Z21 XLAN communication
     """
 
 
+    @staticmethod
+    def calculated_xor(x_header, data, ) -> int:
+        return reduce(lambda acc, x: acc ^ x, data, x_header)
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
     @classmethod
-    def construct(cls, header: Header, data: bytes):
+    def construct_from_command(cls, header: Header, x_header: XHeader, data: bytes):
+        xor = cls.calculated_xor(x_header, data)
+        return XDataset(header, x_header, data, xor)
+
+
+    @classmethod
+    def construct_from_response(cls, header: Header, data: bytes):
         if len(data) < 1:
-            raise ValueError(f'XBusDataset data length must be at least 1 byte')
+            raise ValueError(f'XDataset data length must be at least 1 byte')
 
         x_header = XHeader.construct(data[0])
-        dataset = XBusDataset(header, x_header, data[1:-1], data[-1])
+        dataset = XDataset(header, x_header, data[1:-1], data[-1])
+        calculated_xor = cls.calculated_xor(dataset.x_header, dataset.data)
 
-        if dataset.calculated_xor != dataset.xor:
-            raise ValueError(f'XBusDataset calculated xor {dataset.calculated_xor:02x} '
+        if calculated_xor != dataset.xor:
+            raise ValueError(f'XDataset calculated xor {calculated_xor:02x} '
                              f'does not match supplied xor {dataset.xor:02x}')
 
         return dataset
@@ -131,10 +140,11 @@ class XBusDataset(Dataset):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    @property
-    def calculated_xor(self) -> int:
-        return reduce(lambda acc, x: acc ^ x, self.data, self.x_header)
+    def as_bytes(self):
+        return struct.pack('<HHB', self.total_len, self.header, self.x_header) + self.data + bytes([self.xor])
 
+
+    # ----------------------------------------------------------------------------------------------------------------
 
     @property
     def xor(self):
@@ -156,6 +166,6 @@ class XBusDataset(Dataset):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'XBusDataset:{{header:0x{self.header.value:04x} [{self.header.name}], '
+        return (f'XDataset:{{header:0x{self.header.value:04x} [{self.header.name}], '
                 f'x_header:0x{self.x_header.value:04x} [{self.x_header.name}], total_len:{self.total_len}, '
                 f'data:{self.data.hex(" ")}, xor:0x{self.xor:02x}}}')

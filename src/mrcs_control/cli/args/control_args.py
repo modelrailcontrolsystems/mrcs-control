@@ -17,8 +17,12 @@ from mrcs_core import version
 class ControlArgs(ABC):
     """unix command line handler"""
 
-    def __init__(self, description):
-        self._parser = argparse.ArgumentParser(description=description)
+
+    def __init__(self, description, custom_formatter=None):
+        if custom_formatter is None:
+            self._parser = argparse.ArgumentParser(description=description)
+        else:
+            self._parser = argparse.ArgumentParser(description=description, formatter_class=custom_formatter)
 
         self._parser.add_argument('-i', '--indent', action='store', type=int,
                                   help='pretty-print the output with INDENT')

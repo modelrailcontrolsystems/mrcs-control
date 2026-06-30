@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+
+"""
+Created on 29 Jun 2026
+
+@author: Bruno Beloff (bbeloff@me.com)
+
+source repo: mrcs_control
+
+DESCRIPTION
+A utility to configure acces to the Roco Z21 control station. The --factory-reset option will reset this configuration
+to factory defaults.
+
+Note that this utility does not alter the configuration of the Z21 DCC command station itself. This should be done
+using the Z21 Maintenance Tool: https://www.z21.eu/en/products/z21-maintenance-tool
+
+SYNOPSIS
+mrcs_z21_conf [-h] [-i INDENT] [-v] [--version] [-f | [-a IP_ADDRESS] [-p PORT] [-t TIMEOUT] [-s SUBSCRIPTION]]
+
+EXAMPLES
+mrcs_z21_conf --ip-address 192.168.0.111
+
+FILES
+~/MRCS/conf/control_router_conf.json
+
+SEE ALSO
+mrcs_z21_control
+"""
+
+import sys
+
+from mrcs_control.cli.args.z21_conf_args import Z21ConfArgs
+from mrcs_control.dcc.z21.command.station import Z21Station
+from mrcs_core.data.json import JSONify
+from mrcs_core.equipment.control_router.control_router_conf import ControlRouterConf
+from mrcs_core.sys.host import Host
+from mrcs_core.sys.logging import Logging
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+
+    command_reported = False
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    args = Z21ConfArgs('a utility to configure acces to the Roco Z21 control station')
+
+    Logging.config('mrcs_z21_conf', verbose=args.verbose)
+    logger = Logging.getLogger()
+
+    if not args.is_valid():
+        args.print_help(sys.stderr)
+        exit(2)
+
+    if args.invalid_ip_address():
+        logger.error(f'invalid IPv4 address: {args.invalid_ip_address()}')
+        exit(2)
+
+    if args.invalid_subscription():
+        logger.error(f'invalid flag: {args.invalid_subscription()}')
+        exit(2)
+
+    logger.info(f'args: {args}')
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    conf = ControlRouterConf.load(Host)
+
+    if not args.do_set():
+        print(JSONify.dumps(conf, indent=args.indent))
+        exit(0)
+
+    if conf is None:
+        conf = ControlRouterConf(Z21Station.DEFAULT_IP_ADDRESS, Z21Station.DEFAULT_PORT, Z21Station.DEFAULT_TIMEOUT,
+                                 Z21Station.DEFAULT_SUBSCRIPTION)
+
+    if args.ip_address:
+        conf.ip_address = args.ip_address
+
+    if args.port:
+        conf.port = args.port
+
+    if args.timeout:
+        conf.timeout = args.timeout
+
+    if args.subscription:
+        conf.subscription = args.subscription
+
+    conf.save(Host)
+    print(JSONify.dumps(conf, indent=args.indent))

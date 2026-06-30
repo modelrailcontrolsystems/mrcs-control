@@ -8,33 +8,49 @@ Created on 6 Jun 2026
 source repo: mrcs_control
 
 DESCRIPTION
-A utility to excercise a Roco Z21 control station
+A utility to excercise a Roco Z21 control station. The mrcs_z21_conf utility should be used before the first use of
+this utility in order to establish an access control configuration.
 
 SYNOPSIS
-mrcs_control_z21 [-h] [-i INDENT] [-v] [--version] [-t] [-c] (-r | -s)
+mrcs_z21_control [-h] [-i INDENT] [-v] [--version] [-m | -s | -p POWER | -t TURNOUT TURNOUT]
 
 EXAMPLES
-mrcs_control_z21 --verbose --run-save --test
+mrcs_z21_control -power 1
 
 FILES
 ~/MRCS/conf/z21_conf.json
 
+SEE ALSO
+mrcs_z21_conf
 """
 
 import asyncio
 import logging
 import sys
 
-from mrcs_control.cli.args.z21_args import Z21Args
+from mrcs_control.cli.args.z21_control_args import Z21ControlArgs
 from mrcs_control.dcc.z21.command.station import Z21Station
 from mrcs_core.data.json import JSONable, JSONify
+from mrcs_core.equipment.control_router.control_router_conf import ControlRouterConf
+from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
 def on_dataset(report: JSONable):
+    global command_reported
+
     print(JSONify.dumps(report))
+    # if args.monitor:
+    #     print(JSONify.dumps(report))
+    #     return
+
+    if not command_reported and isinstance(report, args.command.report_type):
+        print(JSONify.dumps(report))
+        command_reported = True
+        return
+        # exit(0)
 
 
 def on_connection_lost(ex: Exception):
@@ -42,10 +58,14 @@ def on_connection_lost(ex: Exception):
 
 
 async def monitor():
-    async with await Z21Station.connect(on_dataset, on_connection_lost, '192.168.1.111') as station:
+    async with await Z21Station.connect(conf, on_dataset, on_connection_lost) as station:
         logger.info(f'station: {station}')
 
-        await station.get_system_state()
+        if args.monitor:
+            await station.set_broadcast_flags(conf.broadcast_flags)
+
+        if args.has_command:
+            await station.send_command(args.command)
 
         while True:
             await asyncio.sleep(1)
@@ -55,13 +75,22 @@ async def monitor():
 
 if __name__ == '__main__':
 
+    command_reported = False
+
     # ----------------------------------------------------------------------------------------------------------------
 
-    args = Z21Args('a utility to excercise a Roco Z21 control station')
+    args = Z21ControlArgs('a utility to excercise a Roco Z21 control station')
 
-    Logging.config('mrcs_control_z21', level=logging.DEBUG)
+    Logging.config('mrcs_z21_control', level=logging.DEBUG)
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
+
+    conf = ControlRouterConf.load(Host)
+    if conf is None:
+        logger.error('no configuration found - use mrcs_z21_conf to create one.')
+        exit(1)
+
+    logger.info(f'conf: {conf}')
 
     # ----------------------------------------------------------------------------------------------------------------
 

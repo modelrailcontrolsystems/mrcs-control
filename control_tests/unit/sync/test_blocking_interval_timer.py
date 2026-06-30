@@ -3,7 +3,7 @@ Created on 15 Nov 2025
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-python -m unittest -v messaging/test_message.py
+python -m unittest -v unit/sync/test_blocking_interval_timer.py
 
 https://realpython.com/python-testing/
 https://www.jetbrains.com/help/pycharm/creating-tests.html
@@ -45,6 +45,8 @@ class TestBlockingIntervalTimer(unittest.TestCase):
         self.assertTrue(response)
         self.assertEqual(2.0, period)
 
+
+# --------------------------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
     unittest.main()

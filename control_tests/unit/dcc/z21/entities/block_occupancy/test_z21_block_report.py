@@ -3,7 +3,7 @@ Created on 13 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-python -m unittest -v dcc/z21/entities/block_occupancy/test_z21_block_report.py
+python -m unittest -v unit/dcc/z21/entities/block_occupancy/test_z21_block_report.py
 
 https://realpython.com/python-testing/
 https://www.jetbrains.com/help/pycharm/creating-tests.html
@@ -42,3 +42,9 @@ class TestZ21BlockReport(unittest.TestCase):
         self.assertEqual('BlockOccupancyReport:{network_id:0xd489, reporter_address:6, reporter_input:7, '
                          'occupant_group:1, occupants:[BlockOccupant:{address:3, face:FWD}, '
                          'BlockOccupant:{address:4, face:FWD}]}', str(obj2))
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    unittest.main()

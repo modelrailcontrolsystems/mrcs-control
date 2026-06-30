@@ -3,7 +3,7 @@ Created on 20 Dec 2025
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-python -m unittest -v operations/message/message_record.py
+python -m unittest -v unit/operations/message/test_message_widen.py
 
 https://realpython.com/python-testing/
 https://www.jetbrains.com/help/pycharm/creating-tests.html
@@ -44,6 +44,8 @@ class TestMessageWiden(unittest.TestCase):
                          'body:hello}',
                          str(obj2))
 
+
+# --------------------------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
     unittest.main()
