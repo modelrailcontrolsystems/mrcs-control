@@ -16,23 +16,23 @@ https://github.com/botmonster/z21aio/tree/main
 https://gitlab.com/z21-fpm/z21_python
 """
 
-from mrcs_core.equipment.block.block_occupant import BlockOccupant
 from mrcs_core.equipment.block.block_occupant_face import BlockOccupantFace
+from mrcs_core.equipment.block.block_occupant_report import BlockOccupantReport
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class Z21BlockOccupant(object):
+class Z21BlockOccupantReport(object):
     """
     An MPU occupant of a block, as reported by a Z21 DCC command station
     """
 
 
     @classmethod
-    def construct_from_data(cls, data: int) -> BlockOccupant:
+    def construct_from_data(cls, data: int) -> BlockOccupantReport:
         address = data & 0x3fff
 
         # may raise ValueError
         face = BlockOccupantFace((data >> 14) & 0x0003)
 
-        return BlockOccupant(address, face)
+        return BlockOccupantReport(address, face)
