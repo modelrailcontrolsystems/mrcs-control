@@ -19,7 +19,7 @@ from mrcs_control.dcc.z21.equipment.motive_power_unit.z21_mpu_configuration_repo
 
 class TestZ21MPUConfigurationReport(unittest.TestCase):
 
-    def test_construct_loco(self):
+    def test_construct(self):
         chars = bytes([0x0f, 0x00, 0x40, 0x00, 0xef, 0x00, 0x04, 0x0c, 0xb5, 0x01, 0x00, 0x00, 0x00, 0x00, 0x53])
         obj1 = Dataset.construct_from_bytes(chars)
         obj2 = Z21MPUConfigurationReport.construct_from_dataset(obj1)
@@ -28,7 +28,7 @@ class TestZ21MPUConfigurationReport(unittest.TestCase):
                          'double_traction:False, smart_search:False}', str(obj2))
 
 
-    def test_construct_x_dataset(self):
+    def test_is_emergency_stop(self):
         chars = bytes([0x0f, 0x00, 0x40, 0x00, 0xef, 0x00, 0x04, 0x0c, 0xb5, 0x01, 0x00, 0x00, 0x00, 0x00, 0x53])
         obj1 = Dataset.construct_from_bytes(chars)
         obj2 = Z21MPUConfigurationReport.construct_from_dataset(obj1)
