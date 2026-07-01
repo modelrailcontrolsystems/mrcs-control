@@ -16,28 +16,28 @@ https://gitlab.com/z21-fpm/z21_python
 import struct
 
 from mrcs_control.dcc.z21.command.dataset import Dataset
-from mrcs_core.equipment.control_router.control_router_state import ControlRouterState
+from mrcs_core.equipment.control_router.control_router_report import ControlRouterReport
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class Z21ControlRouterState(object):
+class Z21ControlRouterReport(object):
     """
     The state of a command station, as reported by a Z21 DCC command station
     """
 
 
     @classmethod
-    def construct_from_dataset(cls, dataset: Dataset) -> ControlRouterState:
+    def construct_from_dataset(cls, dataset: Dataset) -> ControlRouterReport:
         data = dataset.data
 
         if len(data) != 16:
-            raise ValueError(f'Z21ControlRouterState data requires 16 bytes, got {data.hex(" ")}')
+            raise ValueError(f'Z21ControlRouterReport data requires 16 bytes, got {data.hex(" ")}')
 
         (main_current, prog_current, filtered_main_current,
          temperature, supply_voltage, track_voltage, central_state,
          central_state_ext, reserved, capabilities) = struct.unpack('<hhhhHHBBBB', data)
 
-        return ControlRouterState(main_current, prog_current, filtered_main_current,
-                                  supply_voltage, track_voltage, temperature,
-                                  central_state, central_state_ext, capabilities, reserved=reserved)
+        return ControlRouterReport(main_current, prog_current, filtered_main_current,
+                                   supply_voltage, track_voltage, temperature,
+                                   central_state, central_state_ext, capabilities, reserved=reserved)

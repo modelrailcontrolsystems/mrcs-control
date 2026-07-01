@@ -12,8 +12,8 @@ https://www.z21.eu/en/products/z21
 from typing import Dict, Type
 
 from mrcs_control.dcc.z21.command.header import Header, XHeader
-from mrcs_core.equipment.control_router.control_router_state import ControlRouterState
-from mrcs_core.equipment.track.track_state import TrackState
+from mrcs_core.equipment.control_router.control_router_report import ControlRouterReport
+from mrcs_core.equipment.track.track_report import TrackReport
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -31,7 +31,7 @@ class CommandMetadata(object):
         cls.__MAPPING = {
             Header.LAN_LOGOFF: cls(Header.LAN_LOGOFF, '', None),
             Header.LAN_SET_BROADCAST_FLAGS: cls(Header.LAN_SET_BROADCAST_FLAGS, '', None),
-            Header.LAN_SYSTEMSTATE_GETDATA: cls(Header.LAN_SYSTEMSTATE_GETDATA, '', ControlRouterState),
+            Header.LAN_SYSTEMSTATE_GETDATA: cls(Header.LAN_SYSTEMSTATE_GETDATA, '', ControlRouterReport),
         }
 
 
@@ -98,7 +98,7 @@ class XCommandMetadata(CommandMetadata):
     @classmethod
     def init(cls):
         cls.__MAPPING = {
-            XHeader.LAN_X_SET_TRACK_POWER: cls(XHeader.LAN_X_SET_TRACK_POWER, 'B', TrackState),
+            XHeader.LAN_X_SET_TRACK_POWER: cls(XHeader.LAN_X_SET_TRACK_POWER, 'B', TrackReport),
         }
 
 

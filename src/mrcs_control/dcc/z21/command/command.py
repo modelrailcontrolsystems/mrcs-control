@@ -3,7 +3,7 @@ Created on 26 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-A mapping between Rocco Z21 DCC commands and their report_types
+An abstraction over Rocco Z21 DCC command datasets
 
 Classes in support of the Rocco Z21 DCC command station:
 https://www.z21.eu/en/products/z21
@@ -23,7 +23,7 @@ from mrcs_core.data.json import JSONable
 
 class Command(JSONable):
     """
-    An enumeration of all the supported commands
+    An abstraction over Rocco Z21 DCC command datasets
     """
 
 
@@ -75,7 +75,7 @@ class Command(JSONable):
 
     @property
     def dataset(self) -> Dataset:
-        data = b''  # TODO: implement properly
+        data = struct.pack('<' + self.data_format, *self.args)
         return Dataset(self.header, data)
 
 
