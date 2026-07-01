@@ -43,7 +43,7 @@ class TestCommandMetadata(unittest.TestCase):
     def test_x_found(self):
         obj1 = XCommandMetadata.find(XHeader.LAN_X_SET_TRACK_POWER)
         self.assertEqual('XCommandMetadata:{header:LAN_X, x_header:LAN_X_SET_TRACK_POWER, data_format:B, '
-                         'report_type:TrackState}', str(obj1))
+                         'report_type:TrackReport}', str(obj1))
 
 
 # --------------------------------------------------------------------------------------------------------------------

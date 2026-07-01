@@ -15,25 +15,25 @@ https://gitlab.com/z21-fpm/z21_python
 
 from mrcs_control.dcc.z21.command.dataset import Dataset
 from mrcs_core.equipment.track.track_mode import TrackMode
-from mrcs_core.equipment.track.track_state import TrackState
+from mrcs_core.equipment.track.track_report import TrackReport
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class Z21TrackState(object):
+class Z21TrackReport(object):
     """
     The track state, as reported by a Z21 DCC command station
     """
 
 
     @classmethod
-    def construct_from_dataset(cls, dataset: Dataset) -> TrackState:
+    def construct_from_dataset(cls, dataset: Dataset) -> TrackReport:
         data = dataset.data
 
         if len(data) != 1:
-            raise ValueError(f'Z21TrackState data requires 1 byte, got {data.hex(" ")}')
+            raise ValueError(f'Z21TrackReport data requires 1 byte, got {data.hex(" ")}')
 
         # may raise ValueError
         mode = TrackMode(data[0])
 
-        return TrackState(mode)
+        return TrackReport(mode)

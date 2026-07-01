@@ -12,31 +12,32 @@ Based on code:
 https://github.com/botmonster/z21aio/tree/main
 https://gitlab.com/z21-fpm/z21_python
 """
+
 import struct
 
 from mrcs_control.dcc.z21.command.dataset import Dataset
 from mrcs_core.equipment.turnout.turnout_position import TurnoutPosition
-from mrcs_core.equipment.turnout.turnout_state import TurnoutState
+from mrcs_core.equipment.turnout.turnout_report import TurnoutReport
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class Z21TurnoutState(object):
+class Z21TurnoutReport(object):
     """
     A turnout state, as reported by a Z21 DCC command station
     """
 
 
     @classmethod
-    def construct_from_dataset(cls, dataset: Dataset) -> TurnoutState:
+    def construct_from_dataset(cls, dataset: Dataset) -> TurnoutReport:
         data = dataset.data
 
         if len(data) != 3:
-            raise ValueError(f'Z21TurnoutState data requires 3 bytes, got {data.hex(" ")}')
+            raise ValueError(f'Z21TurnoutReport data requires 3 bytes, got {data.hex(" ")}')
 
         address = struct.unpack('<H', data[:2])[0]
 
         # may raise ValueError
         position = TurnoutPosition(data[2] & 0x03)
 
-        return TurnoutState(address, position)
+        return TurnoutReport(address, position)

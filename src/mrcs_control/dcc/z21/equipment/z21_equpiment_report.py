@@ -16,11 +16,11 @@ https://gitlab.com/z21-fpm/z21_python
 from mrcs_control.dcc.z21.command.dataset import Dataset
 from mrcs_control.dcc.z21.command.header import Header, XHeader
 from mrcs_control.dcc.z21.equipment.block.z21_block_report import Z21BlockReport
-from mrcs_control.dcc.z21.equipment.control_router.z21_control_router_state import Z21ControlRouterState
-from mrcs_control.dcc.z21.equipment.motive_power_unit.z21_motive_power_unit_decoder import Z21MotivePowerUnitDecoder
-from mrcs_control.dcc.z21.equipment.motive_power_unit.z21_motive_power_unit_state import Z21MotivePowerUnitState
-from mrcs_control.dcc.z21.equipment.track.z21_track_state import Z21TrackState
-from mrcs_control.dcc.z21.equipment.turnout.z21_turnout_state import Z21TurnoutState
+from mrcs_control.dcc.z21.equipment.control_router.z21_control_router_report import Z21ControlRouterReport
+from mrcs_control.dcc.z21.equipment.motive_power_unit.z21_mpu_configuration_report import Z21MPUConfigurationReport
+from mrcs_control.dcc.z21.equipment.motive_power_unit.z21_mpu_decoder_report import Z21MPUDecoderReport
+from mrcs_control.dcc.z21.equipment.track.z21_track_report import Z21TrackReport
+from mrcs_control.dcc.z21.equipment.turnout.z21_turnout_report import Z21TurnoutReport
 from mrcs_core.data.json import JSONable
 
 
@@ -33,14 +33,14 @@ class Z21EquipmentReport(object):
 
     __HEADER_MAPPING = {
         Header.LAN_CAN_DETECTOR: Z21BlockReport,
-        Header.LAN_SYSTEMSTATE_DATACHANGED: Z21ControlRouterState,
-        Header.LAN_RAILCOM_DATACHANGED: Z21MotivePowerUnitDecoder,
+        Header.LAN_SYSTEMSTATE_DATACHANGED: Z21ControlRouterReport,
+        Header.LAN_RAILCOM_DATACHANGED: Z21MPUDecoderReport,
     }
 
     __X_HEADER_MAPPING = {
-        XHeader.LAN_X_LOCO_INFO: Z21MotivePowerUnitState,
-        XHeader.LAN_X_BC_TRACK_POWER: Z21TrackState,
-        XHeader.LAN_X_TURNOUT_INFO: Z21TurnoutState
+        XHeader.LAN_X_LOCO_INFO: Z21MPUConfigurationReport,
+        XHeader.LAN_X_BC_TRACK_POWER: Z21TrackReport,
+        XHeader.LAN_X_TURNOUT_INFO: Z21TurnoutReport
     }
 
 
