@@ -15,7 +15,7 @@ import unittest
 from mrcs_control.dcc.z21.command.command import Command, XCommand
 from mrcs_control.dcc.z21.command.header import Header, XHeader
 from mrcs_core.data.json import JSONify
-from mrcs_core.equipment.track.track_mode import TrackMode
+from mrcs_core.equipment.track.track_enums import TrackMode
 
 
 # --------------------------------------------------------------------------------------------------------------------

@@ -15,7 +15,7 @@ https://gitlab.com/z21-fpm/z21_python
 
 from mrcs_control.dcc.z21.command.dataset import Dataset
 from mrcs_core.equipment.motive_power_unit.mpu_configuration_report import MPUConfigurationReport
-from mrcs_core.equipment.motive_power_unit.throttle import DCCThrottleSteps
+from mrcs_core.equipment.motive_power_unit.mpu_enums import ThrottleSteps
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -43,7 +43,7 @@ class Z21MPUConfigurationReport(object):
             mpu_config._is_busy = bool(data[byte] & 0x08)
 
             try:
-                mpu_config._stepping = DCCThrottleSteps(data[2] & 0x07)
+                mpu_config._stepping = ThrottleSteps(data[2] & 0x07)
             except ValueError:
                 pass
 

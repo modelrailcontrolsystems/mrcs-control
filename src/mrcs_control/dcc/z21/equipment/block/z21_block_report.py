@@ -15,9 +15,10 @@ https://www.z21.eu/en/products/z21
 import struct
 
 from mrcs_control.dcc.z21.command.dataset import Dataset
-from mrcs_control.dcc.z21.equipment.block.z21_block_occupant_report import Z21BlockOccupantReport
-from mrcs_core.equipment.block.block_report import BlockOccupancyReport, BlockStatusReport
-from mrcs_core.equipment.block.block_status import BlockStatus
+from mrcs_control.dcc.z21.equipment.block.z21_block_occupant_report import Z21BlockOccupant
+from mrcs_core.equipment.block.block_enums import BlockVoltage
+from mrcs_core.equipment.block.block_id import BlockID
+from mrcs_core.equipment.block.block_report import BlockOccupancyReport, BlockVoltageReport
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -29,7 +30,7 @@ class Z21BlockReport(object):
 
 
     @classmethod
-    def construct_from_dataset(cls, dataset: Dataset) -> BlockStatusReport | BlockOccupancyReport:
+    def construct_from_dataset(cls, dataset: Dataset) -> BlockVoltageReport | BlockOccupancyReport:
         data = dataset.data
 
         if len(data) != 10:
@@ -38,15 +39,17 @@ class Z21BlockReport(object):
         network_id, address, port, msg_type, value_1, value_2 = struct.unpack('<HHBBHH', data)
 
         reporter_address = address + 1
-        reporter_input = port + 1
+        reporter_channel = port + 1
+
+        id = BlockID(reporter_address, reporter_channel, network_id)
 
         if msg_type == 0x01:
-            status = BlockStatus(value_1)
-            return BlockStatusReport(network_id, reporter_address, reporter_input, status)
+            voltage = BlockVoltage(value_1)
+            return BlockVoltageReport(id, voltage)
 
         occupant_group = msg_type & 0x0f
-        occupant1 = Z21BlockOccupantReport.construct_from_data(value_1)
-        occupant2 = Z21BlockOccupantReport.construct_from_data(value_2)
+        occupant1 = Z21BlockOccupant.construct_from_data(value_1)
+        occupant2 = Z21BlockOccupant.construct_from_data(value_2)
         occupants = sorted([occupant for occupant in (occupant1, occupant2) if occupant.has_address()])
 
-        return BlockOccupancyReport(network_id, reporter_address, reporter_input, occupant_group, occupants)
+        return BlockOccupancyReport(id, occupant_group, occupants)
