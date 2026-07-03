@@ -16,7 +16,7 @@ https://gitlab.com/z21-fpm/z21_python
 import struct
 
 from mrcs_control.dcc.z21.command.dataset import Dataset
-from mrcs_core.equipment.turnout.turnout_position import TurnoutPosition
+from mrcs_core.equipment.turnout.turnout_enums import TurnoutPosition
 from mrcs_core.equipment.turnout.turnout_report import TurnoutReport
 
 

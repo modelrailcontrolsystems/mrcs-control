@@ -14,7 +14,7 @@ https://gitlab.com/z21-fpm/z21_python
 """
 
 from mrcs_control.dcc.z21.command.dataset import Dataset
-from mrcs_core.equipment.track.track_mode import TrackMode
+from mrcs_core.equipment.track.track_enums import TrackMode
 from mrcs_core.equipment.track.track_report import TrackReport
 
 
