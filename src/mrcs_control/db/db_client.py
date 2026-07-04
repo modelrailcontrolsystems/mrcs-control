@@ -11,16 +11,15 @@ https://iafisher.com/blog/2021/10/using-sqlite-effectively-in-python
 
 use BEGIN / COMMIT throughout?
 https://iafisher.com/blog/2021/10/using-sqlite-effectively-in-python
+https://stackoverflow.com/questions/15856976/transactions-with-python-sqlite3
 """
 
 import os
 import sqlite3
-
-from enum import unique, StrEnum
+from enum import StrEnum, unique
 from sqlite3 import ProgrammingError
 
 from mrcs_control.db.db_name import DbName
-
 from mrcs_core.data.meta_enum import MetaEnum
 from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging
@@ -34,8 +33,8 @@ class DbMode(StrEnum, metaclass=MetaEnum):
     An enumeration of all the possible database modes
     """
 
-    TEST = 'test'         # test
-    LIVE = 'live'         # production
+    TEST = 'test'  # test
+    LIVE = 'live'  # production
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -46,6 +45,7 @@ class DbClient(object):
     """
 
     __client_db_mode = DbMode.LIVE
+
 
     @classmethod
     def client_db_mode(cls):
@@ -66,6 +66,7 @@ class DbClient(object):
     # ----------------------------------------------------------------------------------------------------------------
 
     __clients = {}
+
 
     @classmethod
     def instance(cls, db_name: DbName) -> DbClient:
@@ -107,6 +108,27 @@ class DbClient(object):
 
     # ----------------------------------------------------------------------------------------------------------------
 
+    def txIMMEDIATE(self):
+        self.execute('BEGIN IMMEDIATE TRANSACTION')
+
+
+    def txEXCLUSIVE(self):
+        self.execute('BEGIN EXCLUSIVE TRANSACTION')
+
+
+    def txCOMMIT(self):
+        self.execute('COMMIT TRANSACTION')
+
+
+    def txROLLBACK(self, ex: Exception):
+        self.execute('ROLLBACK TRANSACTION')
+        self.__logger.warning(f'txROLLBACK on {ex}')
+
+        raise ex
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
     def execute(self, statement, data=None):
         if self.connection is None:
             raise RuntimeError('execute: no connection')
@@ -120,14 +142,6 @@ class DbClient(object):
             self.cursor.execute(statement)
 
 
-    def begin(self):
-        pass
-
-
-    def commit(self):
-        self.connection.commit()
-
-
     def fetchall(self):
         return self.cursor.fetchall()
 
@@ -136,11 +150,15 @@ class DbClient(object):
         return self.cursor.fetchone()
 
 
+    # ----------------------------------------------------------------------------------------------------------------
+
     def __open(self):
         filename = '.'.join([self.db_name, 'db'])
 
         os.makedirs(Host.mrcs_db_abs_dir(self.db_mode), exist_ok=True)
-        self.__connection = sqlite3.connect(Host.mrcs_db_abs_file(self.db_mode, filename))
+        self.__connection = sqlite3.connect(Host.mrcs_db_abs_file(self.db_mode, filename), isolation_level=None)
+        self.__connection.execute("PRAGMA foreign_keys = ON;")
+
         self.__cursor = self.connection.cursor()
 
 

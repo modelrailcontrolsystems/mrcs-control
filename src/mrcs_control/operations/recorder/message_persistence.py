@@ -22,44 +22,26 @@ class MessagePersistence(PersistentObject, ABC):
     SQLite database management for messages
     """
 
-    __DATABASE = DbName.MessageLog
+    __DB_NAME = DbName.MessageLog
 
     __TABLE_NAME = 'messages'
     __TABLE_VERSION = 1
+
+
+    @classmethod
+    def db_name(cls) -> DbName:
+        return cls.__DB_NAME
+
 
     @classmethod
     def table(cls):
         return f'{cls.__TABLE_NAME}_v{cls.__TABLE_VERSION}'
 
 
-    @classmethod
-    def recreate_tables(cls):
-        client = DbClient.instance(cls.__DATABASE)
-
-        client.begin()
-        cls.__drop_tables(client)
-        cls.__create_tables(client)
-        client.commit()
-
+    # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def create_tables(cls):
-        client = DbClient.instance(cls.__DATABASE)
-
-        cls.__create_tables(client)
-        client.commit()
-
-
-    @classmethod
-    def drop_tables(cls):
-        client = DbClient.instance(cls.__DATABASE)
-
-        cls.__drop_tables(client)
-        client.commit()
-
-
-    @classmethod
-    def __create_tables(cls, client):
+    def _create_tables(cls, client):
         table = cls.table()
 
         sql = f'''
@@ -90,7 +72,7 @@ class MessagePersistence(PersistentObject, ABC):
 
 
     @classmethod
-    def __drop_tables(cls, client):
+    def _drop_tables(cls, client):
         table = cls.table()
 
         sql = f'DROP INDEX IF EXISTS {table}_id'
@@ -116,7 +98,7 @@ class MessagePersistence(PersistentObject, ABC):
 
     @classmethod
     def find_latest(cls, limit: int):
-        client = DbClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.db_name())
         table = cls.table()
 
         sql = f'SELECT * FROM {table} WHERE id IN (SELECT id FROM {table} ORDER BY id DESC LIMIT {limit})'
@@ -131,38 +113,49 @@ class MessagePersistence(PersistentObject, ABC):
 
     @classmethod
     def insert(cls, entry: PersistentObject):
-        client = DbClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.db_name())
         table = cls.table()
 
-        client.begin()
-        sql = f'INSERT INTO {table} (origin, source, target, body) VALUES (?, ?, ?, ?)'
-        client.execute(sql, data=entry.as_db_insert())
+        try:
+            client.txIMMEDIATE()
 
-        sql = 'SELECT last_insert_rowid()'
-        client.execute(sql)
-        client.commit()
+            sql = f'INSERT INTO {table} (origin, source, target, body) VALUES (?, ?, ?, ?)'
+            client.execute(sql, data=entry.as_db_insert())
 
-        row = client.fetchone()
+            client.txCOMMIT()
 
-        return int(row[0])
+            sql = 'SELECT last_insert_rowid()'
+            client.execute(sql)
+            row = client.fetchone()
+
+            return int(row[0])
+
+        except Exception as ex:
+            client.txROLLBACK(ex)
 
 
     @classmethod
-    def test_insert(cls, rec, entry: PersistentObject):
-        client = DbClient.instance(cls.__DATABASE)
+    def rec_insert(cls, rec, entry: PersistentObject):
+        client = DbClient.instance(cls.db_name())
         table = cls.table()
 
-        client.begin()
-        sql = f'INSERT INTO {table} (rec, origin, source, target, body) VALUES (?, ?, ?, ?, ?)'
-        client.execute(sql, data=(rec,) + entry.as_db_insert())
+        try:
+            client.txIMMEDIATE()
 
-        sql = 'SELECT last_insert_rowid()'
-        client.execute(sql)
-        client.commit()
+            sql = f'INSERT INTO {table} (rec, origin, source, target, body) VALUES (?, ?, ?, ?, ?)'
+            client.execute(sql, data=(rec, *entry.as_db_insert()))
 
-        row = client.fetchone()
+            client.txCOMMIT()
 
-        return int(row[0])
+            sql = 'SELECT last_insert_rowid()'
+            client.execute(sql)
+
+            row = client.fetchone()
+
+            return int(row[0])
+
+        except Exception as ex:
+            client.txROLLBACK(ex)
 
 
     @classmethod

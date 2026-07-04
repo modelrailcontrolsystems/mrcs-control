@@ -16,7 +16,8 @@ class DbName(StrEnum):
     SQLite databases used by mrcs_control
     """
 
-    Admin = 'Admin'                     # users
-    Cron = 'Cron'                       # cron and crontab
-    MessageLog = 'MessageLog'           # message recorder
-    Test = 'Test'                       # used by unit tests
+    Admin = 'Admin'  # users
+    Block = 'Block'  # BlockStatus
+    Cron = 'Cron'  # cron and crontab
+    MessageLog = 'MessageLog'  # message recorder
+    Test = 'Test'  # used by unit tests

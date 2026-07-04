@@ -8,6 +8,10 @@ Required to prevent circular imports between business objects and persistence he
 """
 
 from abc import ABC, abstractmethod
+from typing import List
+
+from mrcs_control.db.db_client import DbClient
+from mrcs_control.db.db_name import DbName
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -17,16 +21,68 @@ class PersistenceManager(ABC):
     classdocs
     """
 
+
     @classmethod
-    @abstractmethod
+    def recreate_tables(cls):
+        client = DbClient.instance(cls.db_name())
+
+        try:
+            client.txEXCLUSIVE()
+            cls._drop_tables(client)
+            cls._create_tables(client)
+            client.txCOMMIT()
+
+        except Exception as ex:
+            client.txROLLBACK(ex)
+
+
+    @classmethod
     def create_tables(cls):
+        client = DbClient.instance(cls.db_name())
+
+        try:
+            client.txEXCLUSIVE()
+            cls._create_tables(client)
+            client.txCOMMIT()
+
+        except Exception as ex:
+            client.txROLLBACK(ex)
+
+
+    @classmethod
+    def drop_tables(cls):
+        client = DbClient.instance(cls.db_name())
+
+        try:
+            client.txEXCLUSIVE()
+            cls._drop_tables(client)
+            client.txCOMMIT()
+
+        except Exception as ex:
+            client.txROLLBACK(ex)
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    @classmethod
+    @abstractmethod
+    def db_name(cls) -> DbName:
         pass
 
 
     @classmethod
     @abstractmethod
-    def drop_tables(cls):
+    def _create_tables(cls, client: DbClient):
         pass
+
+
+    @classmethod
+    @abstractmethod
+    def _drop_tables(cls, client: DbClient):
+        pass
+
+
+    # ----------------------------------------------------------------------------------------------------------------
 
 
     @classmethod
@@ -48,6 +104,7 @@ class PersistentObject(PersistenceManager, ABC):
     classdocs
     """
 
+
     @classmethod
     @abstractmethod
     def construct_from_db(cls, *fields):
@@ -67,3 +124,9 @@ class PersistentObject(PersistenceManager, ABC):
     @abstractmethod
     def as_db_update(self):
         pass
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def children(self) -> List[PersistentObject]:
+        return []
