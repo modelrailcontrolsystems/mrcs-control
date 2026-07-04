@@ -1,0 +1,7 @@
+{
+  "type": "BlockStatus",
+  "label": "N01",
+  "direction": "UP",
+  "voltage": "OCCUPIED_WITH_VOLTAGE",
+  "occupants": []
+}
