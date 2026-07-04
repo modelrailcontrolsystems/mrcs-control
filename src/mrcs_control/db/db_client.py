@@ -9,7 +9,7 @@ https://www.sqlitetutorial.net/sqlite-python/
 https://forum.xojo.com/t/sqlite-return-id-of-record-inserted/37896
 https://iafisher.com/blog/2021/10/using-sqlite-effectively-in-python
 
-use BEGIN / COMMIT throughout?
+use BEGIN / COMMIT / ROLLBACK:
 https://iafisher.com/blog/2021/10/using-sqlite-effectively-in-python
 https://stackoverflow.com/questions/15856976/transactions-with-python-sqlite3
 """
@@ -156,7 +156,9 @@ class DbClient(object):
         filename = '.'.join([self.db_name, 'db'])
 
         os.makedirs(Host.mrcs_db_abs_dir(self.db_mode), exist_ok=True)
+        # isolation_level = None to enable manual TX control
         self.__connection = sqlite3.connect(Host.mrcs_db_abs_file(self.db_mode, filename), isolation_level=None)
+        # foreign keys enabled
         self.__connection.execute("PRAGMA foreign_keys = ON;")
 
         self.__cursor = self.connection.cursor()
