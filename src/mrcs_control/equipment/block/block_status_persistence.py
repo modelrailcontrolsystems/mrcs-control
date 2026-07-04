@@ -51,7 +51,7 @@ class BlockStatusPersistence(PersistentObject, ABC):
         table = cls.block_table()
         sql = f'''
             CREATE TABLE IF NOT EXISTS {table} (
-            id TEXT PRIMARY KEY, 
+            label TEXT PRIMARY KEY, 
             direction TEXT, 
             voltage TEXT)
             '''
@@ -60,22 +60,22 @@ class BlockStatusPersistence(PersistentObject, ABC):
         table = cls.occupant_table()
         sql = f'''
             CREATE TABLE IF NOT EXISTS {table} (
-            block_id TEXT, 
+            block_label TEXT, 
             address TEXT, 
             face TEXT,
-            CONSTRAINT pk_occupants PRIMARY KEY (block_id, address),
-            FOREIGN KEY (block_id) REFERENCES {cls.block_table()}(id) ON DELETE CASCADE)
+            CONSTRAINT pk_occupants PRIMARY KEY (block_label, address),
+            FOREIGN KEY (block_label) REFERENCES {cls.block_table()}(label) ON DELETE CASCADE)
             '''
         client.execute(sql)
 
-        sql = f'CREATE INDEX IF NOT EXISTS {table}_block_id ON {table}(block_id)'
+        sql = f'CREATE INDEX IF NOT EXISTS {table}_block_label ON {table}(block_label)'
         client.execute(sql)
 
 
     @classmethod
     def _drop_tables(cls, client):
         table = cls.occupant_table()
-        sql = f'DROP INDEX IF EXISTS {table}_id'
+        sql = f'DROP INDEX IF EXISTS {table}_block_label'
         client.execute(sql)
 
         sql = f'DROP TABLE IF EXISTS {table}'
@@ -93,7 +93,7 @@ class BlockStatusPersistence(PersistentObject, ABC):
         client = DbClient.instance(cls.db_name())
 
         table = cls.block_table()
-        sql = f'SELECT id, direction, voltage FROM {table} ORDER BY id'
+        sql = f'SELECT label, direction, voltage FROM {table} ORDER BY label'
         client.execute(sql)
         block_rows = client.fetchall()
 
@@ -101,7 +101,7 @@ class BlockStatusPersistence(PersistentObject, ABC):
             return []
 
         table = cls.occupant_table()
-        sql = f'SELECT block_id, address, face FROM {table}'
+        sql = f'SELECT block_label, address, face FROM {table}'
         client.execute(sql)
         occupant_rows = client.fetchall()
 
@@ -114,32 +114,32 @@ class BlockStatusPersistence(PersistentObject, ABC):
 
 
     @classmethod
-    def find(cls, id: str):
+    def find(cls, label: str):
         client = DbClient.instance(cls.db_name())
 
         table = cls.block_table()
-        sql = f'SELECT id, direction, voltage FROM {table} WHERE id == ?'
-        client.execute(sql, data=(id,))
+        sql = f'SELECT label, direction, voltage FROM {table} WHERE label = ?'
+        client.execute(sql, data=(label,))
         block_row = client.fetchone()
 
         if not block_row:
             return None
 
         table = cls.occupant_table()
-        sql = f'SELECT address, face FROM {table} WHERE block_id == ?'
-        client.execute(sql, data=(id,))
+        sql = f'SELECT address, face FROM {table} WHERE block_label = ?'
+        client.execute(sql, data=(label,))
         occupant_rows = client.fetchall()
 
         return cls.construct_from_db(block_row, occupant_rows)
 
 
     @classmethod
-    def exists(cls, id: str):
+    def exists(cls, label: str):
         client = DbClient.instance(cls.db_name())
 
         table = cls.block_table()
-        sql = f'SELECT id FROM {table} WHERE id == ?'
-        client.execute(sql, data=(id,))
+        sql = f'SELECT label FROM {table} WHERE label = ?'
+        client.execute(sql, data=(label,))
         row = client.fetchone()
 
         return row is not None
@@ -154,19 +154,18 @@ class BlockStatusPersistence(PersistentObject, ABC):
         try:
             client.txIMMEDIATE()
 
-            id = item.as_db_insert()[0]
+            label = item.as_db_insert()[0]
 
             table = cls.block_table()
-            sql = f'REPLACE INTO {table} (id, direction, voltage) VALUES (?, ?, ?)'
+            sql = f'REPLACE INTO {table} (label, direction, voltage) VALUES (?, ?, ?)'
             client.execute(sql, data=item.as_db_insert())
 
-            table = cls.occupant_table()
-            sql = f'DELETE FROM {table} WHERE block_id = ?'
-            client.execute(sql, data=[id])
+            # occupants are deleted by cascade on REPLACE
 
+            table = cls.occupant_table()
             for occupant in item.children():
-                sql = f'INSERT INTO {table} (block_id, address, face) VALUES (?, ?, ?)'
-                client.execute(sql, data=(id, *occupant.as_db_insert()))
+                sql = f'INSERT INTO {table} (block_label, address, face) VALUES (?, ?, ?)'
+                client.execute(sql, data=(label, *occupant.as_db_insert()))
 
             client.txCOMMIT()
 
@@ -182,7 +181,7 @@ class BlockStatusPersistence(PersistentObject, ABC):
             client.txIMMEDIATE()
 
             table = cls.block_table()
-            sql = f'UPDATE {table} SET direction = ?, voltage = ? WHERE id = ?'
+            sql = f'UPDATE {table} SET direction = ?, voltage = ? WHERE label = ?'
             client.execute(sql, data=(item.as_db_update()))
 
             client.txCOMMIT()
@@ -192,15 +191,15 @@ class BlockStatusPersistence(PersistentObject, ABC):
 
 
     @classmethod
-    def delete(cls, id: str):
+    def delete(cls, label: str):
         client = DbClient.instance(cls.db_name())
 
         try:
             client.txIMMEDIATE()
 
             table = cls.block_table()
-            sql = f'DELETE FROM {table} WHERE id = ?'
-            client.execute(sql, data=(id,))
+            sql = f'DELETE FROM {table} WHERE label = ?'
+            client.execute(sql, data=(label,))
 
             client.txCOMMIT()
 

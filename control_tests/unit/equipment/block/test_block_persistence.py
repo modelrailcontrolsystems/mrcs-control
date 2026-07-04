@@ -31,17 +31,17 @@ class TestBlockPersistence(unittest.TestCase):
 
     def test_setup(self):
         obj1, obj2 = self.__setup_db()
-        self.assertEqual('BlockStatus:{id:N01, direction:UP, voltage:OCCUPIED_WITH_VOLTAGE, '
+        self.assertEqual('BlockStatus:{label:N01, direction:UP, voltage:OCCUPIED_WITH_VOLTAGE, '
                          'occupants:[BlockOccupant:{address:4660, face:FWD}, '
                          'BlockOccupant:{address:17767, face:REV}]}', str(obj1))
-        self.assertEqual('BlockStatus:{id:N02, direction:UP, voltage:OCCUPIED_NO_VOLTAGE, '
+        self.assertEqual('BlockStatus:{label:N02, direction:UP, voltage:OCCUPIED_NO_VOLTAGE, '
                          'occupants:[BlockOccupant:{address:1767, face:REV}, '
                          'BlockOccupant:{address:4660, face:FWD}]}', str(obj2))
 
 
     def test_find(self):
         obj1, _ = self.__setup_db()
-        obj2 = PersistentBlockStatus.find(obj1.id)
+        obj2 = PersistentBlockStatus.find(obj1.label)
         self.assertEqual(obj1, obj2)
 
 
@@ -53,7 +53,7 @@ class TestBlockPersistence(unittest.TestCase):
 
     def test_exists(self):
         obj1, _ = self.__setup_db()
-        exists = PersistentBlockStatus.exists(obj1.id)
+        exists = PersistentBlockStatus.exists(obj1.label)
         self.assertTrue(exists)
 
 
@@ -65,17 +65,33 @@ class TestBlockPersistence(unittest.TestCase):
 
     def test_update(self):
         obj1, _ = self.__setup_db()
-        obj2 = PersistentBlockStatus(obj1.id, obj1.direction, BlockVoltage.OCCUPIED_OVERLOAD_3)
+        obj2 = PersistentBlockStatus(obj1.label, obj1.direction, BlockVoltage.OCCUPIED_OVERLOAD_3)
         obj2.save_block_only()
-        obj3 = PersistentBlockStatus.find(obj1.id)
+        obj3 = PersistentBlockStatus.find(obj1.label)
 
         self.assertEqual(BlockVoltage.OCCUPIED_OVERLOAD_3, obj3.voltage)
 
 
+    def test_update_with_no_occupants(self):
+        obj1, _ = self.__setup_db()
+
+        abs_filename = Path(__file__).parent / 'data' / 'block_status_3.json'
+        with open(abs_filename) as fp:
+            jdict = json.load(fp)
+        obj2 = PersistentBlockStatus.construct_from_jdict(jdict)
+        assert obj2 is not None
+        obj2.save()
+
+        obj3 = PersistentBlockStatus.find(obj1.label)
+
+        self.assertEqual(2, len(obj1.occupants))
+        self.assertEqual(0, len(obj3.occupants))
+
+
     def test_delete(self):
         _, obj2 = self.__setup_db()
-        PersistentBlockStatus.delete(obj2.id)
-        obj3 = PersistentBlockStatus.find(obj2.id)
+        PersistentBlockStatus.delete(obj2.label)
+        obj3 = PersistentBlockStatus.find(obj2.label)
 
         self.assertEqual(obj3, None)
 

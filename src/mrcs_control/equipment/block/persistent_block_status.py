@@ -7,7 +7,7 @@ A structured representation of a BlockStatus
 
 {
     "type": "BlockStatus",
-    "id": "N01",
+    "label": "N01",
     "direction": "UP",
     "voltage": "OCCUPIED_WITH_VOLTAGE",
     "occupants": [
@@ -42,16 +42,16 @@ class PersistentBlockStatus(BlockStatus, BlockStatusPersistence, PersistentObjec
 
     @classmethod
     def construct_from_db(cls, row, occupant_rows):
-        id, direction, voltage = row
+        label, direction, voltage = row
         occupants = [PersistentBlockOccupant.construct_from_db(occupant_row) for occupant_row in occupant_rows]
 
-        return cls(id, BlockDirection[direction], BlockVoltage[voltage], *occupants)
+        return cls(label, BlockDirection[direction], BlockVoltage[voltage], *occupants)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, id: str, direction: BlockDirection, voltage: BlockVoltage, *occupants: BlockOccupant):
-        super().__init__(id, direction, voltage, *occupants)
+    def __init__(self, label: str, direction: BlockDirection, voltage: BlockVoltage, *occupants: BlockOccupant):
+        super().__init__(label, direction, voltage, *occupants)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -67,11 +67,11 @@ class PersistentBlockStatus(BlockStatus, BlockStatusPersistence, PersistentObjec
     # ----------------------------------------------------------------------------------------------------------------
 
     def as_db_insert(self):
-        return self.id, self.direction.name, self.voltage.name
+        return self.label, self.direction.name, self.voltage.name
 
 
     def as_db_update(self):
-        return self.direction.name, self.voltage.name, self.id
+        return self.direction.name, self.voltage.name, self.label
 
 
     def children(self):
