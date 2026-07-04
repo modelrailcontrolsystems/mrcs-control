@@ -1,0 +1,16 @@
+{
+  "type": "BlockStatus",
+  "id": "N01",
+  "direction": "UP",
+  "voltage": "OCCUPIED_WITH_VOLTAGE",
+  "occupants": [
+    {
+      "addr": 4660,
+      "face": "FWD"
+    },
+    {
+      "addr": 17767,
+      "face": "REV"
+    }
+  ]
+}

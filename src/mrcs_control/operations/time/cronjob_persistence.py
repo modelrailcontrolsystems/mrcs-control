@@ -14,7 +14,6 @@ from abc import ABC
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.db.db_name import DbName
-
 from mrcs_core.data.iso_datetime import ISODatetime
 
 
@@ -25,44 +24,26 @@ class CronjobPersistence(PersistentObject, ABC):
     SQLite database management for cron jobs
     """
 
-    __DATABASE = DbName.Cron
+    __DB_NAME = DbName.Cron
 
     __TABLE_NAME = 'cronjobs'
     __TABLE_VERSION = 1
+
+
+    @classmethod
+    def db_name(cls) -> DbName:
+        return cls.__DB_NAME
+
 
     @classmethod
     def table(cls):
         return f'{cls.__TABLE_NAME}_v{cls.__TABLE_VERSION}'
 
 
-    @classmethod
-    def recreate_tables(cls):
-        client = DbClient.instance(cls.__DATABASE)
-
-        client.begin()
-        cls.__drop_tables(client)
-        cls.__create_tables(client)
-        client.commit()
-
+    # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def create_tables(cls):
-        client = DbClient.instance(cls.__DATABASE)
-
-        cls.__create_tables(client)
-        client.commit()
-
-
-    @classmethod
-    def drop_tables(cls):
-        client = DbClient.instance(cls.__DATABASE)
-
-        cls.__drop_tables(client)
-        client.commit()
-
-
-    @classmethod
-    def __create_tables(cls, client):
+    def _create_tables(cls, client):
         table = cls.table()
 
         sql = f'''
@@ -86,7 +67,7 @@ class CronjobPersistence(PersistentObject, ABC):
 
 
     @classmethod
-    def __drop_tables(cls, client):
+    def _drop_tables(cls, client):
         table = cls.table()
 
         sql = f'DROP INDEX IF EXISTS {table}_id'
@@ -98,7 +79,6 @@ class CronjobPersistence(PersistentObject, ABC):
         sql = f'DROP INDEX IF EXISTS {table}_on_target'
         client.execute(sql)
 
-
         sql = f'DROP TABLE IF EXISTS {table}'
         client.execute(sql)
 
@@ -107,7 +87,7 @@ class CronjobPersistence(PersistentObject, ABC):
 
     @classmethod
     def find_all(cls):
-        client = DbClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.db_name())
         table = cls.table()
 
         sql = f'SELECT id, target, event_id, on_datetime FROM {table} ORDER BY on_datetime, target'
@@ -119,12 +99,12 @@ class CronjobPersistence(PersistentObject, ABC):
 
     @classmethod
     def find_next(cls, now: ISODatetime):
-        client = DbClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.db_name())
         table = cls.table()
 
         sql = (f'SELECT id, target, event_id, on_datetime '
                f'FROM {table} WHERE on_datetime <= ? ORDER BY on_datetime LIMIT 1')
-        client.execute(sql, data=(now.dbformat(), ))
+        client.execute(sql, data=(now.dbformat(),))
         row = client.fetchone()
 
         return cls.construct_from_db(*row) if row else None
@@ -134,21 +114,26 @@ class CronjobPersistence(PersistentObject, ABC):
 
     @classmethod
     def insert(cls, job: PersistentObject):
-        client = DbClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.db_name())
         table = cls.table()
 
-        client.begin()
-        sql = f'INSERT INTO {table} (target, event_id, on_datetime) VALUES (?, ?, ?)'
-        client.execute(sql, data=job.as_db_insert())
-        client.commit()
+        try:
+            client.txIMMEDIATE()
 
-        sql = 'SELECT last_insert_rowid()'
-        client.execute(sql)
-        client.commit()
+            sql = f'INSERT INTO {table} (target, event_id, on_datetime) VALUES (?, ?, ?)'
+            client.execute(sql, data=job.as_db_insert())
 
-        row = client.fetchone()
+            client.txCOMMIT()
 
-        return int(row[0])
+            sql = 'SELECT last_insert_rowid()'
+            client.execute(sql)
+
+            row = client.fetchone()
+
+            return int(row[0])
+
+        except Exception as ex:
+            client.txROLLBACK(ex)
 
 
     @classmethod
@@ -158,13 +143,16 @@ class CronjobPersistence(PersistentObject, ABC):
 
     @classmethod
     def delete(cls, id: int):
-        client = DbClient.instance(cls.__DATABASE)
+        client = DbClient.instance(cls.db_name())
         table = cls.table()
 
         try:
-            client.begin()
-            sql = f'DELETE FROM {table} WHERE id = ?'
-            client.execute(sql, data=(id, ))
+            client.txIMMEDIATE()
 
-        finally:
-            client.commit()
+            sql = f'DELETE FROM {table} WHERE id = ?'
+            client.execute(sql, data=(id,))
+
+            client.txCOMMIT()
+
+        except Exception as ex:
+            client.txROLLBACK(ex)
