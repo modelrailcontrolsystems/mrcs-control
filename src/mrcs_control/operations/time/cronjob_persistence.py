@@ -123,12 +123,11 @@ class CronjobPersistence(PersistentObject, ABC):
             sql = f'INSERT INTO {table} (target, event_id, on_datetime) VALUES (?, ?, ?)'
             client.execute(sql, data=job.as_db_insert())
 
-            client.txCOMMIT()
-
             sql = 'SELECT last_insert_rowid()'
             client.execute(sql)
-
             row = client.fetchone()
+
+            client.txCOMMIT()
 
             return int(row[0])
 

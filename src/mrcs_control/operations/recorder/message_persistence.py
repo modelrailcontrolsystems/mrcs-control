@@ -122,11 +122,11 @@ class MessagePersistence(PersistentObject, ABC):
             sql = f'INSERT INTO {table} (origin, source, target, body) VALUES (?, ?, ?, ?)'
             client.execute(sql, data=entry.as_db_insert())
 
-            client.txCOMMIT()
-
             sql = 'SELECT last_insert_rowid()'
             client.execute(sql)
             row = client.fetchone()
+
+            client.txCOMMIT()
 
             return int(row[0])
 
@@ -145,12 +145,11 @@ class MessagePersistence(PersistentObject, ABC):
             sql = f'INSERT INTO {table} (rec, origin, source, target, body) VALUES (?, ?, ?, ?, ?)'
             client.execute(sql, data=(rec, *entry.as_db_insert()))
 
-            client.txCOMMIT()
-
             sql = 'SELECT last_insert_rowid()'
             client.execute(sql)
-
             row = client.fetchone()
+
+            client.txCOMMIT()
 
             return int(row[0])
 
