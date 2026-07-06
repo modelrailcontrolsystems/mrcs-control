@@ -114,7 +114,7 @@ class UserPersistence(PersistentObject, ABC):
         client.execute(sql)
         rows = client.fetchall()
 
-        return (cls.construct_from_db(*fields) for fields in rows)
+        return (cls.construct_from_db(row) for row in rows)
 
 
     @classmethod
@@ -127,7 +127,7 @@ class UserPersistence(PersistentObject, ABC):
         client.execute(sql, data=(uid,))
         row = client.fetchone()
 
-        return cls.construct_from_db(*row) if row else None
+        return cls.construct_from_db(row) if row else None
 
 
     @classmethod
@@ -179,7 +179,7 @@ class UserPersistence(PersistentObject, ABC):
             client.execute(sql, data=(uid,))
             row = client.fetchone()
 
-            return cls.construct_from_db(*row)
+            return cls.construct_from_db(row)
 
         except Exception as ex:
             client.txROLLBACK(ex)
@@ -265,7 +265,7 @@ class UserPersistence(PersistentObject, ABC):
             client.execute(sql, data=(uid,))
             row = client.fetchone()
 
-            return cls.construct_from_db(*row)
+            return cls.construct_from_db(row)
 
         except Exception as ex:
             client.txROLLBACK(ex)

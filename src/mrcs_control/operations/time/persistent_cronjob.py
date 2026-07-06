@@ -18,7 +18,6 @@ from collections import OrderedDict
 
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.operations.time.cronjob_persistence import CronjobPersistence
-
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.data.iso_datetime import ISODatetime
 from mrcs_core.messaging.message import Message
@@ -32,8 +31,9 @@ class PersistentCronjob(Cronjob, CronjobPersistence, PersistentObject):
     represents a cron job to be performed
     """
 
+
     @classmethod
-    def construct_from_message(cls, message: Message):
+    def construct_from_message(cls, message: Message) -> PersistentCronjob:  # TODO: should this be 'widen'?
         cronjob = Cronjob.construct_from_jdict(message.body)
         target = message.routing_key.source if cronjob.target is None else cronjob.target
 
@@ -41,11 +41,11 @@ class PersistentCronjob(Cronjob, CronjobPersistence, PersistentObject):
 
 
     @classmethod
-    def construct_from_db(cls, id, target, event_id, db_on_datetime):
-        target = EquipmentIdentifier.construct_from_jdict(target)
-        on_datetime = ISODatetime.construct_from_db(db_on_datetime)
+    def construct_from_db(cls, row, *child_rows) -> PersistentCronjob:
+        id, target, event_id, db_on_datetime = row
 
-        return cls(id, target, event_id, on_datetime)
+        return cls(id, EquipmentIdentifier.construct_from_jdict(target), event_id,
+                   ISODatetime.construct_from_db_field(db_on_datetime))
 
 
     # ----------------------------------------------------------------------------------------------------------------

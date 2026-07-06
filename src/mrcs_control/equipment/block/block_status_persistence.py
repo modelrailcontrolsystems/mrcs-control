@@ -110,7 +110,7 @@ class BlockStatusPersistence(PersistentObject, ABC):
         for occupant_row in occupant_rows:
             occupants[occupant_row[0]].append(occupant_row[1:])
 
-        return [cls.construct_from_db(block_row, occupants[block_row[0]]) for block_row in block_rows]
+        return [cls.construct_from_db(block_row, *occupants[block_row[0]]) for block_row in block_rows]
 
 
     @classmethod
@@ -130,7 +130,7 @@ class BlockStatusPersistence(PersistentObject, ABC):
         client.execute(sql, data=(label,))
         occupant_rows = client.fetchall()
 
-        return cls.construct_from_db(block_row, occupant_rows)
+        return cls.construct_from_db(block_row, *occupant_rows)
 
 
     @classmethod
