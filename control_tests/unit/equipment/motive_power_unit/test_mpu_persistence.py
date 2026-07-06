@@ -113,14 +113,12 @@ class TestMPUPersistence(unittest.TestCase):
         with open(abs_filename) as fp:
             jdict = json.load(fp)
         obj1 = PersistentMPUStatus.construct_from_jdict(jdict)
-        assert obj1 is not None
         obj1.save()
 
         abs_filename = Path(__file__).parent / 'data' / 'mpu_status_2.json'
         with open(abs_filename) as fp:
             jdict = json.load(fp)
         obj2 = PersistentMPUStatus.construct_from_jdict(jdict)
-        assert obj2 is not None
         obj2.save()
 
         return obj1, obj2
