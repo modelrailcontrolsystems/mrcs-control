@@ -79,7 +79,6 @@ class TestBlockPersistence(unittest.TestCase):
         with open(abs_filename) as fp:
             jdict = json.load(fp)
         obj2 = PersistentBlockStatus.construct_from_jdict(jdict)
-        assert obj2 is not None
         obj2.save()
 
         obj3 = PersistentBlockStatus.find(obj1.label)
@@ -106,14 +105,12 @@ class TestBlockPersistence(unittest.TestCase):
         with open(abs_filename) as fp:
             jdict = json.load(fp)
         obj1 = PersistentBlockStatus.construct_from_jdict(jdict)
-        assert obj1 is not None
         obj1.save()
 
         abs_filename = Path(__file__).parent / 'data' / 'block_status_2.json'
         with open(abs_filename) as fp:
             jdict = json.load(fp)
         obj2 = PersistentBlockStatus.construct_from_jdict(jdict)
-        assert obj2 is not None
         obj2.save()
 
         return obj1, obj2
