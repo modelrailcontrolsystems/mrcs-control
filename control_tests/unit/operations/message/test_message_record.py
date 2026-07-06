@@ -50,8 +50,8 @@ class TestMessageRecord(unittest.TestCase):
 
     def test_construct_from_db(self):
         ISODatetime.set_local_zone(ZoneInfo('Europe/London'))
-        obj1 = PersistentMessageRecord.construct_from_db(1, '2025-08-26 01:23:45.678', '12345678',
-                                                         'BOS.001.002', 'MPU.*.*', '"hello"')
+        row = [1, '2025-08-26 01:23:45.678', '12345678', 'BOS.001.002', 'MPU.*.*', '"hello"']
+        obj1 = PersistentMessageRecord.construct_from_db(row)
 
         self.assertEqual('PersistentMessageRecord:{uid:1, rec:ISODatetime:{2025-08-26T02:23:45.678+01:00}, '
                          'origin:12345678, routing_key:PublicationRoutingKey:{source:EquipmentIdentifier:{'

@@ -31,18 +31,13 @@ class PersistentUser(User, UserPersistence, PersistentObject):
     a structured representation of a user
     """
 
-    @classmethod
-    def construct_from_db(cls, uid, email, role, must_set_password, given_name, family_name, created, latest_login):
-        uid = uid
-        email = email
-        role = UserRole(role)
-        must_set_password = bool(must_set_password)
-        given_name = given_name
-        family_name = family_name
-        created = ISODatetime.construct_from_db(created)
-        latest_login = ISODatetime.construct_from_db(latest_login)
 
-        return cls(uid, email, role, must_set_password, given_name, family_name, created, latest_login)
+    @classmethod
+    def construct_from_db(cls, row, *child_rows) -> PersistentUser:
+        uid, email, role, must_set_password, given_name, family_name, created, latest_login = row
+
+        return cls(uid, email, UserRole(role), bool(must_set_password), given_name, family_name,
+                   ISODatetime.construct_from_db_field(created), ISODatetime.construct_from_db_field(latest_login))
 
 
     # ----------------------------------------------------------------------------------------------------------------

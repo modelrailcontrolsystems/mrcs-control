@@ -31,8 +31,9 @@ class PersistentMPUStatus(MPUStatus, MPUStatusPersistence, PersistentObject):
 
 
     @classmethod
-    def construct_from_db(cls, row):
+    def construct_from_db(cls, row, *child_rows) -> PersistentMPUStatus:
         label, address, functions, speed_setting, speed, reverse = row
+
         return cls(label, address, MPUFunctions.construct_from_jdict(functions), speed_setting, speed, bool(reverse))
 
 

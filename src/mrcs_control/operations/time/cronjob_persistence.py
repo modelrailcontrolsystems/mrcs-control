@@ -94,7 +94,7 @@ class CronjobPersistence(PersistentObject, ABC):
         client.execute(sql)
         rows = client.fetchall()
 
-        return (cls.construct_from_db(*fields) for fields in rows)
+        return (cls.construct_from_db(row) for row in rows)
 
 
     @classmethod
@@ -107,7 +107,7 @@ class CronjobPersistence(PersistentObject, ABC):
         client.execute(sql, data=(now.dbformat(),))
         row = client.fetchone()
 
-        return cls.construct_from_db(*row) if row else None
+        return cls.construct_from_db(row) if row else None
 
 
     # ----------------------------------------------------------------------------------------------------------------

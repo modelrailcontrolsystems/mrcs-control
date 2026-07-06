@@ -32,7 +32,7 @@ class PersistentBlockOccupant(BlockOccupant, BlockStatusPersistence, PersistentO
 
 
     @classmethod
-    def construct_from_db(cls, row):
+    def construct_from_db(cls, row, *child_rows) -> PersistentBlockOccupant:
         address, face = row
 
         return cls(int(address), BlockOccupantFace[face])

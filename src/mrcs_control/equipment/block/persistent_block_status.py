@@ -41,9 +41,9 @@ class PersistentBlockStatus(BlockStatus, BlockStatusPersistence, PersistentObjec
 
 
     @classmethod
-    def construct_from_db(cls, row, occupant_rows):
+    def construct_from_db(cls, row, *child_rows) -> PersistentBlockStatus:
         label, direction, voltage = row
-        occupants = [PersistentBlockOccupant.construct_from_db(occupant_row) for occupant_row in occupant_rows]
+        occupants = [PersistentBlockOccupant.construct_from_db(occupant_row) for occupant_row in child_rows]
 
         return cls(label, BlockDirection[direction], BlockVoltage[voltage], *occupants)
 

@@ -106,7 +106,7 @@ class MessagePersistence(PersistentObject, ABC):
 
         rows = client.fetchall()
 
-        return (cls.construct_from_db(*fields) for fields in rows)
+        return (cls.construct_from_db(row) for row in rows)
 
 
     # ----------------------------------------------------------------------------------------------------------------

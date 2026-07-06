@@ -26,13 +26,14 @@ class PersistentMessage(Message, MessagePersistence, PersistentObject):
     classdocs message.routing_key, message.body
     """
 
+
     @classmethod
-    def widen(cls, message: Message):
+    def widen(cls, message: Message) -> PersistentMessage:
         return cls(message.routing_key, message.body, message.origin)
 
 
     @classmethod
-    def construct_from_db(cls, *fields):
+    def construct_from_db(cls, row, *child_rows) -> PersistentMessage:
         raise NotImplementedError('use PersistentMessageRecord class instead')
 
 
