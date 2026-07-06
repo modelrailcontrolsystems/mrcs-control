@@ -160,7 +160,7 @@ class BlockStatusPersistence(PersistentObject, ABC):
             sql = f'REPLACE INTO {table} (label, direction, voltage) VALUES (?, ?, ?)'
             client.execute(sql, data=item.as_db_insert())
 
-            # occupants are deleted by cascade on REPLACE
+            # any existing occupants are deleted by cascade on REPLACE
 
             table = cls.occupant_table()
             for occupant in item.children():
@@ -171,6 +171,9 @@ class BlockStatusPersistence(PersistentObject, ABC):
 
         except Exception as ex:
             client.txROLLBACK(ex)
+
+
+    # TODO: implement methods that do updates from BlockVoltageReport, BlockOccupancyReports?
 
 
     @classmethod

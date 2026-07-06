@@ -1,0 +1,9 @@
+{
+  "type": "MPUStatus",
+  "label": "EMR Class 08",
+  "addr": 3,
+  "functions": "+-+",
+  "speed_setting": 12,
+  "speed": 7,
+  "reverse": true
+}

@@ -20,4 +20,5 @@ class DbName(StrEnum):
     Block = 'Block'  # BlockStatus
     Cron = 'Cron'  # cron and crontab
     MessageLog = 'MessageLog'  # message recorder
+    MPU = 'MPU'  # motive power units
     Test = 'Test'  # used by unit tests
