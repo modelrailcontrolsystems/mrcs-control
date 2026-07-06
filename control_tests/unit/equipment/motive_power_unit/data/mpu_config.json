@@ -1,0 +1,11 @@
+{
+  "type": "MPUConfigurationReport",
+  "addr": 3,
+  "functions": "-+-",
+  "busy": false,
+  "stepping": "STEPS_28",
+  "speed": 99,
+  "reverse": false,
+  "consist": false,
+  "smart_search": true
+}

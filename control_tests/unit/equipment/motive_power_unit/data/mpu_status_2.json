@@ -1,0 +1,9 @@
+{
+  "type": "MPUStatus",
+  "label": "DB Class 60",
+  "addr": 4,
+  "functions": "+-+",
+  "speed_setting": 15,
+  "speed": 8,
+  "reverse": false
+}

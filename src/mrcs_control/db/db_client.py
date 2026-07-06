@@ -12,6 +12,9 @@ https://iafisher.com/blog/2021/10/using-sqlite-effectively-in-python
 use BEGIN / COMMIT / ROLLBACK:
 https://iafisher.com/blog/2021/10/using-sqlite-effectively-in-python
 https://stackoverflow.com/questions/15856976/transactions-with-python-sqlite3
+
+type coercion - avoid:
+https://stackoverflow.com/questions/16936608/storing-bools-in-sqlite-database
 """
 
 import os
@@ -108,12 +111,12 @@ class DbClient(object):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def txIMMEDIATE(self):
-        self.execute('BEGIN IMMEDIATE TRANSACTION')
-
-
     def txEXCLUSIVE(self):
         self.execute('BEGIN EXCLUSIVE TRANSACTION')
+
+
+    def txIMMEDIATE(self):
+        self.execute('BEGIN IMMEDIATE TRANSACTION')
 
 
     def txCOMMIT(self):
@@ -156,8 +159,10 @@ class DbClient(object):
         filename = '.'.join([self.db_name, 'db'])
 
         os.makedirs(Host.mrcs_db_abs_dir(self.db_mode), exist_ok=True)
-        # isolation_level = None to enable manual TX control
+
+        # isolation_level=None to enable manual TX control
         self.__connection = sqlite3.connect(Host.mrcs_db_abs_file(self.db_mode, filename), isolation_level=None)
+
         # foreign keys enabled
         self.__connection.execute("PRAGMA foreign_keys = ON;")
 

@@ -1,0 +1,9 @@
+{
+  "type": "MPUDecoderReport",
+  "addr": 3,
+  "received": 456,
+  "errors": 789,
+  "opts": 171,
+  "speed": 90,
+  "qos": 5
+}

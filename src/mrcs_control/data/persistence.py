@@ -107,7 +107,7 @@ class PersistentObject(PersistenceManager, ABC):
 
     @classmethod
     @abstractmethod
-    def construct_from_db(cls, *fields):
+    def construct_from_db(cls, *fields):  # TODO: refactor to take (multiple) db rows
         pass
 
 
