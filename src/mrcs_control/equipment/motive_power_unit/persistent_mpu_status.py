@@ -13,6 +13,7 @@ A structured representation of an MPUStatus
     "speed_setting": 12,
     "speed": 7,
     "reverse": true
+}
 """
 
 from mrcs_control.data.persistence import PersistentObject
@@ -57,4 +58,4 @@ class PersistentMPUStatus(MPUStatus, MPUStatusPersistence, PersistentObject):
 
 
     def as_db_update(self):
-        return self.address, self.functions.as_json(), self.speed_setting, self.speed, self.reverse, self.label
+        raise NotImplementedError('update is provided by MPUConfigurationReport, MPUDecoderReport')

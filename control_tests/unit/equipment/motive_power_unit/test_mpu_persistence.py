@@ -3,7 +3,7 @@ Created on 29 Nov 2025
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-python -m unittest -v unit/admin/user/test_user_persistence.py
+python -m unittest -v unit/equipment/motive_power_unit/test_mpu_persistence.py
 
 https://realpython.com/python-testing/
 https://www.jetbrains.com/help/pycharm/creating-tests.html
@@ -77,7 +77,7 @@ class TestMPUPersistence(unittest.TestCase):
             jdict = json.load(fp)
         obj2 = MPUConfigurationReport.construct_from_jdict(jdict)
 
-        obj3 = PersistentMPUStatus.update_from_config(obj2)
+        obj3 = PersistentMPUStatus.update_from_configuration_report(obj2)
         self.assertEqual('PersistentMPUStatus:{label:EMR Class 08, address:3, functions:-+-, speed_setting:99, '
                          'speed:7, reverse:False}', str(obj3))
 
@@ -90,7 +90,7 @@ class TestMPUPersistence(unittest.TestCase):
             jdict = json.load(fp)
         obj2 = MPUDecoderReport.construct_from_jdict(jdict)
 
-        obj3 = PersistentMPUStatus.update_from_decoder(obj2)
+        obj3 = PersistentMPUStatus.update_from_decoder_report(obj2)
         self.assertEqual('PersistentMPUStatus:{label:EMR Class 08, address:3, functions:+-+, speed_setting:12, '
                          'speed:90, reverse:True}', str(obj3))
 

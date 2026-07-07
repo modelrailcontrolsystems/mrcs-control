@@ -136,11 +136,6 @@ class CronjobPersistence(PersistentObject, ABC):
 
 
     @classmethod
-    def update(cls, entry: PersistentObject):
-        raise NotImplementedError('cron jobs are immutable')
-
-
-    @classmethod
     def delete(cls, id: int):
         client = DbClient.instance(cls.db_name())
         table = cls.table()

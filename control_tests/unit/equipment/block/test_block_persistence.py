@@ -31,10 +31,10 @@ class TestBlockPersistence(unittest.TestCase):
 
     def test_setup(self):
         obj1, obj2 = self.__setup_db()
-        self.assertEqual('BlockStatus:{label:N01, direction:UP, voltage:OCCUPIED_WITH_VOLTAGE, '
+        self.assertEqual('BlockStatus:{label:BN01, direction:UP, voltage:OCCUPIED_WITH_VOLTAGE, '
                          'occupants:[BlockOccupant:{address:4660, face:FWD}, '
                          'BlockOccupant:{address:17767, face:REV}]}', str(obj1))
-        self.assertEqual('BlockStatus:{label:N02, direction:UP, voltage:OCCUPIED_NO_VOLTAGE, '
+        self.assertEqual('BlockStatus:{label:BN02, direction:UP, voltage:OCCUPIED_NO_VOLTAGE, '
                          'occupants:[BlockOccupant:{address:1767, face:REV}, '
                          'BlockOccupant:{address:4660, face:FWD}]}', str(obj2))
 

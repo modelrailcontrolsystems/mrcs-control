@@ -1,9 +1,9 @@
 """
-Created on 4 Jul 2026
+Created on 6 Jul 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-SQLite database management for MPU states
+SQLite database management for turnout states
 """
 
 from abc import ABC
@@ -11,20 +11,20 @@ from abc import ABC
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.db.db_name import DbName
-from mrcs_core.equipment.motive_power_unit.mpu_configuration_report import MPUConfigurationReport
-from mrcs_core.equipment.motive_power_unit.mpu_decoder_report import MPUDecoderReport
+from mrcs_control.equipment.block.block_status_persistence import BlockStatusPersistence
+from mrcs_core.equipment.turnout.turnout_report import TurnoutReport
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class MPUStatusPersistence(PersistentObject, ABC):
+class TurnoutStatusPersistence(PersistentObject, ABC):
     """
     SQLite database management for MPU states
     """
 
-    __DB_NAME = DbName.MPU
+    __DB_NAME = DbName.Track
 
-    __TABLE_NAME = 'mpus'
+    __TABLE_NAME = 'turnouts'
     __TABLE_VERSION = 1
 
 
@@ -40,17 +40,18 @@ class MPUStatusPersistence(PersistentObject, ABC):
 
     # ----------------------------------------------------------------------------------------------------------------
 
+    # TODO: BlockStatusPersistence must be built before this table
+
     @classmethod
     def _create_tables(cls, client):
         table = cls.table()
         sql = f'''
             CREATE TABLE IF NOT EXISTS {table} (
             label TEXT PRIMARY KEY, 
+            block_label TEXT, 
             address INTEGER UNIQUE, 
-            functions TEXT,
-            speed_setting INTEGER,
-            speed INTEGER,
-            reverse BOOLEAN)
+            position TEXT,
+            FOREIGN KEY (block_label) REFERENCES {BlockStatusPersistence.block_table()}(label) ON DELETE CASCADE)
             '''
         client.execute(sql)
 
@@ -69,7 +70,7 @@ class MPUStatusPersistence(PersistentObject, ABC):
         client = DbClient.instance(cls.db_name())
 
         table = cls.table()
-        sql = f'SELECT label, address, functions, speed_setting, speed, reverse FROM {table} ORDER BY label'
+        sql = f'SELECT label, block_label, address, position FROM {table} ORDER BY label'
         client.execute(sql)
         rows = client.fetchall()
 
@@ -81,7 +82,7 @@ class MPUStatusPersistence(PersistentObject, ABC):
         client = DbClient.instance(cls.db_name())
 
         table = cls.table()
-        sql = f'SELECT label, address, functions, speed_setting, speed, reverse FROM {table} WHERE address = ?'
+        sql = f'SELECT label, block_label, address, position FROM {table} WHERE address = ?'
         client.execute(sql, data=(address,))
         row = client.fetchone()
 
@@ -96,7 +97,7 @@ class MPUStatusPersistence(PersistentObject, ABC):
         client = DbClient.instance(cls.db_name())
 
         table = cls.table()
-        sql = f'SELECT label, address, functions, speed_setting, speed, reverse FROM {table} WHERE label = ?'
+        sql = f'SELECT label, block_label, address, position FROM {table} WHERE label = ?'
         client.execute(sql, data=(label,))
         row = client.fetchone()
 
@@ -121,15 +122,14 @@ class MPUStatusPersistence(PersistentObject, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def insert(cls, item: PersistentObject):  # TODO: parameter should be MPUDesign
+    def insert(cls, item: PersistentObject):  # TODO: parameter should be TurnoutDesign
         client = DbClient.instance(cls.db_name())
 
         try:
             client.txIMMEDIATE()
 
             table = cls.table()
-            sql = (f'REPLACE INTO {table} (label, address, functions, speed_setting, speed, reverse) '
-                   f'VALUES (?, ?, ?, ?, ?, ?)')
+            sql = f'REPLACE INTO {table} (label, block_label, address, position) VALUES (?, ?, ?, ?)'
             client.execute(sql, data=item.as_db_insert())
 
             client.txCOMMIT()
@@ -139,48 +139,22 @@ class MPUStatusPersistence(PersistentObject, ABC):
 
 
     @classmethod
-    def update_from_configuration_report(cls, config: MPUConfigurationReport):
+    def update_from_turnout_report(cls, report: TurnoutReport):
         client = DbClient.instance(cls.db_name())
 
         try:
             client.txIMMEDIATE()
 
             table = cls.table()
-            sql = f'UPDATE {table} SET functions = ? , speed_setting = ?, reverse = ? WHERE address = ?'
-            client.execute(sql, data=(config.functions.as_json(), config.speed_setting, config.reverse, config.address))
+            sql = f'UPDATE {table} SET position = ? WHERE address = ?'
+            client.execute(sql, data=(report.position.name, report.address))
 
-            sql = f'SELECT label, address, functions, speed_setting, speed, reverse FROM {table} WHERE address = ?'
-            client.execute(sql, data=(config.address,))
+            sql = f'SELECT label, block_label, address, position FROM {table} WHERE address = ?'
+            client.execute(sql, data=(report.address,))
             row = client.fetchone()
 
             if not row:
-                raise KeyError(f'no MPUStatus with address 0x{config.address:02x}')
-
-            client.txCOMMIT()
-
-            return cls.construct_from_db(row)
-
-        except Exception as ex:
-            client.txROLLBACK(ex)
-
-
-    @classmethod
-    def update_from_decoder_report(cls, decoder: MPUDecoderReport):
-        client = DbClient.instance(cls.db_name())
-
-        try:
-            client.txIMMEDIATE()
-
-            table = cls.table()
-            sql = f'UPDATE {table} SET speed = ? WHERE address = ?'
-            client.execute(sql, data=(decoder.speed, decoder.address))
-
-            sql = f'SELECT label, address, functions, speed_setting, speed, reverse FROM {table} WHERE address = ?'
-            client.execute(sql, data=(decoder.address,))
-            row = client.fetchone()
-
-            if not row:
-                raise KeyError(f'no MPUStatus with address 0x{decoder.address:02x}')
+                raise KeyError(f'no TurnoutStatus with address {report.address}')
 
             client.txCOMMIT()
 

@@ -20,7 +20,7 @@ class BlockStatusPersistence(PersistentObject, ABC):
     SQLite database management for BlockStatus
     """
 
-    __DB_NAME = DbName.Block
+    __DB_NAME = DbName.Track
 
     __BLOCK_TABLE_NAME = 'blocks'
     __BLOCK_TABLE_VERSION = 1
@@ -63,7 +63,7 @@ class BlockStatusPersistence(PersistentObject, ABC):
             block_label TEXT, 
             address TEXT, 
             face TEXT,
-            CONSTRAINT pk_occupants PRIMARY KEY (block_label, address),
+            CONSTRAINT pk_{table} PRIMARY KEY (block_label, address),
             FOREIGN KEY (block_label) REFERENCES {cls.block_table()}(label) ON DELETE CASCADE)
             '''
         client.execute(sql)
@@ -147,8 +147,12 @@ class BlockStatusPersistence(PersistentObject, ABC):
 
     # ----------------------------------------------------------------------------------------------------------------
 
+    # TODO: insert from design
+    # TODO: update from BlockVoltageReport
+    # TODO: update from BlockOccupancyReports
+
     @classmethod
-    def insert(cls, item: PersistentObject):  # block AND occupants
+    def insert(cls, item: PersistentObject):  # TODO: parameter should be BlockDesign
         client = DbClient.instance(cls.db_name())
 
         try:
@@ -171,9 +175,6 @@ class BlockStatusPersistence(PersistentObject, ABC):
 
         except Exception as ex:
             client.txROLLBACK(ex)
-
-
-    # TODO: implement methods that do updates from BlockVoltageReport, BlockOccupancyReports?
 
 
     @classmethod
