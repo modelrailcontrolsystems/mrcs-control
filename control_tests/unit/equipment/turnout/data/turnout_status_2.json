@@ -1,0 +1,7 @@
+{
+  "type": "TurnoutStatus",
+  "label": "TE02",
+  "block_label": "BN01",
+  "addr": 14,
+  "position": "P0"
+}

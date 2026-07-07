@@ -1,6 +1,6 @@
 {
   "type": "BlockStatus",
-  "label": "N02",
+  "label": "BN02",
   "direction": "UP",
   "voltage": "OCCUPIED_NO_VOLTAGE",
   "occupants": [

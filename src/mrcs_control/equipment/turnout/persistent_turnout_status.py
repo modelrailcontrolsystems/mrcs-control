@@ -1,0 +1,57 @@
+"""
+Created on 4 Jul 2026
+
+@author: Bruno Beloff (bbeloff@me.com)
+
+A structured representation of a TurnoutStatus
+
+{
+    "type": "TurnoutStatus",
+    "label": "TE01",
+    "addr": 3,
+    "position": "P1"
+}
+"""
+
+from mrcs_control.data.persistence import PersistentObject
+from mrcs_control.equipment.turnout.turnout_status_persistence import TurnoutStatusPersistence
+from mrcs_core.equipment.turnout.turnout_enums import TurnoutPosition
+from mrcs_core.equipment.turnout.turnout_status import TurnoutStatus
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+class PersistentTurnoutStatus(TurnoutStatus, TurnoutStatusPersistence, PersistentObject):
+    """
+    a structured representation of a TurnoutStatus
+    label, address, address, position
+    """
+
+
+    @classmethod
+    def construct_from_db(cls, row, *child_rows) -> PersistentTurnoutStatus:
+        label, block_label, address, position = row
+
+        return cls(label, block_label, address, TurnoutPosition[position])
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def __init__(self, label: str, block_label: str, address: int, position: TurnoutPosition):
+        super().__init__(label, block_label, address, position)
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def save(self):
+        return super().insert(self)
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def as_db_insert(self):
+        return self.label, self.block_label, self.address, self.position.name
+
+
+    def as_db_update(self):
+        raise NotImplementedError('update is provided by TurnoutReport')

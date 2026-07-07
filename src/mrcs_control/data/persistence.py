@@ -82,21 +82,6 @@ class PersistenceManager(ABC):
         pass
 
 
-    # ----------------------------------------------------------------------------------------------------------------
-
-
-    @classmethod
-    @abstractmethod
-    def insert(cls, entry: PersistentObject):
-        pass
-
-
-    @classmethod
-    @abstractmethod
-    def update(cls, entry: PersistentObject):
-        pass
-
-
 # --------------------------------------------------------------------------------------------------------------------
 
 class PersistentObject(PersistenceManager, ABC):

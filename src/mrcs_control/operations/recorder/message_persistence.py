@@ -155,8 +155,3 @@ class MessagePersistence(PersistentObject, ABC):
 
         except Exception as ex:
             client.txROLLBACK(ex)
-
-
-    @classmethod
-    def update(cls, entry: PersistentObject):
-        raise NotImplementedError('messages are immutable')
