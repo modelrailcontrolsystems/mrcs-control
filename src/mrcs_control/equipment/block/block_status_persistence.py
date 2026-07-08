@@ -11,6 +11,7 @@ from abc import ABC
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.db.db_name import DbName
+from mrcs_core.equipment.block.block_report import BlockVoltageReport
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -52,6 +53,7 @@ class BlockStatusPersistence(PersistentObject, ABC):
         sql = f'''
             CREATE TABLE IF NOT EXISTS {table} (
             label TEXT PRIMARY KEY, 
+            address TEXT UNIQUE, 
             direction TEXT, 
             voltage TEXT)
             '''
@@ -93,7 +95,7 @@ class BlockStatusPersistence(PersistentObject, ABC):
         client = DbClient.instance(cls.db_name())
 
         table = cls.block_table()
-        sql = f'SELECT label, direction, voltage FROM {table} ORDER BY label'
+        sql = f'SELECT label, address, direction, voltage FROM {table} ORDER BY label'
         client.execute(sql)
         block_rows = client.fetchall()
 
@@ -118,7 +120,7 @@ class BlockStatusPersistence(PersistentObject, ABC):
         client = DbClient.instance(cls.db_name())
 
         table = cls.block_table()
-        sql = f'SELECT label, direction, voltage FROM {table} WHERE label = ?'
+        sql = f'SELECT label, address, direction, voltage FROM {table} WHERE label = ?'
         client.execute(sql, data=(label,))
         block_row = client.fetchone()
 
@@ -147,10 +149,6 @@ class BlockStatusPersistence(PersistentObject, ABC):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    # TODO: insert from design
-    # TODO: update from BlockVoltageReport
-    # TODO: update from BlockOccupancyReports
-
     @classmethod
     def insert(cls, item: PersistentObject):  # TODO: parameter should be BlockDesign
         client = DbClient.instance(cls.db_name())
@@ -161,7 +159,7 @@ class BlockStatusPersistence(PersistentObject, ABC):
             label = item.as_db_insert()[0]
 
             table = cls.block_table()
-            sql = f'REPLACE INTO {table} (label, direction, voltage) VALUES (?, ?, ?)'
+            sql = f'REPLACE INTO {table} (label, address, direction, voltage) VALUES (?, ?, ?, ?)'
             client.execute(sql, data=item.as_db_insert())
 
             # any existing occupants are deleted by cascade on REPLACE
@@ -178,17 +176,32 @@ class BlockStatusPersistence(PersistentObject, ABC):
 
 
     @classmethod
-    def update(cls, item: PersistentObject):  # block ONLY
+    def update_from_voltage(cls, report: BlockVoltageReport):
+        # TODO: separate method for BlockOccupancyReport(s)
         client = DbClient.instance(cls.db_name())
 
         try:
             client.txIMMEDIATE()
 
             table = cls.block_table()
-            sql = f'UPDATE {table} SET direction = ?, voltage = ? WHERE label = ?'
-            client.execute(sql, data=(item.as_db_update()))
+            sql = f'UPDATE {table} SET voltage = ? WHERE address = ?'
+            client.execute(sql, data=(report.voltage.name, report.block_address))
+
+            sql = f'SELECT label, address, direction, voltage FROM {table} WHERE address = ?'
+            client.execute(sql, data=(report.block_address,))
+            block_row = client.fetchone()
+
+            if not block_row:
+                raise KeyError(f'no BlockStatus with address {report.block_address}')
+
+            table = cls.occupant_table()
+            sql = f'SELECT address, face FROM {table} WHERE block_label = ?'
+            client.execute(sql, data=(block_row[0],))
+            occupant_rows = client.fetchall()
 
             client.txCOMMIT()
+
+            return cls.construct_from_db(block_row, *occupant_rows)
 
         except Exception as ex:
             client.txROLLBACK(ex)
