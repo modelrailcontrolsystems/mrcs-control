@@ -7,6 +7,7 @@ SQLite database management for BlockStatus
 """
 
 from abc import ABC
+from typing import List, Self
 
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.db.db_client import DbClient
@@ -91,7 +92,7 @@ class BlockStatusPersistence(PersistentObject, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def find_all(cls):
+    def find_all(cls) -> List[Self]:
         client = DbClient.instance(cls.db_name())
 
         table = cls.block_table()
@@ -116,7 +117,7 @@ class BlockStatusPersistence(PersistentObject, ABC):
 
 
     @classmethod
-    def find(cls, label: str):
+    def find(cls, label: str) -> Self | None:
         client = DbClient.instance(cls.db_name())
 
         table = cls.block_table()
@@ -136,7 +137,7 @@ class BlockStatusPersistence(PersistentObject, ABC):
 
 
     @classmethod
-    def exists(cls, label: str):
+    def exists(cls, label: str) -> bool:
         client = DbClient.instance(cls.db_name())
 
         table = cls.block_table()
@@ -150,7 +151,7 @@ class BlockStatusPersistence(PersistentObject, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def insert(cls, item: PersistentObject):  # TODO: parameter should be BlockDesign
+    def insert(cls, item: PersistentObject) -> None:  # TODO: parameter should be BlockDesign
         client = DbClient.instance(cls.db_name())
 
         try:
@@ -173,10 +174,11 @@ class BlockStatusPersistence(PersistentObject, ABC):
 
         except Exception as ex:
             client.txROLLBACK(ex)
+            raise
 
 
     @classmethod
-    def update_from_voltage(cls, report: BlockVoltageReport):
+    def update_from_voltage(cls, report: BlockVoltageReport) -> Self:
         # TODO: separate method for BlockOccupancyReport(s)
         client = DbClient.instance(cls.db_name())
 
@@ -205,10 +207,11 @@ class BlockStatusPersistence(PersistentObject, ABC):
 
         except Exception as ex:
             client.txROLLBACK(ex)
+            raise
 
 
     @classmethod
-    def delete(cls, label: str):
+    def delete(cls, label: str) -> None:
         client = DbClient.instance(cls.db_name())
 
         try:
@@ -222,3 +225,4 @@ class BlockStatusPersistence(PersistentObject, ABC):
 
         except Exception as ex:
             client.txROLLBACK(ex)
+            raise

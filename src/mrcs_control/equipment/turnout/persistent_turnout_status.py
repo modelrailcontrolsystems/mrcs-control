@@ -43,8 +43,8 @@ class PersistentTurnoutStatus(TurnoutStatus, TurnoutStatusPersistence, Persisten
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def save(self):
-        return super().insert(self)
+    def save(self) -> None:
+        type(self).insert(self)
 
 
     # ----------------------------------------------------------------------------------------------------------------

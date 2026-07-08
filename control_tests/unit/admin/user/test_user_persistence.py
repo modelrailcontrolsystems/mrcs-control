@@ -40,6 +40,7 @@ class TestUserPersistence(unittest.TestCase):
         obj1, _ = self.__setup_db()
         obj2 = PersistentUser.find(obj1.uid)
 
+        assert obj2 is not None
         self.assertEqual(obj2.email, obj1.email)
 
 
@@ -56,6 +57,7 @@ class TestUserPersistence(unittest.TestCase):
                               'Mickey', 'Mouse', obj1.created, obj1.latest_login)
         obj2.save()
         obj3 = PersistentUser.find(obj1.uid)
+        assert obj3 is not None
 
         self.assertEqual(obj3.given_name, 'Mickey')
         self.assertEqual(obj3.family_name, 'Mouse')

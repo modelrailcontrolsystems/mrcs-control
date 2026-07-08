@@ -45,8 +45,8 @@ class PersistentMessage(Message, MessagePersistence, PersistentObject):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def save(self):
-        return super().insert(self)
+    def save(self) -> int:
+        return type(self).insert(self)
 
 
     # ----------------------------------------------------------------------------------------------------------------

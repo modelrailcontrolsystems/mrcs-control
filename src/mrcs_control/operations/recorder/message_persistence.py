@@ -112,7 +112,7 @@ class MessagePersistence(PersistentObject, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def insert(cls, entry: PersistentObject):
+    def insert(cls, entry: PersistentObject) -> int:
         client = DbClient.instance(cls.db_name())
         table = cls.table()
 
@@ -132,6 +132,7 @@ class MessagePersistence(PersistentObject, ABC):
 
         except Exception as ex:
             client.txROLLBACK(ex)
+            raise
 
 
     @classmethod
@@ -155,3 +156,4 @@ class MessagePersistence(PersistentObject, ABC):
 
         except Exception as ex:
             client.txROLLBACK(ex)
+            raise

@@ -127,8 +127,6 @@ class DbClient(object):
         self.execute('ROLLBACK TRANSACTION')
         self.__logger.warning(f'txROLLBACK on {ex}')
 
-        raise ex
-
 
     # ----------------------------------------------------------------------------------------------------------------
 
