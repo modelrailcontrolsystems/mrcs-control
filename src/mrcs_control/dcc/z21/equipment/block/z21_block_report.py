@@ -15,7 +15,7 @@ https://www.z21.eu/en/products/z21
 import struct
 
 from mrcs_control.dcc.z21.command.dataset import Dataset
-from mrcs_control.dcc.z21.equipment.block.z21_block_occupant_report import Z21BlockOccupant
+from mrcs_control.dcc.z21.equipment.block.z21_block_occupant import Z21BlockOccupant
 from mrcs_core.equipment.block.block_enums import BlockVoltage
 from mrcs_core.equipment.block.block_id import BlockID
 from mrcs_core.equipment.block.block_report import BlockOccupancyReport, BlockVoltageReport

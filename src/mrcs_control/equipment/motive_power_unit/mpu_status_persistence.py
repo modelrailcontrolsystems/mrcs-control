@@ -3,7 +3,7 @@ Created on 4 Jul 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-SQLite database management for MPU states
+SQLite database management for MPU status
 """
 
 from abc import ABC
@@ -20,7 +20,7 @@ from mrcs_core.equipment.motive_power_unit.mpu_decoder_report import MPUDecoderR
 
 class MPUStatusPersistence(PersistentObject, ABC):
     """
-    SQLite database management for MPU states
+    SQLite database management for MPU status
     """
 
     __DB_NAME = DbName.MPU
