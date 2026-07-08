@@ -1,0 +1,9 @@
+{
+  "type": "BlockVoltageReport",
+  "id": {
+    "addr": 5,
+    "channel": 6,
+    "rid": 4660
+  },
+  "voltage": "FREE_NO_VOLTAGE"
+}

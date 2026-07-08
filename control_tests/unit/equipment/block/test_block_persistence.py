@@ -15,7 +15,7 @@ from pathlib import Path
 
 from mrcs_control.db.db_client import DbClient, DbMode
 from mrcs_control.equipment.block.persistent_block_status import PersistentBlockStatus
-from mrcs_core.equipment.block.block_enums import BlockVoltage
+from mrcs_core.equipment.block.block_report import BlockVoltageReport
 from setup import Setup
 
 
@@ -31,10 +31,10 @@ class TestBlockPersistence(unittest.TestCase):
 
     def test_setup(self):
         obj1, obj2 = self.__setup_db()
-        self.assertEqual('BlockStatus:{label:BN01, direction:UP, voltage:OCCUPIED_WITH_VOLTAGE, '
+        self.assertEqual('BlockStatus:{label:BN01, address:5/6, direction:UP, voltage:OCCUPIED_WITH_VOLTAGE, '
                          'occupants:[BlockOccupant:{address:4660, face:FWD}, '
                          'BlockOccupant:{address:17767, face:REV}]}', str(obj1))
-        self.assertEqual('BlockStatus:{label:BN02, direction:UP, voltage:OCCUPIED_NO_VOLTAGE, '
+        self.assertEqual('BlockStatus:{label:BN02, address:5/7, direction:UP, voltage:OCCUPIED_NO_VOLTAGE, '
                          'occupants:[BlockOccupant:{address:1767, face:REV}, '
                          'BlockOccupant:{address:4660, face:FWD}]}', str(obj2))
 
@@ -43,6 +43,21 @@ class TestBlockPersistence(unittest.TestCase):
         obj1, _ = self.__setup_db()
         obj2 = PersistentBlockStatus.find(obj1.label)
         self.assertEqual(obj1, obj2)
+
+
+    def test_find_with_no_occupants(self):
+        obj1, _ = self.__setup_db()
+
+        abs_filename = Path(__file__).parent / 'data' / 'block_status_3.json'
+        with open(abs_filename) as fp:
+            jdict = json.load(fp)
+        obj2 = PersistentBlockStatus.construct_from_jdict(jdict)
+        obj2.save()
+
+        obj3 = PersistentBlockStatus.find(obj1.label)
+
+        self.assertEqual(2, len(obj1.occupants))
+        self.assertEqual(0, len(obj3.occupants))
 
 
     def test_find_all(self):
@@ -65,26 +80,15 @@ class TestBlockPersistence(unittest.TestCase):
 
     def test_update(self):
         obj1, _ = self.__setup_db()
-        obj2 = PersistentBlockStatus(obj1.label, obj1.direction, BlockVoltage.OCCUPIED_OVERLOAD_3)
-        obj2.save_block_only()
-        obj3 = PersistentBlockStatus.find(obj1.label)
 
-        self.assertEqual(BlockVoltage.OCCUPIED_OVERLOAD_3, obj3.voltage)
-
-
-    def test_update_with_no_occupants(self):
-        obj1, _ = self.__setup_db()
-
-        abs_filename = Path(__file__).parent / 'data' / 'block_status_3.json'
+        abs_filename = Path(__file__).parent / 'data' / 'block_voltage_report.json'
         with open(abs_filename) as fp:
             jdict = json.load(fp)
-        obj2 = PersistentBlockStatus.construct_from_jdict(jdict)
-        obj2.save()
-
-        obj3 = PersistentBlockStatus.find(obj1.label)
-
-        self.assertEqual(2, len(obj1.occupants))
-        self.assertEqual(0, len(obj3.occupants))
+        obj2 = BlockVoltageReport.construct_from_jdict(jdict)
+        obj3 = obj1.update_from_voltage(obj2)
+        self.assertEqual('BlockStatus:{label:BN01, address:5/6, direction:UP, voltage:FREE_NO_VOLTAGE, '
+                         'occupants:[BlockOccupant:{address:4660, face:FWD}, BlockOccupant:{address:17767, face:REV}]}',
+                         str(obj3))
 
 
     def test_delete(self):

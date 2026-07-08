@@ -1,6 +1,7 @@
 {
   "type": "BlockStatus",
   "label": "BN02",
+  "addr": "5/7",
   "direction": "UP",
   "voltage": "OCCUPIED_NO_VOLTAGE",
   "occupants": [
