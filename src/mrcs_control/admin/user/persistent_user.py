@@ -19,7 +19,6 @@ A structured representation of a user
 
 from mrcs_control.admin.user.user_persistence import UserPersistence
 from mrcs_control.data.persistence import PersistentObject
-
 from mrcs_core.admin.user.user import User, UserRole
 from mrcs_core.data.iso_datetime import ISODatetime
 
@@ -49,13 +48,13 @@ class PersistentUser(User, UserPersistence, PersistentObject):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def save(self, password=None):
+    def save(self, password=None) -> PersistentUser:
         if self.uid is None:
             if password is None:
                 raise ValueError('insert requires password')
-            return super().insert(self, password=password)
+            return type(self).insert(self, password=password)
 
-        return super().update(self)
+        return type(self).update(self)
 
 
     # ----------------------------------------------------------------------------------------------------------------

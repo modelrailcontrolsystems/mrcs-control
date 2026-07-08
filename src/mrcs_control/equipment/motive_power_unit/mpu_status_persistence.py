@@ -7,6 +7,7 @@ SQLite database management for MPU states
 """
 
 from abc import ABC
+from typing import List, Self
 
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.db.db_client import DbClient
@@ -65,7 +66,7 @@ class MPUStatusPersistence(PersistentObject, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def find_all(cls):
+    def find_all(cls) -> List[Self]:
         client = DbClient.instance(cls.db_name())
 
         table = cls.table()
@@ -77,7 +78,7 @@ class MPUStatusPersistence(PersistentObject, ABC):
 
 
     @classmethod
-    def find_by_address(cls, address: int):
+    def find_by_address(cls, address: int) -> Self | None:
         client = DbClient.instance(cls.db_name())
 
         table = cls.table()
@@ -92,7 +93,7 @@ class MPUStatusPersistence(PersistentObject, ABC):
 
 
     @classmethod
-    def find(cls, label: str):
+    def find(cls, label: str) -> Self | None:
         client = DbClient.instance(cls.db_name())
 
         table = cls.table()
@@ -107,7 +108,7 @@ class MPUStatusPersistence(PersistentObject, ABC):
 
 
     @classmethod
-    def exists(cls, label: str):
+    def exists(cls, label: str) -> bool:
         client = DbClient.instance(cls.db_name())
 
         table = cls.table()
@@ -121,7 +122,7 @@ class MPUStatusPersistence(PersistentObject, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def insert(cls, item: PersistentObject):  # TODO: parameter should be MPUDesign
+    def insert(cls, item: PersistentObject) -> None:  # TODO: parameter should be MPUDesign
         client = DbClient.instance(cls.db_name())
 
         try:
@@ -136,10 +137,11 @@ class MPUStatusPersistence(PersistentObject, ABC):
 
         except Exception as ex:
             client.txROLLBACK(ex)
+            raise
 
 
     @classmethod
-    def update_from_configuration_report(cls, config: MPUConfigurationReport):
+    def update_from_configuration_report(cls, config: MPUConfigurationReport) -> Self:
         client = DbClient.instance(cls.db_name())
 
         try:
@@ -162,10 +164,11 @@ class MPUStatusPersistence(PersistentObject, ABC):
 
         except Exception as ex:
             client.txROLLBACK(ex)
+            raise
 
 
     @classmethod
-    def update_from_decoder_report(cls, decoder: MPUDecoderReport):
+    def update_from_decoder_report(cls, decoder: MPUDecoderReport) -> Self:
         client = DbClient.instance(cls.db_name())
 
         try:
@@ -188,10 +191,11 @@ class MPUStatusPersistence(PersistentObject, ABC):
 
         except Exception as ex:
             client.txROLLBACK(ex)
+            raise
 
 
     @classmethod
-    def delete(cls, label: str):
+    def delete(cls, label: str) -> None:
         client = DbClient.instance(cls.db_name())
 
         try:
@@ -205,3 +209,4 @@ class MPUStatusPersistence(PersistentObject, ABC):
 
         except Exception as ex:
             client.txROLLBACK(ex)
+            raise

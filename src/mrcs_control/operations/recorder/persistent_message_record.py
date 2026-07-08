@@ -54,7 +54,7 @@ class PersistentMessageRecord(MessageRecord, MessagePersistence, PersistentObjec
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def save(self):
+    def save(self) -> None:
         raise NotImplementedError('use PersistentMessage class instead')
 
 

@@ -13,6 +13,7 @@ https://www.geeksforgeeks.org/python/how-to-hash-passwords-in-python/
 
 import uuid
 from abc import ABC
+from typing import List, Self
 
 from pwdlib import PasswordHash
 
@@ -105,7 +106,7 @@ class UserPersistence(PersistentObject, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def find_all(cls):
+    def find_all(cls) -> List[Self]:
         client = DbClient.instance(cls.db_name())
         table = cls.table()
 
@@ -114,11 +115,11 @@ class UserPersistence(PersistentObject, ABC):
         client.execute(sql)
         rows = client.fetchall()
 
-        return (cls.construct_from_db(row) for row in rows)
+        return [cls.construct_from_db(row) for row in rows]
 
 
     @classmethod
-    def find(cls, uid):
+    def find(cls, uid) -> Self | None:
         client = DbClient.instance(cls.db_name())
         table = cls.table()
 
@@ -131,7 +132,7 @@ class UserPersistence(PersistentObject, ABC):
 
 
     @classmethod
-    def email_user(cls, email):
+    def email_user(cls, email) -> str | None:
         client = DbClient.instance(cls.db_name())
         table = cls.table()
 
@@ -143,7 +144,7 @@ class UserPersistence(PersistentObject, ABC):
 
 
     @classmethod
-    def exists(cls, uid):
+    def exists(cls, uid) -> bool:
         client = DbClient.instance(cls.db_name())
         table = cls.table()
 
@@ -157,7 +158,7 @@ class UserPersistence(PersistentObject, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def insert(cls, item: PersistentObject, password=None):
+    def insert(cls, item: PersistentObject, password=None) -> Self:
         client = DbClient.instance(cls.db_name())
         table = cls.table()
 
@@ -183,10 +184,11 @@ class UserPersistence(PersistentObject, ABC):
 
         except Exception as ex:
             client.txROLLBACK(ex)
+            raise
 
 
     @classmethod
-    def update(cls, item: PersistentObject):
+    def update(cls, item: PersistentObject) -> Self:
         client = DbClient.instance(cls.db_name())
         table = cls.table()
 
@@ -194,16 +196,27 @@ class UserPersistence(PersistentObject, ABC):
             client.txIMMEDIATE()
 
             sql = f'UPDATE {table} SET email = ?, given_name = ?, family_name = ? WHERE uid = ?'  # TODO: set role also
-            client.execute(sql, data=(item.as_db_update()))
+            client.execute(sql, data=item.as_db_update())
+
+            sql = (f'SELECT uid, email, role, must_set_password, given_name, family_name, created, latest_login '
+                   f'FROM {table} WHERE uid == ?')
+            client.execute(sql, data=(item.as_db_update()[-1],))
+            row = client.fetchone()
+
+            if not row:
+                raise KeyError(f'no User with uid {item.as_db_update()[-1]}')
 
             client.txCOMMIT()
 
+            return cls.construct_from_db(row)
+
         except Exception as ex:
             client.txROLLBACK(ex)
+            raise
 
 
     @classmethod
-    def delete(cls, uid: str):
+    def delete(cls, uid: str) -> None:
         client = DbClient.instance(cls.db_name())
         table = cls.table()
 
@@ -233,10 +246,11 @@ class UserPersistence(PersistentObject, ABC):
 
         except Exception as ex:
             client.txROLLBACK(ex)
+            raise
 
 
     @classmethod
-    def log_in(cls, email, password):
+    def log_in(cls, email, password) -> Self | None:
         client = DbClient.instance(cls.db_name())
         table = cls.table()
 
@@ -269,10 +283,11 @@ class UserPersistence(PersistentObject, ABC):
 
         except Exception as ex:
             client.txROLLBACK(ex)
+            raise
 
 
     @classmethod
-    def set_password(cls, uid, password):
+    def set_password(cls, uid, password) -> None:
         client = DbClient.instance(cls.db_name())
         table = cls.table()
 
@@ -288,3 +303,4 @@ class UserPersistence(PersistentObject, ABC):
 
         except Exception as ex:
             client.txROLLBACK(ex)
+            raise

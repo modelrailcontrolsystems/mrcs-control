@@ -10,6 +10,7 @@ https://stackoverflow.com/questions/2701877/sqlite-table-constraint-unique-on-mu
 """
 
 from abc import ABC
+from typing import List, Self
 
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.db.db_client import DbClient
@@ -86,7 +87,7 @@ class CronjobPersistence(PersistentObject, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def find_all(cls):
+    def find_all(cls) -> List[Self]:
         client = DbClient.instance(cls.db_name())
         table = cls.table()
 
@@ -94,11 +95,11 @@ class CronjobPersistence(PersistentObject, ABC):
         client.execute(sql)
         rows = client.fetchall()
 
-        return (cls.construct_from_db(row) for row in rows)
+        return [cls.construct_from_db(row) for row in rows]
 
 
     @classmethod
-    def find_next(cls, now: ISODatetime):
+    def find_next(cls, now: ISODatetime) -> Self | None:
         client = DbClient.instance(cls.db_name())
         table = cls.table()
 
@@ -113,7 +114,7 @@ class CronjobPersistence(PersistentObject, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def insert(cls, job: PersistentObject):
+    def insert(cls, job: PersistentObject) -> int:
         client = DbClient.instance(cls.db_name())
         table = cls.table()
 
@@ -133,10 +134,11 @@ class CronjobPersistence(PersistentObject, ABC):
 
         except Exception as ex:
             client.txROLLBACK(ex)
+            raise
 
 
     @classmethod
-    def delete(cls, id: int):
+    def delete(cls, id: int) -> None:
         client = DbClient.instance(cls.db_name())
         table = cls.table()
 
@@ -150,3 +152,4 @@ class CronjobPersistence(PersistentObject, ABC):
 
         except Exception as ex:
             client.txROLLBACK(ex)
+            raise

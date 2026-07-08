@@ -57,6 +57,8 @@ class TestBlockPersistence(unittest.TestCase):
         obj3 = PersistentBlockStatus.find(obj1.label)
 
         self.assertEqual(2, len(obj1.occupants))
+        assert obj3 is not None
+
         self.assertEqual(0, len(obj3.occupants))
 
 

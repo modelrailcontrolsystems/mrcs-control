@@ -46,7 +46,7 @@ class PersistentBlockOccupant(BlockOccupant, BlockStatusPersistence, PersistentO
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def save(self):
+    def save(self) -> None:
         raise NotImplementedError('use BlockStatus class instead')
 
 

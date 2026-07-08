@@ -23,10 +23,11 @@ A structured representation of a BlockStatus
 }
 """
 
+from typing import List
+
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.equipment.block.block_status_persistence import BlockStatusPersistence
 from mrcs_control.equipment.block.persistent_block_occupant import PersistentBlockOccupant
-
 from mrcs_core.equipment.block.block_enums import BlockDirection, BlockVoltage
 from mrcs_core.equipment.block.block_occupant import BlockOccupant
 from mrcs_core.equipment.block.block_status import BlockStatus
@@ -57,8 +58,8 @@ class PersistentBlockStatus(BlockStatus, BlockStatusPersistence, PersistentObjec
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def save(self):
-        return super().insert(self)
+    def save(self) -> None:
+        type(self).insert(self)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -71,5 +72,5 @@ class PersistentBlockStatus(BlockStatus, BlockStatusPersistence, PersistentObjec
         return self.direction.name, self.voltage.name, self.label
 
 
-    def children(self):
-        return (PersistentBlockOccupant.widen(occupant) for occupant in self.occupants)
+    def children(self) -> List[PersistentBlockOccupant]:
+        return [PersistentBlockOccupant.widen(occupant) for occupant in self.occupants]

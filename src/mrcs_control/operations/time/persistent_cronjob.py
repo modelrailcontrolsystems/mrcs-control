@@ -33,7 +33,7 @@ class PersistentCronjob(Cronjob, CronjobPersistence, PersistentObject):
 
 
     @classmethod
-    def construct_from_message(cls, message: Message) -> PersistentCronjob:  # TODO: should this be 'widen'?
+    def construct_from_message(cls, message: Message) -> PersistentCronjob:
         cronjob = Cronjob.construct_from_jdict(message.body)
         target = message.routing_key.source if cronjob.target is None else cronjob.target
 
@@ -58,11 +58,11 @@ class PersistentCronjob(Cronjob, CronjobPersistence, PersistentObject):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def save(self):
+    def save(self) -> int:
         if self.id is not None:
             raise ValueError('cron jobs are immutable')
 
-        return super().insert(self)
+        return type(self).insert(self)
 
 
     # ----------------------------------------------------------------------------------------------------------------

@@ -8,7 +8,7 @@ Required to prevent circular imports between business objects and persistence he
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, List
+from typing import Any, List, Self
 
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.db.db_name import DbName
@@ -34,6 +34,7 @@ class PersistenceManager(ABC):
 
         except Exception as ex:
             client.txROLLBACK(ex)
+            raise
 
 
     @classmethod
@@ -47,6 +48,7 @@ class PersistenceManager(ABC):
 
         except Exception as ex:
             client.txROLLBACK(ex)
+            raise
 
 
     @classmethod
@@ -60,6 +62,7 @@ class PersistenceManager(ABC):
 
         except Exception as ex:
             client.txROLLBACK(ex)
+            raise
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -92,7 +95,7 @@ class PersistentObject(PersistenceManager, ABC):
 
     @classmethod
     @abstractmethod
-    def construct_from_db(cls, row: List[Any], *child_rows: List[Any]) -> PersistentObject:
+    def construct_from_db(cls, row: List[Any], *child_rows: Any) -> Self:
         pass
 
 

@@ -74,8 +74,9 @@ class TestCronjobPersistence(unittest.TestCase):
         time.sleep(1)
 
         job = PersistentCronjob.find_next(ISODatetime.now())
-        self.assertEqual(job, job1)
+        assert job is not None
 
+        self.assertEqual(job, job1)
         PersistentCronjob.delete(job.id)
 
         job = PersistentCronjob.find_next(ISODatetime.now())
