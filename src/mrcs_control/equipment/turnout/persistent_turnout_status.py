@@ -3,7 +3,7 @@ Created on 4 Jul 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-A structured representation of a TurnoutStatus
+SQLite database management for TurnoutStatus
 
 {
     "type": "TurnoutStatus",
@@ -23,8 +23,7 @@ from mrcs_core.equipment.turnout.turnout_status import TurnoutStatus
 
 class PersistentTurnoutStatus(TurnoutStatus, TurnoutStatusPersistence, PersistentObject):
     """
-    a structured representation of a TurnoutStatus
-    label, address, address, position
+    SQLite database management for TurnoutStatus
     """
 
 
