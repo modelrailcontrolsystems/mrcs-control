@@ -35,5 +35,6 @@ class Z21MPUDecoderReport(object):
             raise ValueError(f'Z21MPUDecoderReport data requires 13 bytes, got {data.hex(" ")}')
 
         address, receive_count, error_count, _, opts, speed, qos, _ = struct.unpack('<HLHBBBBB', data)
+        mpu_address = address & 0x3fff
 
-        return MPUDecoderReport(address, receive_count, error_count, opts, speed, qos)
+        return MPUDecoderReport(mpu_address, receive_count, error_count, opts, speed, qos)

@@ -30,9 +30,9 @@ class Z21BlockOccupant(object):
 
     @classmethod
     def construct_from_data(cls, data: int) -> BlockOccupant:
-        address = data & 0x3fff
+        mpu_address = data & 0x3fff
 
         # may raise ValueError
         face = BlockOccupantFace((data >> 14) & 0x0003)
 
-        return BlockOccupant(address, face)
+        return BlockOccupant(mpu_address, face)

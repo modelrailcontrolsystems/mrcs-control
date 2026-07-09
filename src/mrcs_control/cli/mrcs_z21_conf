@@ -41,8 +41,6 @@ from mrcs_core.sys.logging import Logging
 
 if __name__ == '__main__':
 
-    command_reported = False
-
     # ----------------------------------------------------------------------------------------------------------------
 
     args = Z21ConfArgs('a utility to configure acces to the Roco Z21 control station')

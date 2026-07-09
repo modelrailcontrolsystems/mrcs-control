@@ -38,10 +38,10 @@ class Z21BlockReport(object):
 
         network_id, address, port, msg_type, value_1, value_2 = struct.unpack('<HHBBHH', data)
 
-        reporter_address = address + 1
-        reporter_channel = port + 1
+        detector_address = address + 1
+        detector_channel = port + 1
 
-        id = BlockID(reporter_address, reporter_channel, network_id)
+        id = BlockID(detector_address, detector_channel, network_id)
 
         if msg_type == 0x01:
             voltage = BlockVoltage(value_1)
@@ -50,6 +50,6 @@ class Z21BlockReport(object):
         occupant_group = msg_type & 0x0f
         occupant1 = Z21BlockOccupant.construct_from_data(value_1)
         occupant2 = Z21BlockOccupant.construct_from_data(value_2)
-        occupants = sorted([occupant for occupant in (occupant1, occupant2) if occupant.has_address()])
+        occupants = sorted([occupant for occupant in (occupant1, occupant2) if occupant.has_mpu_address()])
 
         return BlockOccupancyReport(id, occupant_group, occupants)

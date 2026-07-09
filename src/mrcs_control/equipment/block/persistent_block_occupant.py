@@ -28,7 +28,7 @@ class PersistentBlockOccupant(BlockOccupant, BlockStatusPersistence, PersistentO
 
     @classmethod
     def widen(cls, occupant: BlockOccupant):
-        return cls(occupant.address, occupant.face)
+        return cls(occupant.mpu_address, occupant.face)
 
 
     @classmethod
@@ -53,7 +53,7 @@ class PersistentBlockOccupant(BlockOccupant, BlockStatusPersistence, PersistentO
     # ----------------------------------------------------------------------------------------------------------------
 
     def as_db_insert(self):
-        return self.address, self.face.name
+        return self.mpu_address, self.face.name
 
 
     def as_db_update(self):
