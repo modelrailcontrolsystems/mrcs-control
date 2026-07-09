@@ -32,8 +32,10 @@ class TestMPUPersistence(unittest.TestCase):
 
     def test_setup(self):
         obj1, obj2 = self.__setup_db()
-        self.assertEqual('TurnoutStatus:{label:TE01, block_label:BN01, address:13, position:P0}', str(obj1))
-        self.assertEqual('TurnoutStatus:{label:TE02, block_label:BN01, address:14, position:P0}', str(obj2))
+        self.assertEqual('TurnoutStatus:{label:TE01, block_label:BN01, turnout_address:13, position:P0}',
+                         str(obj1))
+        self.assertEqual('TurnoutStatus:{label:TE02, block_label:BN01, turnout_address:14, position:P0}',
+                         str(obj2))
 
 
     def test_find(self):
@@ -44,7 +46,7 @@ class TestMPUPersistence(unittest.TestCase):
 
     def test_find_by_addr(self):
         obj1, _ = self.__setup_db()
-        obj2 = PersistentTurnoutStatus.find_by_address(obj1.address)
+        obj2 = PersistentTurnoutStatus.find_by_address(obj1.turnout_address)
         self.assertEqual(obj1, obj2)
 
 
@@ -76,7 +78,8 @@ class TestMPUPersistence(unittest.TestCase):
 
         obj3 = PersistentTurnoutStatus.update_from_turnout_report(obj2)
         print(obj3)
-        self.assertEqual('TurnoutStatus:{label:TE01, block_label:BN01, address:13, position:P1}', str(obj3))
+        self.assertEqual('TurnoutStatus:{label:TE01, block_label:BN01, turnout_address:13, position:P1}',
+                         str(obj3))
 
 
     def test_update_from_report_not_found(self):

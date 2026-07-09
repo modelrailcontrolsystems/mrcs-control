@@ -43,17 +43,17 @@ class PersistentBlockStatus(BlockStatus, BlockStatusPersistence, PersistentObjec
 
     @classmethod
     def construct_from_db(cls, row, *child_rows) -> PersistentBlockStatus:
-        label, address, direction, voltage = row
+        label, block_address, direction, voltage = row
         occupants = [PersistentBlockOccupant.construct_from_db(occupant_row) for occupant_row in child_rows]
 
-        return cls(label, address, BlockDirection[direction], BlockVoltage[voltage], *occupants)
+        return cls(label, block_address, BlockDirection[direction], BlockVoltage[voltage], *occupants)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, label: str, address: str, direction: BlockDirection, voltage: BlockVoltage,
+    def __init__(self, label: str, block_address: str, direction: BlockDirection, voltage: BlockVoltage,
                  *occupants: BlockOccupant):
-        super().__init__(label, address, direction, voltage, *occupants)
+        super().__init__(label, block_address, direction, voltage, *occupants)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -65,7 +65,7 @@ class PersistentBlockStatus(BlockStatus, BlockStatusPersistence, PersistentObjec
     # ----------------------------------------------------------------------------------------------------------------
 
     def as_db_insert(self):
-        return self.label, self.address, self.direction.name, self.voltage.name
+        return self.label, self.block_address, self.direction.name, self.voltage.name
 
 
     def as_db_update(self):

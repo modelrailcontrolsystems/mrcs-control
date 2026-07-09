@@ -149,14 +149,15 @@ class MPUStatusPersistence(PersistentObject, ABC):
 
             table = cls.table()
             sql = f'UPDATE {table} SET functions = ? , speed_setting = ?, reverse = ? WHERE address = ?'
-            client.execute(sql, data=(config.functions.as_json(), config.speed_setting, config.reverse, config.address))
+            client.execute(sql,
+                           data=(config.functions.as_json(), config.speed_setting, config.reverse, config.mpu_address))
 
             sql = f'SELECT label, address, functions, speed_setting, speed, reverse FROM {table} WHERE address = ?'
-            client.execute(sql, data=(config.address,))
+            client.execute(sql, data=(config.mpu_address,))
             row = client.fetchone()
 
             if not row:
-                raise KeyError(f'no MPUStatus with address 0x{config.address:02x}')
+                raise KeyError(f'no MPUStatus with address 0x{config.mpu_address:02x}')
 
             client.txCOMMIT()
 
@@ -176,14 +177,14 @@ class MPUStatusPersistence(PersistentObject, ABC):
 
             table = cls.table()
             sql = f'UPDATE {table} SET speed = ? WHERE address = ?'
-            client.execute(sql, data=(decoder.speed, decoder.address))
+            client.execute(sql, data=(decoder.speed, decoder.mpu_address))
 
             sql = f'SELECT label, address, functions, speed_setting, speed, reverse FROM {table} WHERE address = ?'
-            client.execute(sql, data=(decoder.address,))
+            client.execute(sql, data=(decoder.mpu_address,))
             row = client.fetchone()
 
             if not row:
-                raise KeyError(f'no MPUStatus with address 0x{decoder.address:02x}')
+                raise KeyError(f'no MPUStatus with address 0x{decoder.mpu_address:02x}')
 
             client.txCOMMIT()
 

@@ -35,7 +35,7 @@ class Z21MPUConfigurationReport(object):
             raise ValueError(f'Z21MPUConfigurationReport data requires at least 2 bytes, got {data.hex(" ")}')
 
         # defaults
-        address = ((data[0] & 0x3f) << 8) | data[1]
+        mpu_address = ((data[0] & 0x3f) << 8) | data[1]
         functions = [False] * 32
         is_busy = False
         stepping = ThrottleSteps.STEPS_128
@@ -74,7 +74,7 @@ class Z21MPUConfigurationReport(object):
         except IndexError:
             pass
 
-        return MPUConfigurationReport(address, MPUFunctions(functions), is_busy, stepping, speed_setting, reverse,
+        return MPUConfigurationReport(mpu_address, MPUFunctions(functions), is_busy, stepping, speed_setting, reverse,
                                       double_traction, smart_search)
 
 

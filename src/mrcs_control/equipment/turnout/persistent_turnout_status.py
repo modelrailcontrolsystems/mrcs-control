@@ -29,15 +29,15 @@ class PersistentTurnoutStatus(TurnoutStatus, TurnoutStatusPersistence, Persisten
 
     @classmethod
     def construct_from_db(cls, row, *child_rows) -> PersistentTurnoutStatus:
-        label, block_label, address, position = row
+        label, block_label, turnout_address, position = row
 
-        return cls(label, block_label, address, TurnoutPosition[position])
+        return cls(label, block_label, turnout_address, TurnoutPosition[position])
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, label: str, block_label: str, address: int, position: TurnoutPosition):
-        super().__init__(label, block_label, address, position)
+    def __init__(self, label: str, block_label: str, turnout_address: int, position: TurnoutPosition):
+        super().__init__(label, block_label, turnout_address, position)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -49,7 +49,7 @@ class PersistentTurnoutStatus(TurnoutStatus, TurnoutStatusPersistence, Persisten
     # ----------------------------------------------------------------------------------------------------------------
 
     def as_db_insert(self):
-        return self.label, self.block_label, self.address, self.position.name
+        return self.label, self.block_label, self.turnout_address, self.position.name
 
 
     def as_db_update(self):

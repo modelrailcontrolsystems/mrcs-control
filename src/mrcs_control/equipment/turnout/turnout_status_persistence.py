@@ -149,14 +149,14 @@ class TurnoutStatusPersistence(PersistentObject, ABC):
 
             table = cls.table()
             sql = f'UPDATE {table} SET position = ? WHERE address = ?'
-            client.execute(sql, data=(report.position.name, report.address))
+            client.execute(sql, data=(report.position.name, report.turnout_address))
 
             sql = f'SELECT label, block_label, address, position FROM {table} WHERE address = ?'
-            client.execute(sql, data=(report.address,))
+            client.execute(sql, data=(report.turnout_address,))
             row = client.fetchone()
 
             if not row:
-                raise KeyError(f'no TurnoutStatus with address {report.address}')
+                raise KeyError(f'no TurnoutStatus with address {report.turnout_address}')
 
             client.txCOMMIT()
 

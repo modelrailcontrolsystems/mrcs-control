@@ -35,9 +35,9 @@ class Z21TurnoutReport(object):
         if len(data) != 3:
             raise ValueError(f'Z21TurnoutReport data requires 3 bytes, got {data.hex(" ")}')
 
-        address = struct.unpack('<H', data[:2])[0]
+        turnout_address = struct.unpack('<H', data[:2])[0]
 
         # may raise ValueError
         position = TurnoutPosition(data[2] & 0x03)
 
-        return TurnoutReport(address, position)
+        return TurnoutReport(turnout_address, position)

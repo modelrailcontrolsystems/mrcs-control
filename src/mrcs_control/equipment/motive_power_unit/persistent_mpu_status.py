@@ -33,16 +33,17 @@ class PersistentMPUStatus(MPUStatus, MPUStatusPersistence, PersistentObject):
 
     @classmethod
     def construct_from_db(cls, row, *child_rows) -> PersistentMPUStatus:
-        label, address, functions, speed_setting, speed, reverse = row
+        label, mpu_address, functions, speed_setting, speed, reverse = row
 
-        return cls(label, address, MPUFunctions.construct_from_jdict(functions), speed_setting, speed, bool(reverse))
+        return cls(label, mpu_address, MPUFunctions.construct_from_jdict(functions), speed_setting, speed,
+                   bool(reverse))
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, label: str, address: int, functions: MPUFunctions, speed_setting: int, speed: int,
+    def __init__(self, label: str, mpu_address: int, functions: MPUFunctions, speed_setting: int, speed: int,
                  reverse: bool):
-        super().__init__(label, address, functions, speed_setting, speed, reverse)
+        super().__init__(label, mpu_address, functions, speed_setting, speed, reverse)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -54,7 +55,7 @@ class PersistentMPUStatus(MPUStatus, MPUStatusPersistence, PersistentObject):
     # ----------------------------------------------------------------------------------------------------------------
 
     def as_db_insert(self):
-        return self.label, self.address, self.functions.as_json(), self.speed_setting, self.speed, self.reverse
+        return self.label, self.mpu_address, self.functions.as_json(), self.speed_setting, self.speed, self.reverse
 
 
     def as_db_update(self):

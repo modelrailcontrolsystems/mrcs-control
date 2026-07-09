@@ -23,14 +23,14 @@ class TestZ21TurnoutReport(unittest.TestCase):
         chars = bytes([0x09, 0x00, 0x40, 0x00, 0x43, 0x00, 0x00, 0x01, 0x42])
         obj1 = Dataset.construct_from_bytes(chars)
         obj2 = Z21TurnoutReport.construct_from_dataset(obj1)
-        self.assertEqual('TurnoutReport:{address:0, position:P0}', str(obj2))
+        self.assertEqual('TurnoutReport:{turnout_address:0, position:P0}', str(obj2))
 
 
     def test_construct_turnout_p1(self):
         chars = bytes([0x09, 0x00, 0x40, 0x00, 0x43, 0x00, 0x00, 0x02, 0x41])
         obj1 = Dataset.construct_from_bytes(chars)
         obj2 = Z21TurnoutReport.construct_from_dataset(obj1)
-        self.assertEqual('TurnoutReport:{address:0, position:P1}', str(obj2))
+        self.assertEqual('TurnoutReport:{turnout_address:0, position:P1}', str(obj2))
 
 
 # --------------------------------------------------------------------------------------------------------------------
