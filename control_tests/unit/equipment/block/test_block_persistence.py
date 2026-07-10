@@ -15,6 +15,7 @@ from pathlib import Path
 
 from mrcs_control.db.db_client import DbClient, DbMode
 from mrcs_control.equipment.block.persistent_block_status import PersistentBlockStatus
+from mrcs_control.equipment.turnout.persistent_turnout_status import PersistentTurnoutStatus
 from mrcs_core.equipment.block.block_report import BlockVoltageReport
 from setup import Setup
 
@@ -45,6 +46,14 @@ class TestBlockPersistence(unittest.TestCase):
         obj1, _ = self.__setup_db()
         obj2 = PersistentBlockStatus.find(obj1.label)
         self.assertEqual(obj1, obj2)
+
+
+    def test_find_turnouts(self):
+        obj1, _ = self.__setup_db()
+        obj2 = PersistentBlockStatus.find(obj1.label)
+        assert obj2 is not None
+        turnouts = obj2.turnouts
+        self.assertEqual(2, len(turnouts))
 
 
     def test_find_with_no_occupants(self):
@@ -122,6 +131,18 @@ class TestBlockPersistence(unittest.TestCase):
             jdict = json.load(fp)
         obj2 = PersistentBlockStatus.construct_from_jdict(jdict)
         obj2.save()
+
+        abs_filename = Path(__file__).parent / 'data' / 'turnout_status_1.json'
+        with open(abs_filename) as fp:
+            jdict = json.load(fp)
+        obj3 = PersistentTurnoutStatus.construct_from_jdict(jdict)
+        obj3.save()
+
+        abs_filename = Path(__file__).parent / 'data' / 'turnout_status_2.json'
+        with open(abs_filename) as fp:
+            jdict = json.load(fp)
+        obj4 = PersistentTurnoutStatus.construct_from_jdict(jdict)
+        obj4.save()
 
         return obj1, obj2
 

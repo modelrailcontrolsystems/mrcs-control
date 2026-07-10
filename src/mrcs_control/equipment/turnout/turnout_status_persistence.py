@@ -71,8 +71,20 @@ class TurnoutStatusPersistence(PersistentObject, ABC):
         client = DbClient.instance(cls.db_name())
 
         table = cls.table()
-        sql = f'SELECT label, block_label, address, position FROM {table} ORDER BY label'
+        sql = f'SELECT label, block_label, address, position FROM {table} ORDER BY block_label, label'
         client.execute(sql)
+        rows = client.fetchall()
+
+        return [cls.construct_from_db(row) for row in rows]
+
+
+    @classmethod
+    def find_for_block(cls, block_label: str) -> List[Self]:
+        client = DbClient.instance(cls.db_name())
+
+        table = cls.table()
+        sql = f'SELECT label, block_label, address, position FROM {table} WHERE block_label = ? ORDER BY label'
+        client.execute(sql, data=(block_label,))
         rows = client.fetchall()
 
         return [cls.construct_from_db(row) for row in rows]

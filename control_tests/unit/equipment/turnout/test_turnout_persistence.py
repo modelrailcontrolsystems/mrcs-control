@@ -21,7 +21,7 @@ from setup import Setup
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class TestMPUPersistence(unittest.TestCase):
+class TestTurnoutPersistence(unittest.TestCase):
 
 
     @classmethod
@@ -56,6 +56,18 @@ class TestMPUPersistence(unittest.TestCase):
         self.assertEqual(2, len(objs))
 
 
+    def test_find_for_block(self):
+        self.__setup_db()
+        objs = PersistentTurnoutStatus.find_for_block('BN01')
+        self.assertEqual(2, len(objs))
+
+
+    def test_find_for_block_empty(self):
+        self.__setup_db()
+        objs = PersistentTurnoutStatus.find_for_block('BN02')
+        self.assertEqual(0, len(objs))
+
+
     def test_exists(self):
         obj1, _ = self.__setup_db()
         exists = PersistentTurnoutStatus.exists(obj1.label)
@@ -77,7 +89,6 @@ class TestMPUPersistence(unittest.TestCase):
         obj2 = TurnoutReport.construct_from_jdict(jdict)
 
         obj3 = PersistentTurnoutStatus.update_from_turnout_report(obj2)
-        print(obj3)
         self.assertEqual('TurnoutStatus:{label:TE01, block_label:BN01, turnout_address:13, position:P1}',
                          str(obj3))
 
