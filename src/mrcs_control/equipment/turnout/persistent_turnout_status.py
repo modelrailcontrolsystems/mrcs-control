@@ -29,9 +29,9 @@ class PersistentTurnoutStatus(TurnoutStatus, TurnoutStatusPersistence, Persisten
 
     @classmethod
     def construct_from_db(cls, row, *child_rows) -> PersistentTurnoutStatus:
-        label, block_label, turnout_address, position = row
+        label, block_label, turnout_address, position_name = row
 
-        return cls(label, block_label, turnout_address, TurnoutPosition[position])
+        return cls(label, block_label, turnout_address, TurnoutPosition[position_name])
 
 
     # ----------------------------------------------------------------------------------------------------------------

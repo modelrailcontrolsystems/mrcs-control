@@ -28,9 +28,11 @@ from typing import List
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.equipment.block.block_status_persistence import BlockStatusPersistence
 from mrcs_control.equipment.block.persistent_block_occupant import PersistentBlockOccupant
+from mrcs_control.equipment.turnout.persistent_turnout_status import PersistentTurnoutStatus
 from mrcs_core.equipment.block.block_enums import BlockDirection, BlockVoltage
 from mrcs_core.equipment.block.block_occupant import BlockOccupant
 from mrcs_core.equipment.block.block_status import BlockStatus
+from mrcs_core.equipment.turnout.turnout_status import TurnoutStatus
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -64,12 +66,19 @@ class PersistentBlockStatus(BlockStatus, BlockStatusPersistence, PersistentObjec
 
     # ----------------------------------------------------------------------------------------------------------------
 
+    @property
+    def turnouts(self) -> List[TurnoutStatus]:
+        return PersistentTurnoutStatus.find_for_block(self.label)
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
     def as_db_insert(self):
         return self.label, self.block_address, self.direction.name, self.voltage.name
 
 
     def as_db_update(self):
-        return self.direction.name, self.voltage.name, self.label
+        raise NotImplementedError('use BlockReport classes instead')
 
 
     def children(self) -> List[PersistentBlockOccupant]:
