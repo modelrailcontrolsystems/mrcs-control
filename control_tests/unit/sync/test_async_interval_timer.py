@@ -17,7 +17,7 @@ from mrcs_control.sys.interval_timer import AsyncIntervalTimer
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class TestAsyncIntervalTimer(unittest.TestCase):
+class TestAsyncIntervalTimer(unittest.IsolatedAsyncioTestCase):
 
     def test_construct(self):
         obj1 = AsyncIntervalTimer(1.5)
