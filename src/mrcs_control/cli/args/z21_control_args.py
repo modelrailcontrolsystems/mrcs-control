@@ -10,6 +10,7 @@ from mrcs_control.cli.args.control_args import ControlArgs
 from mrcs_control.dcc.z21.command.command import Command, XCommand
 from mrcs_control.dcc.z21.command.header import Header, XHeader
 from mrcs_core.equipment.track.track_enums import TrackMode
+from mrcs_core.equipment.turnout.turnout_enums import TurnoutPosition
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -25,7 +26,7 @@ class Z21ControlArgs(ControlArgs):
         group.add_argument('-m', '--monitor', action='store_true', help='monitor broadcast messages')
         group.add_argument('-s', '--system', action='store_true', help='get system state')
         group.add_argument('-p', '--power', action='store', type=int, nargs=1, help='set track power')
-        group.add_argument('-t', '--turnout', action='store', type=str, nargs=2, help='set turnout state')
+        group.add_argument('-t', '--turnout', action='store', type=int, nargs=2, help='set turnout state')
 
         self._args = self._parser.parse_args()
 
@@ -34,7 +35,7 @@ class Z21ControlArgs(ControlArgs):
 
     @property
     def has_command(self):
-        return self.system or self.power is not None
+        return self.system or self.power is not None or self.turnout is not None
 
 
     @property
@@ -45,6 +46,10 @@ class Z21ControlArgs(ControlArgs):
         if self.power is not None:
             mode = TrackMode.COMMAND_POWER_ON if self.power else TrackMode.COMMAND_POWER_OFF
             return XCommand.construct(XHeader.LAN_X_SET_TRACK_POWER, mode)
+
+        if self.turnout is not None:
+            positon = TurnoutPosition.P0 if self.turnout[1] == 0 else TurnoutPosition.P1
+            return XCommand.construct(XHeader.LAN_X_SET_TURNOUT, self.turnout[0], positon)
 
         return None
 

@@ -54,7 +54,7 @@ class Z21Station(object):
 
         transport, protocol = await loop.create_datagram_endpoint(
             lambda: Z21Protocol(station.dataset_handler, station.connection_lost_handler),
-            remote_addr=(conf.ip_address, conf.port),
+            remote_addr=(conf.ip_address.dot_decimal, conf.port),
         )
 
         # TODO: use conf.timeout? Do we need receive_packet() if broadcast is off?
@@ -109,7 +109,6 @@ class Z21Station(object):
 
 
     def connection_lost_handler(self, ex: Exception | None) -> None:
-        self.logger.debug(f'connection_lost_handler - ex:{ex}')
         self.on_connection_lost(ex)
 
 
@@ -135,10 +134,11 @@ class Z21Station(object):
     # ----------------------------------------------------------------------------------------------------------------
 
     async def send_command(self, command: Command) -> None:
-        self.logger.debug(f'*** station - send_command:{command}')
-
         if self.__transport is None:
             raise ConnectionError('not connected to a Z21 station')
+
+        chars = command.dataset.as_bytes()
+        # self.logger.debug(f'*** station - send_command:{chars.hex(" ")}')
 
         self.__transport.sendto(command.dataset.as_bytes())
 
@@ -207,6 +207,9 @@ class Z21Station(object):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'Z21Station:{{conf:{self.conf}, on_response:{self.on_response}, '
-                f'on_connection_lost:{self.on_connection_lost}, has_connection:{self.has_connection}, '
+        on_response = self.__on_response is not None
+        on_connection_lost = self.__on_connection_lost is not None
+
+        return (f'Z21Station:{{conf:{self.conf}, on_response:{on_response}, '
+                f'on_connection_lost:{on_connection_lost}, has_connection:{self.has_connection}, '
                 f'transport:{bool(self.__transport)}, protocol:{self.__protocol}}}')

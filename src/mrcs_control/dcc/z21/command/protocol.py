@@ -42,11 +42,10 @@ class Z21Protocol(DatagramProtocol):
     # ----------------------------------------------------------------------------------------------------------------
 
     def connection_made(self, transport):
-        self.logger.debug('connection_made')
+        pass
 
 
     def connection_lost(self, ex):
-        self.logger.debug(f'connection_lost - ex:{ex}')
         self.__connection_lost_handler(ex)
 
 

@@ -41,31 +41,34 @@ from mrcs_core.sys.logging import Logging
 def on_dataset(report: JSONable):
     global command_reported
 
-    print(JSONify.dumps(report))
-    # if args.monitor:
-    #     print(JSONify.dumps(report))
-    #     return
+    # print(JSONify.dumps(report))
+
+    if args.monitor:
+        print(JSONify.dumps(report))
+        return
 
     if not command_reported and isinstance(report, args.command.report_type):
         print(JSONify.dumps(report))
         command_reported = True
-        return
-        # exit(0)
+        exit(0)
 
 
 def on_connection_lost(ex: Exception):
-    logger.warning(f'connection lost: {ex}')
+    if ex:
+        logger.warning(f'connection lost - ex: {ex}')
 
 
 async def monitor():
     async with await Z21Station.connect(conf, on_dataset, on_connection_lost) as station:
         logger.info(f'station: {station}')
 
-        if args.monitor:
-            await station.set_broadcast_flags(conf.broadcast_flags)
+        await station.set_broadcast_flags(conf.subscription)
 
         if args.has_command:
-            await station.send_command(args.command)
+            command = args.command
+            await station.send_command(command)
+            if command.report_type is None:
+                exit(0)
 
         while True:
             await asyncio.sleep(1)
