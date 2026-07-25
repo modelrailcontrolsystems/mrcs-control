@@ -15,7 +15,8 @@ SYNOPSIS
 mrcs_z21_control [-h] [-i INDENT] [-v] [--version] [-m | -s | -p POWER | -t TURNOUT TURNOUT]
 
 EXAMPLES
-mrcs_z21_control -power 1
+mrcs_z21_control -p 1
+mrcs_z21_control -t 3 0
 
 FILES
 ~/MRCS/conf/z21_conf.json
@@ -27,6 +28,7 @@ mrcs_z21_conf
 import asyncio
 import logging
 import sys
+import time
 
 from mrcs_control.cli.args.z21_control_args import Z21ControlArgs
 from mrcs_control.dcc.z21.command.station import Z21Station
@@ -39,17 +41,12 @@ from mrcs_core.sys.logging import Logging
 # --------------------------------------------------------------------------------------------------------------------
 
 def on_dataset(report: JSONable):
-    global command_reported
-
-    # print(JSONify.dumps(report))
-
     if args.monitor:
         print(JSONify.dumps(report))
         return
 
-    if not command_reported and isinstance(report, args.command.report_type):
+    if isinstance(report, args.command.report_type):
         print(JSONify.dumps(report))
-        command_reported = True
         exit(0)
 
 
@@ -60,9 +57,12 @@ def on_connection_lost(ex: Exception):
 
 async def monitor():
     async with await Z21Station.connect(conf, on_dataset, on_connection_lost) as station:
+        time.sleep(0.1)
+
         logger.info(f'station: {station}')
 
         await station.set_broadcast_flags(conf.subscription)
+        time.sleep(0.1)
 
         if args.has_command:
             command = args.command
@@ -77,8 +77,6 @@ async def monitor():
 # --------------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-
-    command_reported = False
 
     # ----------------------------------------------------------------------------------------------------------------
 
