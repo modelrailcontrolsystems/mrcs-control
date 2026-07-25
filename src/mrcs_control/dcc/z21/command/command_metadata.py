@@ -131,7 +131,7 @@ class XCommandMetadata(CommandMetadata):
     def init(cls):
         cls.__CATALOG = {
             XHeader.LAN_X_SET_TRACK_POWER: cls(XHeader.LAN_X_SET_TRACK_POWER, 1, cls.argv_std, 'B', TrackReport),
-            XHeader.LAN_X_SET_TURNOUT: cls(XHeader.LAN_X_SET_TURNOUT, 2, cls.argv_turnout, '<HB', TurnoutReport),
+            XHeader.LAN_X_SET_TURNOUT: cls(XHeader.LAN_X_SET_TURNOUT, 2, cls.argv_turnout, '>HB', TurnoutReport),
         }
 
 
