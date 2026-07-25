@@ -141,9 +141,9 @@ class XCommand(Command):
 
 
     @classmethod
-    def construct(cls, x_header: XHeader, *argv: int):
+    def construct_x(cls, x_header: XHeader, *argv: int):
         try:
-            meta = XCommandMetadata.find(x_header)
+            meta = XCommandMetadata.find_x(x_header)
         except TypeError:
             raise TypeError(f'unsupported header: {x_header}')
 
@@ -209,12 +209,12 @@ class XCommand(Command):
 
     @property
     def data_format(self):
-        return self.meta.find(self.x_header).data_format
+        return self.meta.data_format
 
 
     @property
     def report_type(self):
-        return self.meta.find(self.x_header).report_type
+        return self.meta.report_type
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -222,7 +222,7 @@ class XCommand(Command):
 
     @property
     def meta(self):
-        return XCommandMetadata.find(self.x_header)
+        return XCommandMetadata.find_x(self.x_header)
 
 
     @property

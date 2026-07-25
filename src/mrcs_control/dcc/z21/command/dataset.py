@@ -16,6 +16,8 @@ https://gitlab.com/z21-fpm/z21_python
 import struct
 from functools import reduce
 
+from mypy.types import Any
+
 from mrcs_control.dcc.z21.command.header import Header, XHeader
 
 
@@ -50,7 +52,7 @@ class Dataset(object):
         self._data = data
 
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any):
         try:
             return self.header == other.header and self.x_header == other.x_header and self.data == other.data
         except (AttributeError, TypeError):

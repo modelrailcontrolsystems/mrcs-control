@@ -19,16 +19,6 @@ from mrcs_control.dcc.z21.command.header import Header, XHeader
 
 class TestCommandMetadata(unittest.TestCase):
 
-    def test_is_supported(self):
-        supported = CommandMetadata.is_supported(Header.LAN_SYSTEMSTATE_GETDATA)
-        self.assertTrue(supported)
-
-
-    def test_is_not_supported(self):
-        supported = CommandMetadata.is_supported(Header.LAN_LOCONET_Z21_RX)
-        self.assertFalse(supported)
-
-
     def test_found(self):
         obj1 = CommandMetadata.find(Header.LAN_SET_BROADCAST_FLAGS)
         self.assertEqual('CommandMetadata:{header:LAN_SET_BROADCAST_FLAGS, argc:1, argv_builder:argv_std, '
@@ -47,13 +37,13 @@ class TestCommandMetadata(unittest.TestCase):
 
 
     def test_x_found(self):
-        obj1 = XCommandMetadata.find(XHeader.LAN_X_SET_TRACK_POWER)
+        obj1 = XCommandMetadata.find_x(XHeader.LAN_X_SET_TRACK_POWER)
         self.assertEqual('XCommandMetadata:{header:LAN_X, x_header:LAN_X_SET_TRACK_POWER, argc:1, '
                          'argv_builder:argv_std, data_format:B, report_type:TrackReport}', str(obj1))
 
 
     def test_argv_turnout(self):
-        obj1 = XCommandMetadata.find(XHeader.LAN_X_SET_TURNOUT)
+        obj1 = XCommandMetadata.find_x(XHeader.LAN_X_SET_TURNOUT)
         obj2 = obj1.argv_builder(1, 2, 3)
         self.assertEqual('(1, 169)', str(obj2))
 

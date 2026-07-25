@@ -15,11 +15,11 @@ A structured representation of an MPUStatus
     "reverse": true
 }
 """
+from typing import Self
 
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.equipment.motive_power_unit.mpu_status_persistence import MPUStatusPersistence
 from mrcs_core.equipment.motive_power_unit.mpu_functions import MPUFunctions
-
 from mrcs_core.equipment.motive_power_unit.mpu_status import MPUStatus
 
 
@@ -32,7 +32,7 @@ class PersistentMPUStatus(MPUStatus, MPUStatusPersistence, PersistentObject):
 
 
     @classmethod
-    def construct_from_db(cls, row, *child_rows) -> PersistentMPUStatus:
+    def construct_from_db(cls, row, *child_rows) -> Self:
         label, mpu_address, functions, speed_setting, speed, reverse = row
 
         return cls(label, mpu_address, MPUFunctions.construct_from_jdict(functions), speed_setting, speed,
