@@ -11,11 +11,10 @@ the change is broadcasted.
 from mrcs_control.operations.messaging_node import SubscriberNode
 from mrcs_control.operations.operation_mode import OperationService
 from mrcs_control.operations.time.cron import CRN
-
-from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType, EquipmentFilter
+from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
-from mrcs_core.messaging.routing_key import SubscriptionRoutingKey, PublicationRoutingKey
+from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
 from mrcs_core.operations.time.clock import Clock
 from mrcs_core.sys.host import Host
 
@@ -51,13 +50,13 @@ class ClockManagerNode(SubscriberNode):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def handle_message(self, incoming: Message):
-        self.logger.info(f'handle_message - incoming:{JSONify.as_jdict(incoming)}')
+    def handle_message(self, message: Message):
+        self.logger.info(f'handle_message - incoming:{JSONify.as_jdict(message)}')
 
         try:
-            clock = Clock.construct_from_jdict(incoming.body)
+            clock = Clock.construct_from_jdict(message.body)
         except Exception:
-            self.logger.warning(f'invalid message body:{incoming.body}')
+            self.logger.warning(f'invalid message body:{message.body}')
             return
 
         if clock == Clock.load(Host):
@@ -65,7 +64,7 @@ class ClockManagerNode(SubscriberNode):
 
         clock.save(Host)
 
-        outgoing = Message(self.publication_routing_key(), incoming.body, origin=incoming.origin)
+        outgoing = Message(self.publication_routing_key(), message.body, origin=message.origin)
         self.logger.info(f'handle - outgoing:{JSONify.as_jdict(outgoing)}')
         self.mq_client.publish(outgoing)
 

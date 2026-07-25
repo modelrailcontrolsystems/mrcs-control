@@ -10,10 +10,10 @@ A structured representation of a message
     "body": "hello"
 }
 """
+from typing import Self
 
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.operations.recorder.message_persistence import MessagePersistence
-
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import RoutingKey
@@ -33,7 +33,7 @@ class PersistentMessage(Message, MessagePersistence, PersistentObject):
 
 
     @classmethod
-    def construct_from_db(cls, row, *child_rows) -> PersistentMessage:
+    def construct_from_db(cls, row, *child_rows) -> Self:
         raise NotImplementedError('use PersistentMessageRecord class instead')
 
 

@@ -23,7 +23,7 @@ A structured representation of a BlockStatus
 }
 """
 
-from typing import List
+from typing import List, Self
 
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.equipment.block.block_status_persistence import BlockStatusPersistence
@@ -44,7 +44,7 @@ class PersistentBlockStatus(BlockStatus, BlockStatusPersistence, PersistentObjec
 
 
     @classmethod
-    def construct_from_db(cls, row, *child_rows) -> PersistentBlockStatus:
+    def construct_from_db(cls, row, *child_rows) -> Self:
         label, block_address, direction, voltage = row
         occupants = [PersistentBlockOccupant.construct_from_db(occupant_row) for occupant_row in child_rows]
 

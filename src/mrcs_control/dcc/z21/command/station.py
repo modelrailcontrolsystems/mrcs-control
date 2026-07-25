@@ -137,7 +137,7 @@ class Z21Station(object):
         if self.__transport is None:
             raise ConnectionError('not connected to a Z21 station')
 
-        chars = command.dataset.as_bytes()
+        # chars = command.dataset.as_bytes()
         # self.logger.debug(f'*** station - send_command:{chars.hex(" ")}')
 
         self.__transport.sendto(command.dataset.as_bytes())

@@ -45,11 +45,11 @@ class Z21ControlArgs(ControlArgs):
 
         if self.power is not None:
             mode = TrackMode.COMMAND_POWER_ON if self.power else TrackMode.COMMAND_POWER_OFF
-            return XCommand.construct(XHeader.LAN_X_SET_TRACK_POWER, mode)
+            return XCommand.construct_x(XHeader.LAN_X_SET_TRACK_POWER, mode)
 
         if self.turnout is not None:
             positon = TurnoutPosition.P0 if self.turnout[1] == 0 else TurnoutPosition.P1
-            return XCommand.construct(XHeader.LAN_X_SET_TURNOUT, self.turnout[0], positon)
+            return XCommand.construct_x(XHeader.LAN_X_SET_TURNOUT, self.turnout[0], positon)
 
         return None
 

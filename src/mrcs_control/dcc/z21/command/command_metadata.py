@@ -53,11 +53,6 @@ class CommandMetadata(object):
 
 
     @classmethod
-    def is_supported(cls, header: Header) -> bool:
-        return header in cls.__CATALOG
-
-
-    @classmethod
     def find(cls, header: Header):
         try:
             return cls.__CATALOG[header]
@@ -141,12 +136,7 @@ class XCommandMetadata(CommandMetadata):
 
 
     @classmethod
-    def is_supported(cls, x_header: XHeader) -> bool:
-        return x_header in cls.__CATALOG
-
-
-    @classmethod
-    def find(cls, x_header: XHeader):
+    def find_x(cls, x_header: XHeader):
         try:
             return cls.__CATALOG[x_header]
         except KeyError:

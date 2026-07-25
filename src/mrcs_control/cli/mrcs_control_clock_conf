@@ -63,10 +63,10 @@ if __name__ == '__main__':
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
 
-    clock_conf_node = ClockConfNode(args.mode.value)
-    logger.info(f'clock_conf_node: {clock_conf_node}')
-
     clock = Clock.load(Host)
+
+    clock_conf_node = ClockConfNode(args.mode.value, clock)
+    logger.info(f'clock_conf_node: {clock_conf_node}')
 
     # ----------------------------------------------------------------------------------------------------------------
 

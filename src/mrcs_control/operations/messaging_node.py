@@ -100,8 +100,9 @@ class SubscriberNode(MessagingNode, ABC):
 
     # ----------------------------------------------------------------------------------------------------------------
 
+    @classmethod
     @abstractmethod
-    def subscription_routing_keys(self) -> list[SubscriptionRoutingKey]:
+    def subscription_routing_keys(cls) -> list[SubscriptionRoutingKey]:
         pass
 
 

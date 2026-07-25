@@ -34,13 +34,13 @@ class TestCommand(unittest.TestCase):
 
 
     def test_x_construct(self):
-        obj1 = XCommand.construct(XHeader.LAN_X_SET_TRACK_POWER, TrackMode.COMMAND_POWER_ON)
+        obj1 = XCommand.construct_x(XHeader.LAN_X_SET_TRACK_POWER, TrackMode.COMMAND_POWER_ON)
         self.assertEqual('XCommand:{header:LAN_X, x_header:LAN_X_SET_TRACK_POWER, '
                          'argv:(<TrackMode.COMMAND_POWER_ON: 129>,)}', str(obj1))
 
 
     def test_x_dataset(self):
-        obj1 = XCommand.construct(XHeader.LAN_X_SET_TRACK_POWER, TrackMode.COMMAND_POWER_ON)
+        obj1 = XCommand.construct_x(XHeader.LAN_X_SET_TRACK_POWER, TrackMode.COMMAND_POWER_ON)
         obj2 = obj1.dataset
         self.assertEqual('XDataset:{header:0x0040 [LAN_X], x_header:0x0021 [LAN_X_SET_TRACK_POWER], '
                          'total_len:7, data:81, xor:0xa0}', str(obj2))
@@ -65,7 +65,7 @@ class TestCommand(unittest.TestCase):
 
 
     def test_x_json_eq(self):
-        obj1 = XCommand.construct(XHeader.LAN_X_SET_TRACK_POWER, TrackMode.COMMAND_POWER_ON)
+        obj1 = XCommand.construct_x(XHeader.LAN_X_SET_TRACK_POWER, TrackMode.COMMAND_POWER_ON)
         jstr = JSONify.dumps(obj1)
         obj2 = Command.construct_from_jdict(json.loads(jstr))
         self.assertEqual(obj1, obj2)

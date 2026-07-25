@@ -11,10 +11,9 @@ from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
 from mrcs_control.operations.operation_mode import OperationService
 from mrcs_control.operations.time.clock_manager_node import ClockManagerNode
 from mrcs_control.operations.time.cron import CRN
-
-from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType, EquipmentFilter
+from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.messaging.message import Message
-from mrcs_core.messaging.routing_key import SubscriptionRoutingKey, PublicationRoutingKey
+from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
 from mrcs_core.operations.time.clock import Clock
 
 
@@ -24,6 +23,7 @@ class ClockConfNode(AsyncSubscriberNode):
     """
     an authority for clock configuration
     """
+
 
     @classmethod
     def id(cls):
@@ -42,10 +42,10 @@ class ClockConfNode(AsyncSubscriberNode):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, ops: OperationService):
+    def __init__(self, ops: OperationService, clock: Clock):
         super().__init__(ops)
 
-        self.__clock = None
+        self.__clock = clock
         self.__origin = None
 
 
@@ -56,17 +56,12 @@ class ClockConfNode(AsyncSubscriberNode):
         self.async_loop.create_task(self.publish_clock())
 
 
-    def handle_message(self, incoming: Message):
-        if incoming.origin == self.origin:
+    def handle_message(self, message: Message):
+        if message.origin == self.origin:
             self.async_loop.create_task(self.halt())
 
 
     # ----------------------------------------------------------------------------------------------------------------
-
-    def run(self, clock: Clock):
-        self.__clock = clock
-        super().run()
-
 
     async def publish_clock(self):
         message = Message(self.publication_routing_key(), self.clock)

@@ -15,6 +15,7 @@ Note that the cron components work in model time, not true time.
 """
 
 from collections import OrderedDict
+from typing import Self
 
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.operations.time.cronjob_persistence import CronjobPersistence
@@ -41,7 +42,7 @@ class PersistentCronjob(Cronjob, CronjobPersistence, PersistentObject):
 
 
     @classmethod
-    def construct_from_db(cls, row, *child_rows) -> PersistentCronjob:
+    def construct_from_db(cls, row, *child_rows) -> Self:
         id, target, event_id, db_on_datetime = row
 
         return cls(id, EquipmentIdentifier.construct_from_jdict(target), event_id,

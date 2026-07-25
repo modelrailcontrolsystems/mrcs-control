@@ -93,7 +93,7 @@ class CronNode(AsyncSubscriberNode):
         return PersistentCronjob.find_all()
 
 
-    def run(self):
+    def run(self, *args):
         DbClient.set_client_db_mode(self.ops.db_mode)
         PersistentCronjob.create_tables()
         super().run()

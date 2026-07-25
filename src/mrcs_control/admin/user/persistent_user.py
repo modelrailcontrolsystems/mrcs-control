@@ -16,6 +16,7 @@ A structured representation of a user
   "latest_login": null
 }
 """
+from typing import Self
 
 from mrcs_control.admin.user.user_persistence import UserPersistence
 from mrcs_control.data.persistence import PersistentObject
@@ -32,7 +33,7 @@ class PersistentUser(User, UserPersistence, PersistentObject):
 
 
     @classmethod
-    def construct_from_db(cls, row, *child_rows) -> PersistentUser:
+    def construct_from_db(cls, row, *child_rows) -> Self:
         uid, email, role, must_set_password, given_name, family_name, created, latest_login = row
 
         return cls(uid, email, UserRole(role), bool(must_set_password), given_name, family_name,

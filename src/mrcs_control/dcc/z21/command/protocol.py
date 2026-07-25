@@ -45,28 +45,28 @@ class Z21Protocol(DatagramProtocol):
         pass
 
 
-    def connection_lost(self, ex):
-        self.__connection_lost_handler(ex)
+    def connection_lost(self, exc):
+        self.__connection_lost_handler(exc)
 
 
-    def datagram_received(self, chars: bytes, addr: tuple[str, int]):
+    def datagram_received(self, data: bytes, addr: tuple[str, int]):
         # self.logger.debug(f'datagram_received - chars:{chars.hex(" ")}')
 
         offset = 0
-        while offset < len(chars):
+        while offset < len(data):
             try:
-                dataset = Dataset.construct_from_bytes(chars[offset:])
+                dataset = Dataset.construct_from_bytes(data[offset:])
                 self.__dataset_handler(dataset)
                 offset += dataset.total_len
 
             except (ValueError, struct.error) as ex:
                 self.logger.error('datagram_received on %s at offset %d: %s <%s>', addr, offset, ex,
-                                  chars[offset:].hex(' '))
+                                  data[offset:].hex(' '))
                 return
 
 
-    def error_received(self, ex):
-        self.logger.warn(f'error_received - ex:{ex}')
+    def error_received(self, exc):
+        self.logger.warn(f'error_received - ex:{exc}')
 
 
     # ----------------------------------------------------------------------------------------------------------------

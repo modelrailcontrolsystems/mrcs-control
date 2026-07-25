@@ -16,6 +16,7 @@ https://forum.xojo.com/t/sqlite-return-id-of-record-inserted/37896/3
 """
 
 import json
+from typing import Self
 
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.operations.recorder.message_persistence import MessagePersistence
@@ -34,7 +35,7 @@ class PersistentMessageRecord(MessageRecord, MessagePersistence, PersistentObjec
 
 
     @classmethod
-    def construct_from_db(cls, row, *child_rows) -> PersistentMessageRecord:
+    def construct_from_db(cls, row, *child_rows) -> Self:
         uid_field, rec_field, origin_field, source_field, target_field, body_field = row
 
         source = EquipmentIdentifier.construct_from_jdict(source_field)
