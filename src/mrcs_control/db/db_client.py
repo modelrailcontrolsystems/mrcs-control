@@ -123,9 +123,9 @@ class DbClient(object):
         self.execute('COMMIT TRANSACTION')
 
 
-    def txROLLBACK(self, ex: Exception):
+    def txROLLBACK(self, exc: Exception):
         self.execute('ROLLBACK TRANSACTION')
-        self.__logger.warning(f'txROLLBACK on {ex}')
+        self.__logger.warning(f'txROLLBACK on {exc}')
 
 
     # ----------------------------------------------------------------------------------------------------------------

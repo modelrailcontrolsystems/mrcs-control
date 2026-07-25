@@ -182,8 +182,8 @@ class UserPersistence(PersistentObject, ABC):
 
             return cls.construct_from_db(row)
 
-        except Exception as ex:
-            client.txROLLBACK(ex)
+        except Exception as exc:
+            client.txROLLBACK(exc)
             raise
 
 
@@ -210,8 +210,8 @@ class UserPersistence(PersistentObject, ABC):
 
             return cls.construct_from_db(row)
 
-        except Exception as ex:
-            client.txROLLBACK(ex)
+        except Exception as exc:
+            client.txROLLBACK(exc)
             raise
 
 
@@ -244,8 +244,8 @@ class UserPersistence(PersistentObject, ABC):
 
             client.txCOMMIT()
 
-        except Exception as ex:
-            client.txROLLBACK(ex)
+        except Exception as exc:
+            client.txROLLBACK(exc)
             raise
 
 
@@ -281,8 +281,8 @@ class UserPersistence(PersistentObject, ABC):
 
             return cls.construct_from_db(row)
 
-        except Exception as ex:
-            client.txROLLBACK(ex)
+        except Exception as exc:
+            client.txROLLBACK(exc)
             raise
 
 
@@ -301,6 +301,6 @@ class UserPersistence(PersistentObject, ABC):
 
             client.txCOMMIT()
 
-        except Exception as ex:
-            client.txROLLBACK(ex)
+        except Exception as exc:
+            client.txROLLBACK(exc)
             raise

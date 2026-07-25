@@ -32,8 +32,8 @@ class PersistenceManager(ABC):
             cls._create_tables(client)
             client.txCOMMIT()
 
-        except Exception as ex:
-            client.txROLLBACK(ex)
+        except Exception as exc:
+            client.txROLLBACK(exc)
             raise
 
 
@@ -46,8 +46,8 @@ class PersistenceManager(ABC):
             cls._create_tables(client)
             client.txCOMMIT()
 
-        except Exception as ex:
-            client.txROLLBACK(ex)
+        except Exception as exc:
+            client.txROLLBACK(exc)
             raise
 
 
@@ -60,8 +60,8 @@ class PersistenceManager(ABC):
             cls._drop_tables(client)
             client.txCOMMIT()
 
-        except Exception as ex:
-            client.txROLLBACK(ex)
+        except Exception as exc:
+            client.txROLLBACK(exc)
             raise
 
 

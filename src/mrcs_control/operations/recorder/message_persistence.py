@@ -130,8 +130,8 @@ class MessagePersistence(PersistentObject, ABC):
 
             return int(row[0])
 
-        except Exception as ex:
-            client.txROLLBACK(ex)
+        except Exception as exc:
+            client.txROLLBACK(exc)
             raise
 
 
@@ -154,6 +154,6 @@ class MessagePersistence(PersistentObject, ABC):
 
             return int(row[0])
 
-        except Exception as ex:
-            client.txROLLBACK(ex)
+        except Exception as exc:
+            client.txROLLBACK(exc)
             raise
