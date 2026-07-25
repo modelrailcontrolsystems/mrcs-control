@@ -11,9 +11,9 @@ https://www.z21.eu/en/products/z21
 
 import struct
 from collections import OrderedDict
+from typing import Any
 
-from mrcs_control.dcc.z21.command import XCommandMetadata
-from mrcs_control.dcc.z21.command.command_metadata import CommandMetadata
+from mrcs_control.dcc.z21.command.command_metadata import CommandMetadata, XCommandMetadata
 from mrcs_control.dcc.z21.command.dataset import Dataset, XDataset
 from mrcs_control.dcc.z21.command.header import Header, XHeader
 from mrcs_core.data.json import JSONable
@@ -30,11 +30,18 @@ class Command(JSONable):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def construct(cls, header: Header, *args):
-        if not CommandMetadata.is_supported(header):
+    def construct(cls, header: Header, *argv):
+        try:
+            meta = CommandMetadata.find(header)
+        except TypeError:
             raise TypeError(f'unsupported header: {header}')
 
-        return cls(header, *args)
+        if len(argv) != meta.argc:
+            raise ValueError(f'{header} requires {meta.argc} got: {len(argv)}')
+
+        argv = meta.argv_builder(*argv)
+
+        return cls(header, *argv)
 
 
     @classmethod
@@ -52,21 +59,21 @@ class Command(JSONable):
 
         # may raise KeyError
         header = Header[jdict['header']]
-        args = jdict.get('args')
+        argv = jdict.get('argv')
 
-        return cls(header, *args)
+        return cls(header, *argv)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, header: Header, *args: int):
+    def __init__(self, header: Header, *argv: int):
         self._header = header
-        self._args = args
+        self._argv = argv
 
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any):
         try:
-            return self.header == other.header and self.args == other.args
+            return self.header == other.header and self.argv == other.argv
         except (AttributeError, TypeError):
             return False
 
@@ -75,29 +82,29 @@ class Command(JSONable):
 
     @property
     def dataset(self) -> Dataset:
-        data = struct.pack('<' + self.data_format, *self.args)
+        data = struct.pack(self.data_format, *self.argv)
         return Dataset(self.header, data)
 
 
     @property
     def data_format(self):
-        return CommandMetadata.find(self.header).data_format
+        return self.meta.data_format
 
 
     @property
     def report_type(self):
-        return CommandMetadata.find(self.header).report_type
+        return self.meta.report_type
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def as_json(self, **kwargs):
+    def as_json(self, **kwargv):
         jdict = OrderedDict()
 
         jdict['type'] = self.type_name()
 
         jdict['header'] = self.header.name
-        jdict['args'] = self.args
+        jdict['argv'] = self.argv
 
         return jdict
 
@@ -105,19 +112,24 @@ class Command(JSONable):
     # ----------------------------------------------------------------------------------------------------------------
 
     @property
+    def meta(self):
+        return CommandMetadata.find(self.header)
+
+
+    @property
     def header(self):
         return self._header
 
 
     @property
-    def args(self):
-        return self._args
+    def argv(self):
+        return self._argv
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __str__(self, *args, **kwargs):
-        return f'Command:{{header:{self.header.name}, args:{self.args}}}'
+    def __str__(self, *argv, **kwargv):
+        return f'Command:{{header:{self.header.name}, argv:{self.argv}}}'
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -129,11 +141,18 @@ class XCommand(Command):
 
 
     @classmethod
-    def construct(cls, x_header: XHeader, *args: int):
-        if not XCommandMetadata.is_supported(x_header):
-            raise TypeError(f'unsupported x_header: {x_header}')
+    def construct(cls, x_header: XHeader, *argv: int):
+        try:
+            meta = XCommandMetadata.find(x_header)
+        except TypeError:
+            raise TypeError(f'unsupported header: {x_header}')
 
-        return cls(x_header, *args)
+        if len(argv) != meta.argc:
+            raise ValueError(f'{x_header} requires {meta.argc} got: {len(argv)}')
+
+        argv = meta.argv_builder(*argv)
+
+        return cls(x_header, *argv)
 
 
     @classmethod
@@ -148,34 +167,34 @@ class XCommand(Command):
 
         # may raise KeyError
         x_header = XHeader[jdict['x_header']]
-        args = jdict.get('args')
+        argv = jdict.get('argv')
 
-        return cls(x_header, *args)
+        return cls(x_header, *argv)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, x_header: XHeader, *args):
-        super().__init__(Header.LAN_X, *args)
+    def __init__(self, x_header: XHeader, *argv):
+        super().__init__(Header.LAN_X, *argv)
         self.__x_header = x_header
 
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any):
         try:
-            return self.header == other.header and self.x_header == other.x_header and self.args == other.args
+            return self.header == other.header and self.x_header == other.x_header and self.argv == other.argv
         except (AttributeError, TypeError):
             return False
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def as_json(self, **kwargs):
+    def as_json(self, **kwargv):
         jdict = OrderedDict()
 
         jdict['type'] = self.type_name()
 
         jdict['x_header'] = self.x_header.name
-        jdict['args'] = self.args
+        jdict['argv'] = self.argv
 
         return jdict
 
@@ -184,21 +203,27 @@ class XCommand(Command):
 
     @property
     def dataset(self) -> XDataset:
-        data = struct.pack('<' + self.data_format, *self.args)
+        data = struct.pack(self.data_format, *self.argv)
         return XDataset.construct_from_command(self.header, self.x_header, data)
 
 
     @property
     def data_format(self):
-        return XCommandMetadata.find(self.x_header).data_format
+        return self.meta.find(self.x_header).data_format
 
 
     @property
     def report_type(self):
-        return XCommandMetadata.find(self.x_header).report_type
+        return self.meta.find(self.x_header).report_type
 
 
     # ----------------------------------------------------------------------------------------------------------------
+
+
+    @property
+    def meta(self):
+        return XCommandMetadata.find(self.x_header)
+
 
     @property
     def x_header(self):
@@ -207,6 +232,5 @@ class XCommand(Command):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __str__(self, *args, **kwargs):
-        return (f'XCommand:{{header:{self.header.name}, x_header:{self.x_header.name}, '
-                f'args:{[int(arg) for arg in self.args]}}}')
+    def __str__(self, *argv, **kwargv):
+        return f'XCommand:{{header:{self.header.name}, x_header:{self.x_header.name}, argv:{self.argv}}}'

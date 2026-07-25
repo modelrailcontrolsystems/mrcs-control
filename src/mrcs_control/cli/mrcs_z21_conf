@@ -11,7 +11,7 @@ DESCRIPTION
 A utility to configure acces to the Roco Z21 control station. The --factory-reset option will reset this configuration
 to factory defaults.
 
-Note that this utility does not alter the configuration of the Z21 DCC command station itself. This should be done
+Note that this utility does not alter the IP configuration of the Z21 DCC command station itself. This should be done
 using the Z21 Maintenance Tool: https://www.z21.eu/en/products/z21-maintenance-tool
 
 SYNOPSIS
@@ -87,4 +87,5 @@ if __name__ == '__main__':
         conf.subscription = args.subscription
 
     conf.save(Host)
+    conf = ControlRouterConf.load(Host)
     print(JSONify.dumps(conf, indent=args.indent))

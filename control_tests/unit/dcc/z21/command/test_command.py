@@ -24,7 +24,7 @@ class TestCommand(unittest.TestCase):
 
     def test_construct(self):
         obj1 = Command.construct(Header.LAN_SYSTEMSTATE_GETDATA)
-        self.assertEqual('Command:{header:LAN_SYSTEMSTATE_GETDATA, args:()}', str(obj1))
+        self.assertEqual('Command:{header:LAN_SYSTEMSTATE_GETDATA, argv:()}', str(obj1))
 
 
     def test_dataset(self):
@@ -36,7 +36,7 @@ class TestCommand(unittest.TestCase):
     def test_x_construct(self):
         obj1 = XCommand.construct(XHeader.LAN_X_SET_TRACK_POWER, TrackMode.COMMAND_POWER_ON)
         self.assertEqual('XCommand:{header:LAN_X, x_header:LAN_X_SET_TRACK_POWER, '
-                         'args:[129]}', str(obj1))
+                         'argv:(<TrackMode.COMMAND_POWER_ON: 129>,)}', str(obj1))
 
 
     def test_x_dataset(self):
@@ -54,7 +54,7 @@ class TestCommand(unittest.TestCase):
     def test_json(self):
         obj1 = Command.construct(Header.LAN_SYSTEMSTATE_GETDATA)
         jstr = JSONify.dumps(obj1)
-        self.assertEqual('{"type": "Command", "header": "LAN_SYSTEMSTATE_GETDATA", "args": []}', jstr)
+        self.assertEqual('{"type": "Command", "header": "LAN_SYSTEMSTATE_GETDATA", "argv": []}', jstr)
 
 
     def test_json_eq(self):
