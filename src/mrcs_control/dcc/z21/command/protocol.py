@@ -59,14 +59,14 @@ class Z21Protocol(DatagramProtocol):
                 self.__dataset_handler(dataset)
                 offset += dataset.total_len
 
-            except (ValueError, struct.error) as ex:
-                self.logger.error('datagram_received on %s at offset %d: %s <%s>', addr, offset, ex,
+            except (ValueError, struct.error) as exc:
+                self.logger.error('datagram_received on %s at offset %d: %s <%s>', addr, offset, exc,
                                   data[offset:].hex(' '))
                 return
 
 
     def error_received(self, exc):
-        self.logger.warn(f'error_received - ex:{exc}')
+        self.logger.warn(f'error_received - exc:{exc}')
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -79,5 +79,9 @@ class Z21Protocol(DatagramProtocol):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'Z21Protocol:{{dataset_handler:{bool(self.__dataset_handler)}, '
-                f'connection_lost_handler:{bool(self.__connection_lost_handler)}}}')
+        dataset_handler = None if self.__dataset_handler is None else self.__dataset_handler.__name__
+        connection_lost_handler = None if self.__connection_lost_handler is None \
+            else self.__connection_lost_handler.__name__
+
+        return (f'Z21Protocol:{{dataset_handler:{dataset_handler}, '
+                f'connection_lost_handler:{connection_lost_handler}}}')

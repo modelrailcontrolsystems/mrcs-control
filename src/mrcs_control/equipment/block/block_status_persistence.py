@@ -172,8 +172,8 @@ class BlockStatusPersistence(PersistentObject, ABC):
 
             client.txCOMMIT()
 
-        except Exception as ex:
-            client.txROLLBACK(ex)
+        except Exception as exc:
+            client.txROLLBACK(exc)
             raise
 
 
@@ -205,8 +205,8 @@ class BlockStatusPersistence(PersistentObject, ABC):
 
             return cls.construct_from_db(block_row, *occupant_rows)
 
-        except Exception as ex:
-            client.txROLLBACK(ex)
+        except Exception as exc:
+            client.txROLLBACK(exc)
             raise
 
 
@@ -223,6 +223,6 @@ class BlockStatusPersistence(PersistentObject, ABC):
 
             client.txCOMMIT()
 
-        except Exception as ex:
-            client.txROLLBACK(ex)
+        except Exception as exc:
+            client.txROLLBACK(exc)
             raise

@@ -79,8 +79,8 @@ class MQClient(ABC):
         except (AttributeError, ChannelWrongStateError):
             return False
 
-        except AMQPError as ex:
-            self.logger.warn(f'close: {ex.__class__.__name__}:{ex}')
+        except AMQPError as exc:
+            self.logger.warn(f'close: {exc.__class__.__name__}:{exc}')
             return False
 
         finally:

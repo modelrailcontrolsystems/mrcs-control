@@ -53,7 +53,7 @@ class Z21Station(object):
         station = cls(conf, on_response, on_connection_lost)
 
         transport, protocol = await loop.create_datagram_endpoint(
-            lambda: Z21Protocol(station.dataset_handler, station.connection_lost_handler),
+            lambda: Z21Protocol(station.station_dataset_handler, station.station_connection_lost_handler),
             remote_addr=(conf.ip_address.dot_decimal, conf.port),
         )
 
@@ -100,7 +100,7 @@ class Z21Station(object):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def dataset_handler(self, dataset: Dataset) -> None:
+    def station_dataset_handler(self, dataset: Dataset) -> None:
         try:
             self.on_response(Z21EquipmentReport.construct_from_dataset(dataset))
 
@@ -108,8 +108,8 @@ class Z21Station(object):
             self.logger.warning(f'dataset_handler unsupported: {dataset}')
 
 
-    def connection_lost_handler(self, ex: Exception | None) -> None:
-        self.on_connection_lost(ex)
+    def station_connection_lost_handler(self, exc: Exception | None) -> None:
+        self.on_connection_lost(exc)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -150,13 +150,13 @@ class Z21Station(object):
             self.__keep_alive_task.cancel()
             try:
                 await self.__keep_alive_task
-            except asyncio.CancelledError as ex:
-                self.logger.warning(f'error while canceling keep alive task:{ex}')
+            except asyncio.CancelledError as exc:
+                self.logger.warning(f'error while canceling keep alive task:{exc}')
 
         try:
             await self.logout()
-        except (OSError, ConnectionError) as ex:
-            self.logger.warning(f'error while logging out:{ex}')
+        except (OSError, ConnectionError) as exc:
+            self.logger.warning(f'error while logging out:{exc}')
 
         if self.__transport is not None:
             self.__transport.close()
@@ -173,8 +173,8 @@ class Z21Station(object):
             except CancelledError:
                 break
 
-            except (OSError, ConnectionError) as ex:
-                self.logger.debug(f'keep-alive failed: {ex}')
+            except (OSError, ConnectionError) as exc:
+                self.logger.debug(f'keep-alive failed: {exc}')
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -207,8 +207,8 @@ class Z21Station(object):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        on_response = self.__on_response is not None
-        on_connection_lost = self.__on_connection_lost is not None
+        on_response = None if self.__on_response is None else self.__on_response.__name__
+        on_connection_lost = None if self.__on_connection_lost is None else self.__on_connection_lost.__name__
 
         return (f'Z21Station:{{conf:{self.conf}, on_response:{on_response}, '
                 f'on_connection_lost:{on_connection_lost}, has_connection:{self.has_connection}, '

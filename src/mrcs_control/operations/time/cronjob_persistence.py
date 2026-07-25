@@ -132,8 +132,8 @@ class CronjobPersistence(PersistentObject, ABC):
 
             return int(row[0])
 
-        except Exception as ex:
-            client.txROLLBACK(ex)
+        except Exception as exc:
+            client.txROLLBACK(exc)
             raise
 
 
@@ -150,6 +150,6 @@ class CronjobPersistence(PersistentObject, ABC):
 
             client.txCOMMIT()
 
-        except Exception as ex:
-            client.txROLLBACK(ex)
+        except Exception as exc:
+            client.txROLLBACK(exc)
             raise

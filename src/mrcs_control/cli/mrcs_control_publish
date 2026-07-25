@@ -99,8 +99,8 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    except AMQPError as ex:
-        logger.error(ex)
+    except AMQPError as exc:
+        logger.error(exc)
         exit(1)
 
     except KeyboardInterrupt:
