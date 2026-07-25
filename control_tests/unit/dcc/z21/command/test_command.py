@@ -58,6 +58,13 @@ class TestCommand(unittest.TestCase):
 
 
     def test_json_eq(self):
+        obj1 = Command.construct(Header.LAN_SYSTEMSTATE_GETDATA)
+        jstr = JSONify.dumps(obj1)
+        obj2 = Command.construct_from_jdict(json.loads(jstr))
+        self.assertEqual(obj1, obj2)
+
+
+    def test_x_json_eq(self):
         obj1 = XCommand.construct(XHeader.LAN_X_SET_TRACK_POWER, TrackMode.COMMAND_POWER_ON)
         jstr = JSONify.dumps(obj1)
         obj2 = Command.construct_from_jdict(json.loads(jstr))

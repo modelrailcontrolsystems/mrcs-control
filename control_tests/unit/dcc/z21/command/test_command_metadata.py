@@ -35,6 +35,12 @@ class TestCommandMetadata(unittest.TestCase):
                          'data_format:<I, report_type:None}', str(obj1))
 
 
+    def test_argv_std(self):
+        obj1 = CommandMetadata.find(Header.LAN_SET_BROADCAST_FLAGS)
+        obj2 = obj1.argv_builder(1, 2, 3)
+        self.assertEqual('(1, 2, 3)', str(obj2))
+
+
     def test_not_found(self):
         with self.assertRaises(TypeError):
             CommandMetadata.find(Header.LAN_RMBUS_PROGRAMMODULE)
@@ -44,6 +50,12 @@ class TestCommandMetadata(unittest.TestCase):
         obj1 = XCommandMetadata.find(XHeader.LAN_X_SET_TRACK_POWER)
         self.assertEqual('XCommandMetadata:{header:LAN_X, x_header:LAN_X_SET_TRACK_POWER, argc:1, '
                          'argv_builder:argv_std, data_format:B, report_type:TrackReport}', str(obj1))
+
+
+    def test_argv_turnout(self):
+        obj1 = XCommandMetadata.find(XHeader.LAN_X_SET_TURNOUT)
+        obj2 = obj1.argv_builder(1, 2, 3)
+        self.assertEqual('(1, 169)', str(obj2))
 
 
 # --------------------------------------------------------------------------------------------------------------------
