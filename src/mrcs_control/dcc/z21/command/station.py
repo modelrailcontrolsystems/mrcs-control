@@ -41,6 +41,7 @@ class Z21Station(object):
     DEFAULT_TIMEOUT = 2.0
     DEFAULT_SUBSCRIPTION = ControlRouterSubscription(Broadcast.CAN_DETECTOR, Broadcast.RAILCOM_DATA_ALL,
                                                      Broadcast.TRACK, Broadcast.X_LOCO_INFO_ALL)
+    __DEFAULT_TIME_BETWEEN_SENDS = 0.1
     __KEEP_ALIVE_INTERVAL = 30.0
 
 
@@ -137,10 +138,11 @@ class Z21Station(object):
         if self.__transport is None:
             raise ConnectionError('not connected to a Z21 station')
 
-        # chars = command.dataset.as_bytes()
-        # self.logger.debug(f'*** station - send_command:{chars.hex(" ")}')
+        chars = command.dataset.as_bytes()
+        self.logger.debug(f'*** station - send_command:{chars.hex(" ")}')
 
         self.__transport.sendto(command.dataset.as_bytes())
+        await asyncio.sleep(self.__DEFAULT_TIME_BETWEEN_SENDS)
 
 
     async def close(self) -> None:

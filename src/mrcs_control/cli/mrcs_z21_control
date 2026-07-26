@@ -26,9 +26,7 @@ mrcs_z21_conf
 """
 
 import asyncio
-import logging
 import sys
-import time
 
 from mrcs_control.cli.args.z21_control_args import Z21ControlArgs
 from mrcs_control.dcc.z21.command.station import Z21Station
@@ -57,12 +55,9 @@ def mrcs_control_on_connection_lost(exc: Exception):
 
 async def monitor():
     async with await Z21Station.connect(conf, mrcs_control_on_dataset, mrcs_control_on_connection_lost) as station:
-        time.sleep(0.1)
-
         logger.info(f'station: {station}')
 
         await station.set_broadcast_flags(conf.subscription)
-        time.sleep(0.1)
 
         if args.has_command:
             command = args.command
@@ -82,7 +77,7 @@ if __name__ == '__main__':
 
     args = Z21ControlArgs('a utility to excercise a Roco Z21 control station')
 
-    Logging.config('mrcs_z21_control', level=logging.DEBUG)
+    Logging.config('mrcs_z21_control', verbose=args.verbose)  # level=logging.DEBUG
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
 
