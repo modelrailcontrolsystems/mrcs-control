@@ -20,6 +20,8 @@ from typing import Dict, Protocol, Type
 
 from mrcs_control.dcc.z21.command.header import Header, XHeader
 from mrcs_core.equipment.control_router.control_router_report import ControlRouterReport
+from mrcs_core.equipment.motive_power_unit.mpu_configuration_report import MPUConfigurationReport
+from mrcs_core.equipment.motive_power_unit.mpu_enums import ThrottleSteps
 from mrcs_core.equipment.track.track_report import TrackReport
 from mrcs_core.equipment.turnout.turnout_enums import TurnoutPosition
 from mrcs_core.equipment.turnout.turnout_report import TurnoutReport
@@ -130,6 +132,9 @@ class XCommandMetadata(CommandMetadata):
     @classmethod
     def init(cls):
         cls.__CATALOG = {
+            XHeader.LAN_X_GET_LOCO: cls(XHeader.LAN_X_GET_LOCO, 1, cls.argv_get_loco, '>BH', MPUConfigurationReport),
+            XHeader.LAN_X_SET_LOCO_FUNCTION: cls(XHeader.LAN_X_SET_LOCO_FUNCTION, 3, cls.argv_set_loco, '>BHB',
+                                                 None),
             XHeader.LAN_X_SET_TRACK_POWER: cls(XHeader.LAN_X_SET_TRACK_POWER, 1, cls.argv_std, 'B', TrackReport),
             XHeader.LAN_X_SET_TURNOUT: cls(XHeader.LAN_X_SET_TURNOUT, 2, cls.argv_turnout, '>HB', TurnoutReport),
         }
@@ -149,6 +154,20 @@ class XCommandMetadata(CommandMetadata):
     def argv_turnout(cls, *args: int) -> tuple[int, ...]:
         db2 = 0xa9 if args[1] == TurnoutPosition.P1 else 0xa8
         return args[0], db2
+
+
+    @classmethod
+    def argv_get_loco(cls, *args: int) -> tuple[int, ...]:
+        db0 = 0xf0
+        return db0, args[0]
+
+
+    @classmethod
+    def argv_set_loco(cls, *args: int) -> tuple[int, ...]:
+        db0 = ThrottleSteps.STEPS_128.to_speed_byte()
+        direction = 0x80 if args[1] == 1 else 0x00
+        db3 = direction | args[2]
+        return db0, args[0], db3
 
 
     # ----------------------------------------------------------------------------------------------------------------
