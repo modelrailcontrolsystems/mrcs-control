@@ -139,7 +139,7 @@ class Z21Station(object):
             raise ConnectionError('not connected to a Z21 station')
 
         chars = command.dataset.as_bytes()
-        self.logger.debug(f'*** station - send_command:{chars.hex(" ")}')
+        self.logger.info(f'*** station - send_command:{chars.hex(" ")}')
 
         self.__transport.sendto(command.dataset.as_bytes())
         await asyncio.sleep(self.__DEFAULT_TIME_BETWEEN_SENDS)
