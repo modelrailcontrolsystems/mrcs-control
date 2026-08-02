@@ -42,7 +42,7 @@ class CronNode(AsyncSubscriberNode):
 
     @classmethod
     def id(cls):
-        return EquipmentIdentifier(EquipmentType.CRN, None, CRN.Cron)
+        return EquipmentIdentifier(EquipmentType.CRN, None, CRN.Cron)  # TODO: non-numeric 'serial_number'
 
 
     @classmethod

@@ -9,12 +9,10 @@ The AsyncMessagingNode class provides asyncio loop utilities to support concrete
 """
 
 import asyncio
-
 from abc import ABC, abstractmethod
 
-from mrcs_control.messaging.mq_async_client import MQAsyncSubscriber, MQAsyncPublisher
+from mrcs_control.messaging.mq_async_client import MQAsyncPublisher, MQAsyncSubscriber
 from mrcs_control.operations.operation_mode import OperationService
-
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
@@ -28,10 +26,12 @@ class AsyncMessagingNode(ABC):
     An abstract async messaging node
     """
 
+
     @classmethod
     @abstractmethod
     def id(cls) -> EquipmentIdentifier:
         pass
+
 
     # ----------------------------------------------------------------------------------------------------------------
 
@@ -89,15 +89,40 @@ class AsyncPublisherNode(AsyncMessagingNode, ABC):
     an async messaging node that can publish
     """
 
+
     def __init__(self, ops: OperationService):
         publisher = MQAsyncPublisher.construct_pub(ops.mq_mode, on_startup_complete=self.handle_startup)
         super().__init__(ops, publisher)
+        self.__async_loop = None
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     async def publish(self, message: Message):
+        self.logger.debug('AsyncPublisherNode - publish')
         await self.mq_client.publish(message)
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def run(self):
+        self.logger.debug('AsyncPublisherNode - run')
+
+        self.__async_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.async_loop)
+        self.connect()
+        self.async_loop.run_forever()
+
+
+    async def halt(self):
+        self.async_loop.stop()
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    @property
+    def async_loop(self):
+        return self.__async_loop
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -106,6 +131,7 @@ class AsyncSubscriberNode(AsyncMessagingNode, ABC):
     """
     an async messaging node that can publish and subscribe
     """
+
 
     @classmethod
     @abstractmethod
@@ -132,7 +158,16 @@ class AsyncSubscriberNode(AsyncMessagingNode, ABC):
 
     # ----------------------------------------------------------------------------------------------------------------
 
+    async def publish(self, message: Message):
+        self.logger.debug('AsyncPublisherNode - publish')
+        await self.mq_client.publish(message)
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
     def run(self, *args):
+        self.logger.debug('AsyncPublisherNode - run')
+
         self.__async_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.async_loop)
         self.connect()
@@ -140,13 +175,8 @@ class AsyncSubscriberNode(AsyncMessagingNode, ABC):
 
 
     async def halt(self):
+        self.logger.debug('AsyncPublisherNode - halt')
         self.async_loop.stop()
-
-
-    # ----------------------------------------------------------------------------------------------------------------
-
-    async def publish(self, message: Message):
-        await self.mq_client.publish(message)
 
 
     # ----------------------------------------------------------------------------------------------------------------

@@ -33,11 +33,6 @@ class ClockManagerNode(SubscriberNode):
 
 
     @classmethod
-    def subscription_routing_keys(cls):
-        return (SubscriptionRoutingKey(EquipmentFilter.any(), cls.id()),)
-
-
-    @classmethod
     def publication_routing_key(cls):
         return PublicationRoutingKey(cls.id(), EquipmentFilter.any())
 
@@ -50,8 +45,12 @@ class ClockManagerNode(SubscriberNode):
 
     # ----------------------------------------------------------------------------------------------------------------
 
+    def subscription_routing_keys(self):
+        return (SubscriptionRoutingKey(EquipmentFilter.any(), self.id()),)
+
+
     def handle_message(self, message: Message):
-        self.logger.info(f'handle_message - incoming:{JSONify.as_jdict(message)}')
+        self.logger.debug(f'handle_message - incoming:{JSONify.as_jdict(message)}')
 
         try:
             clock = Clock.construct_from_jdict(message.body)
@@ -65,7 +64,6 @@ class ClockManagerNode(SubscriberNode):
         clock.save(Host)
 
         outgoing = Message(self.publication_routing_key(), message.body, origin=message.origin)
-        self.logger.info(f'handle - outgoing:{JSONify.as_jdict(outgoing)}')
         self.mq_client.publish(outgoing)
 
 

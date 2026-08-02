@@ -1,0 +1,77 @@
+#!/usr/bin/env python3
+
+"""
+Created on 1 Aug 2026
+
+@author: Bruno Beloff (bbeloff@me.com)
+
+source repo: mrcs_control
+
+DESCRIPTION
+A tool for subscribing to topics. Multiple publisher sources can be specified. The target is always '*.*.*'.
+Messages are printed to stdout in json format.
+
+SYNOPSIS
+mrcs_control_subscriber [-h] [-i INDENT] [-v] [--version] [-t] [-s SOURCES [SOURCES ...]]
+
+EXAMPLES
+mrcs_control_subscriber -t -v -s CRT.*.1
+
+RESOURCES
+"""
+
+import sys
+
+from mrcs_control.cli.args.subscriber_args import SubscriberArgs
+from mrcs_control.cli.internal.simple_subscriber_node import SimpleSubscriberNode
+from mrcs_core.data.json import JSONify
+from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
+from mrcs_core.sys.logging import Logging
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+def on_message(message):
+    print(JSONify.dumps(message, indent=args.indent))
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+
+    target = '*.*.*'
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    subscriber = None
+    args = SubscriberArgs('a tool for subscribing to topics')
+
+    Logging.config('mrcs_control_subscriber', verbose=args.verbose)  # verbose=args.verbose / level=logging.DEBUG
+    logger = Logging.getLogger()
+    logger.info(f'args: {args}')
+    logger.info(f'mode: {args.mode.value}')
+
+    subscriptions = []
+    for source in args.sources:
+        try:
+            subscriptions.append(SubscriptionRoutingKey.construct_from_jdict('.'.join([source, target])))
+        except ValueError:
+            logger.error(f'the source {source} is invalid.')
+            exit(2)
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    try:
+        subscriber = SimpleSubscriberNode(args.mode.value, subscriptions, on_message)
+        logger.info(subscriber)
+
+        subscriber.subscribe()
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    finally:
+        print(file=sys.stderr)
+
+        if subscriber is not None:
+            subscriber.close()

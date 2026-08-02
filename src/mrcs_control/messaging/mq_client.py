@@ -16,6 +16,7 @@ https://stackoverflow.com/questions/15150207/connection-in-rabbitmq-server-auto-
 from abc import ABC
 from enum import StrEnum, unique
 from typing import Callable
+from uuid import uuid4
 
 import pika
 from pika.exceptions import AMQPError, ChannelWrongStateError
@@ -61,7 +62,7 @@ class MQClient(ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     def connect(self):
-        self.logger.debug('connect')
+        self.logger.debug('MQClient - connect')
 
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(host=self.__DEFAULT_HOST),
@@ -71,7 +72,7 @@ class MQClient(ABC):
 
 
     def close(self):
-        self.logger.debug('close')
+        self.logger.debug('MQClient - close')
 
         try:
             self.channel.close()
@@ -125,13 +126,13 @@ class MQManager(MQClient):
         self.logger.debug(f'exchange_delete:{exchange}')
 
         if self.channel is None:
-            raise RuntimeError('exchange_delete: no channel')
+            raise RuntimeError('MQManager - exchange_delete: no channel')
 
         self.channel.exchange_delete(exchange=exchange, if_unused=True)
 
 
     def queue_delete(self, queue):
-        self.logger.debug(f'queue_delete:{queue}')
+        self.logger.debug(f'MQManager - queue_delete:{queue}')
 
         if self.channel is None:
             raise RuntimeError('queue_delete: no channel')
@@ -169,7 +170,7 @@ class MQPublisher(MQClient):
     # ----------------------------------------------------------------------------------------------------------------
 
     def connect(self):
-        self.logger.debug(f'connect')
+        self.logger.debug(f'MQPublisher - connect')
 
         super().connect()
         self.channel.exchange_declare(exchange=self.exchange_name, exchange_type=ExchangeType.topic, durable=True)
@@ -177,7 +178,7 @@ class MQPublisher(MQClient):
 
 
     def publish(self, message: Message):
-        self.logger.debug(f'publish - message:{message}')
+        self.logger.debug(f'MQPublisher - publish - message:{message}')
 
         try:
             routing_key = JSONify.as_jdict(message.routing_key)
@@ -234,15 +235,21 @@ class MQSubscriber(MQPublisher):
 
 
     @classmethod
+    def queue_name(cls, exchange_name: MQMode, id: EquipmentIdentifier) -> str:
+        """Construct a unique queue name retaining the exchange and subscriber identity."""
+        return '.'.join([exchange_name, id.as_json(), uuid4().hex])
+
+
+    @classmethod
     def construct_sub(cls, exchange_name: MQMode, id: EquipmentIdentifier, on_message: Callable):
-        queue = '.'.join([exchange_name, id.as_json()])
+        queue = cls.queue_name(exchange_name, id)
 
         return cls(exchange_name, id, queue, on_message)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, exchange_name, id: EquipmentIdentifier, queue, on_message: Callable):
+    def __init__(self, exchange_name, id: EquipmentIdentifier, queue: str, on_message: Callable):
         super().__init__(exchange_name)
 
         self.__id = id
@@ -253,7 +260,7 @@ class MQSubscriber(MQPublisher):
     # ----------------------------------------------------------------------------------------------------------------
 
     def subscribe(self, *routing_keys: RoutingKey):
-        self.logger.debug('subscribe')
+        self.logger.debug('MQSubscriber - subscribe')
 
         if self.channel is None:
             raise RuntimeError('subscribe: no channel')
@@ -266,7 +273,7 @@ class MQSubscriber(MQPublisher):
 
         while True:
             try:
-                self.channel.queue_declare(self.queue, durable=True, exclusive=False)  # durables may not be exclusive
+                self.channel.queue_declare(self.queue, durable=True, exclusive=False, auto_delete=False)
 
                 for routing_key in routing_keys:
                     self.channel.queue_bind(
@@ -287,8 +294,20 @@ class MQSubscriber(MQPublisher):
                 self.logger.warn('subscribe: connection re-established')
 
 
+    def close(self):
+        self.logger.debug(f'MQSubscriber - close - deleting:{self.queue}')
+
+        try:
+            if self.channel is not None:
+                self.channel.queue_delete(queue=self.queue, if_unused=False, if_empty=False)
+        except (AttributeError, AMQPError, ChannelWrongStateError):
+            pass
+        finally:
+            super().close()
+
+
     def on_consume(self, ch, method, _properties, payload):
-        self.logger.debug(f'on_consume - payload:{str(payload)}')
+        self.logger.debug(f'MQSubscriber - on_consume - payload:{str(payload)}')
 
         try:
             routing_key = PublicationRoutingKey.construct_from_jdict(method.routing_key)

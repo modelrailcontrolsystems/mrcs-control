@@ -15,8 +15,7 @@ from mrcs_control.operations.messaging_node import SubscriberNode
 from mrcs_control.operations.operation_mode import OperationService
 from mrcs_control.operations.time.cron import CRN
 from mrcs_control.operations.time.persistent_cronjob import PersistentCronjob
-
-from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentFilter, EquipmentType
+from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
@@ -35,11 +34,6 @@ class CrontabNode(SubscriberNode):
         return EquipmentIdentifier(EquipmentType.CRN, None, CRN.Crontab)
 
 
-    @classmethod
-    def subscription_routing_keys(cls):
-        return (SubscriptionRoutingKey(EquipmentFilter.any(), cls.id()),)
-
-
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, ops: OperationService):
@@ -47,6 +41,10 @@ class CrontabNode(SubscriberNode):
 
 
     # ----------------------------------------------------------------------------------------------------------------
+
+    def subscription_routing_keys(self):
+        return (SubscriptionRoutingKey(EquipmentFilter.any(), self.id()),)
+
 
     def handle_message(self, message: Message):
         self.logger.info(f'handle_message: {JSONify.as_jdict(message)}')

@@ -50,8 +50,6 @@ class Z21Protocol(DatagramProtocol):
 
 
     def datagram_received(self, data: bytes, addr: tuple[str, int]):
-        # self.logger.debug(f'datagram_received - chars:{chars.hex(" ")}')
-
         offset = 0
         while offset < len(data):
             try:
