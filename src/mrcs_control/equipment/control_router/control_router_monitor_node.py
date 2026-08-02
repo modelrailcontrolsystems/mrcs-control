@@ -50,7 +50,6 @@ class ControlRouterMonitorNode(AsyncPublisherNode):
     def __init__(self, ops: OperationService, conf: ControlRouterConf):
         super().__init__(ops)
         self.__conf = conf
-        self.__station = None
         self.__monitor_task = None
 
 
@@ -61,17 +60,39 @@ class ControlRouterMonitorNode(AsyncPublisherNode):
         self.__monitor_task = self.async_loop.create_task(self.monitor())
 
 
-    def close(self):
-        self.logger.debug('ControlRouterMonitorNode - close')
+    async def monitor(self):
+        self.logger.debug('ControlRouterMonitorNode - monitor')
 
-        if self.async_loop is None or self.async_loop.is_running():
-            # If the node is running, shutdown must be awaited by the loop.
-            if self.async_loop is not None:
-                self.async_loop.create_task(self.shutdown())
-            return
+        station = None
 
-        self.async_loop.run_until_complete(self.shutdown())
-        self.logger.debug('closed')
+        try:
+            station = await Z21Station.connect(self.conf, self.on_dataset, self.on_connection_lost)
+            self.logger.debug(f'ControlRouterMonitorNode - monitor - station: {station}')
+
+            await station.set_broadcast_flags(self.conf.subscription)
+
+            while True:
+                await asyncio.sleep(1)  # TODO: test connection here?
+
+        except asyncio.CancelledError:
+            self.logger.info('monitor cancelled')
+            raise
+
+        except Exception as exc:
+            self.logger.exception(f'monitor failed: {exc}')
+            self.async_loop.stop()
+            raise
+
+        finally:
+            if station is not None:
+                await station.close()
+
+
+    async def halt(self):
+        self.logger.debug('ControlRouterMonitorNode - halt')
+
+        await self.shutdown()
+        await super().halt()
 
 
     async def shutdown(self):
@@ -91,41 +112,17 @@ class ControlRouterMonitorNode(AsyncPublisherNode):
                 raise exception
 
 
-    async def halt(self):
-        self.logger.debug('ControlRouterMonitorNode - halt')
+    def close(self):
+        self.logger.debug('ControlRouterMonitorNode - close')
 
-        await self.shutdown()
-        await super().halt()
+        if self.async_loop is None or self.async_loop.is_running():
+            # If the node is running, shutdown must be awaited by the loop.
+            if self.async_loop is not None:
+                self.async_loop.create_task(self.shutdown())
+            return
 
-
-    async def monitor(self):
-        self.logger.debug('ControlRouterMonitorNode - monitor')
-
-        station = None
-
-        try:
-            station = await Z21Station.connect(self.conf, self.on_dataset, self.on_connection_lost)
-            self.logger.debug(f'ControlRouterMonitorNode - monitor - station: {station}')
-
-            self.__station = station
-            await station.set_broadcast_flags(self.conf.subscription)
-
-            while True:
-                await asyncio.sleep(1)  # TODO: test connection here?
-
-        except asyncio.CancelledError:
-            self.logger.info('monitor cancelled')
-            raise
-
-        except Exception as exc:
-            self.logger.exception(f'monitor failed: {exc}')
-            self.async_loop.stop()
-            raise
-
-        finally:
-            if station is not None:
-                await station.close()
-            self.__station = None
+        self.async_loop.run_until_complete(self.shutdown())
+        self.logger.debug('closed')
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -148,13 +145,7 @@ class ControlRouterMonitorNode(AsyncPublisherNode):
         return self.__conf
 
 
-    @property
-    def station(self):
-        return self.__station
-
-
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'ControlRouterMonitorNode:{{conf:{self.conf}, ops:{self.ops}, mq_client:{self.mq_client}, '
-                f'station:{self.station}}}')
+        return f'ControlRouterMonitorNode:{{conf:{self.conf}, ops:{self.ops}, mq_client:{self.mq_client}}}'
