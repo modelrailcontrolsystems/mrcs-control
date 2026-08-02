@@ -85,4 +85,4 @@ class ClockConfNode(AsyncSubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return f'TimeControllerNode:{{clock:{self.clock}, ops:{self.ops}, mq_client:{self.mq_client}}}'
+        return f'ClockConfNode:{{clock:{self.clock}, ops:{self.ops}, mq_client:{self.mq_client}}}'

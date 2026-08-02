@@ -26,6 +26,7 @@ mrcs_z21_conf
 """
 
 import asyncio
+import logging
 import sys
 
 from mrcs_control.cli.args.z21_control_args import Z21ControlArgs
@@ -39,18 +40,19 @@ from mrcs_core.sys.logging import Logging
 # --------------------------------------------------------------------------------------------------------------------
 
 def mrcs_control_on_dataset(report: JSONable):
-    if args.monitor:
-        print(JSONify.dumps(report))
-        return
-
-    if isinstance(report, args.command.report_type):
-        print(JSONify.dumps(report))
-        exit(0)
+    print(JSONify.dumps(report))
+    # if args.monitor:
+    #     print(JSONify.dumps(report))
+    #     return
+    #
+    # if isinstance(report, args.command.report_type):
+    #     print(JSONify.dumps(report))
+    #     exit(0)
 
 
 def mrcs_control_on_connection_lost(exc: Exception):
     if exc:
-        logger.warning(f'connection lost - exc: {exc}')
+        logger.warning(f'connection lost - exc: {exc}')  # TODO: when does this happen?
 
 
 async def monitor():
@@ -62,11 +64,11 @@ async def monitor():
         if args.has_command:
             command = args.command
             await station.send_command(command)
-            if command.report_type is None:
-                exit(0)
+            # if command.report_type is None:
+            #     exit(0)
 
         while True:
-            await asyncio.sleep(1)
+            await asyncio.sleep(1)  # TODO: test connection here?
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -77,7 +79,7 @@ if __name__ == '__main__':
 
     args = Z21ControlArgs('a utility to excercise a Roco Z21 control station')
 
-    Logging.config('mrcs_z21_control', verbose=args.verbose)  # level=logging.DEBUG
+    Logging.config('mrcs_z21_control', level=logging.DEBUG)  # level=logging.DEBUG / verbose=args.verbose
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
 

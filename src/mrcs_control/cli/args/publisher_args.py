@@ -12,8 +12,9 @@ from mrcs_control.cli.args.multimode_control_args import MultimodeControlArgs
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class PublishArgs(MultimodeControlArgs):
+class PublisherArgs(MultimodeControlArgs):
     """unix command line handler"""
+
 
     def __init__(self, description):
         super().__init__(description)
@@ -66,7 +67,7 @@ class PublishArgs(MultimodeControlArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'PublishArgs:{{test:{self.test}, source_serial:{self.source_serial}, '
+        return (f'PublisherArgs:{{test:{self.test}, source_serial:{self.source_serial}, '
                 f'target_equipment:{self.target_equipment}, target_block:{self.target_block}, '
                 f'target_serial:{self.target_serial}, message_body:{self.message_body}, '
                 f'indent:{self.indent}, verbose:{self.verbose}}}')

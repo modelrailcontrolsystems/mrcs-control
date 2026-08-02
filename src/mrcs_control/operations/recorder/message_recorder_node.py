@@ -9,10 +9,9 @@ A universal message logger
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.operations.messaging_node import SubscriberNode
 from mrcs_control.operations.operation_mode import OperationService
-from mrcs_control.operations.recorder.persistent_message_record import PersistentMessageRecord
 from mrcs_control.operations.recorder.persistent_message import PersistentMessage
-
-from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentFilter, EquipmentType
+from mrcs_control.operations.recorder.persistent_message_record import PersistentMessageRecord
+from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
@@ -25,14 +24,10 @@ class MessageRecorderNode(SubscriberNode):
     A universal message logger
     """
 
+
     @classmethod
     def id(cls):
         return EquipmentIdentifier(EquipmentType.MLG, None, 1)
-
-
-    @classmethod
-    def subscription_routing_keys(cls):
-        return (SubscriptionRoutingKey(EquipmentFilter.any(), EquipmentFilter.any()), )
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -42,6 +37,10 @@ class MessageRecorderNode(SubscriberNode):
 
 
     # ----------------------------------------------------------------------------------------------------------------
+
+    def subscription_routing_keys(self):
+        return (SubscriptionRoutingKey(EquipmentFilter.any(), EquipmentFilter.any()),)
+
 
     def handle_message(self, message: Message):
         self.logger.info(f'handle_message: {JSONify.as_jdict(message)}')

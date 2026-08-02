@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+
+"""
+Created on 31 Jul 2026
+
+@author: Bruno Beloff (bbeloff@me.com)
+
+source repo: mrcs_control
+
+DESCRIPTION
+A service providing the interface between a Z21 control router and the messaging system.
+Note that in --run modes, the utility runs forever.
+
+SYNOPSIS
+
+EXAMPLES
+
+FILES
+~/MRCS/conf/control_router_conf.json
+
+SEE ALSO
+mrcs_z21_conf
+mrcs_z21_control
+"""
+
+import sys
+
+from mrcs_control.cli.args.router_args import RouterArgs
+from mrcs_control.equipment.control_router.control_router_monitor_node import ControlRouterMonitorNode
+from mrcs_core.equipment.control_router.control_router_conf import ControlRouterConf
+from mrcs_core.sys.host import Host
+from mrcs_core.sys.logging import Logging
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+
+    monitor = None
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    args = RouterArgs('a service providing the interface between a control router and the messaging system')
+
+    Logging.config('mrcs_control_router', verbose=args.verbose)  # level=logging.DEBUG / verbose=args.verbose
+    logger = Logging.getLogger()
+    logger.info(f'args: {args}')
+    logger.info(f'mode: {args.mode.value}')
+
+    conf = ControlRouterConf.load(Host)
+    if conf is None:
+        logger.error('no configuration found - use mrcs_z21_conf to create one.')
+        exit(1)
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    try:
+        monitor = ControlRouterMonitorNode(args.mode.value, conf)
+        logger.info(f'monitor: {monitor}')
+
+        if args.run:
+            monitor.run()
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    except KeyboardInterrupt:
+        print(file=sys.stderr)
+
+    finally:
+        if monitor is not None:
+            monitor.close()

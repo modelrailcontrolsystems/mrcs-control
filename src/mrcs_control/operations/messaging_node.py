@@ -8,9 +8,8 @@ Abstract blocking messaging nodes
 
 from abc import ABC, abstractmethod
 
-from mrcs_control.messaging.mq_client import MQPublisher, MQSubscriber, MQClient
+from mrcs_control.messaging.mq_client import MQClient, MQPublisher, MQSubscriber
 from mrcs_control.operations.operation_mode import OperationMode, OperationService
-
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
@@ -25,10 +24,12 @@ class MessagingNode(ABC):
     An abstract blocking messaging node
     """
 
+
     @classmethod
     @abstractmethod
     def id(cls) -> EquipmentIdentifier:
         pass
+
 
     # ----------------------------------------------------------------------------------------------------------------
 
@@ -69,6 +70,7 @@ class PublisherNode(MessagingNode, ABC):
     a messaging node that can publish
     """
 
+
     @classmethod
     def construct(cls, ops_mode: OperationMode):
         return cls(ops_mode.value)
@@ -87,6 +89,7 @@ class SubscriberNode(MessagingNode, ABC):
     a blocking messaging node that can publish and subscribe
     """
 
+
     @classmethod
     def construct(cls, ops_mode: OperationMode):
         return cls(ops_mode.value)
@@ -100,9 +103,8 @@ class SubscriberNode(MessagingNode, ABC):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    @classmethod
     @abstractmethod
-    def subscription_routing_keys(cls) -> list[SubscriptionRoutingKey]:
+    def subscription_routing_keys(self) -> list[SubscriptionRoutingKey]:
         pass
 
 
@@ -118,7 +120,14 @@ class SubscriberNode(MessagingNode, ABC):
 
     # ----------------------------------------------------------------------------------------------------------------
 
+    def close(self):
+        self.mq_client.close()
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
     def __str__(self, *args, **kwargs):
         routing_keys = [JSONify.as_jdict(key) for key in self.subscription_routing_keys()]
+
         return (f'{self.__class__.__name__}:{{routing_keys:{routing_keys}, '
                 f'ops:{self.ops}, mq_client:{self.mq_client}}}')

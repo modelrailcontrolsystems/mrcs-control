@@ -14,6 +14,7 @@ https://gitlab.com/z21-fpm/z21_python
 """
 
 import asyncio
+import errno
 from asyncio import CancelledError, DatagramTransport
 from typing import Any, Callable, Self
 
@@ -38,6 +39,10 @@ class Z21Station(object):
 
     DEFAULT_IP_ADDRESS = IPv4Address.construct('192.168.1.111')
     DEFAULT_PORT = 21105
+    # The Z21 associates broadcast delivery with the client's UDP endpoint.
+    # Keep this port stable across process restarts instead of allowing the OS
+    # to allocate a new ephemeral source port each time.
+    DEFAULT_CLIENT_PORT = 21106
     DEFAULT_TIMEOUT = 2.0
     DEFAULT_SUBSCRIPTION = ControlRouterSubscription(Broadcast.CAN_DETECTOR, Broadcast.RAILCOM_DATA_ALL,
                                                      Broadcast.TRACK, Broadcast.X_LOCO_INFO_ALL)
@@ -53,10 +58,21 @@ class Z21Station(object):
 
         station = cls(conf, on_response, on_connection_lost)
 
-        transport, protocol = await loop.create_datagram_endpoint(
-            lambda: Z21Protocol(station.station_dataset_handler, station.station_connection_lost_handler),
-            remote_addr=(conf.ip_address.dot_decimal, conf.port),
-        )
+        try:
+            # Binding without SO_REUSEPORT makes the client endpoint exclusive:
+            # a second MRCS Z21 client cannot silently share this port.
+            transport, protocol = await loop.create_datagram_endpoint(
+                lambda: Z21Protocol(station.station_dataset_handler, station.station_connection_lost_handler),
+                local_addr=('0.0.0.0', conf.port),
+                remote_addr=(conf.ip_address.dot_decimal, conf.port),
+            )
+
+        except OSError as exc:
+            if exc.errno == errno.EADDRINUSE:
+                raise RuntimeError(
+                    f'Z21 client UDP port {cls.DEFAULT_CLIENT_PORT} is already in use; '
+                    'stop the other MRCS Z21 client before starting this utility.') from exc
+            raise
 
         # TODO: use conf.timeout? Do we need receive_packet() if broadcast is off?
         # https://github.com/botmonster/z21aio/blob/a615edc27021955ed3bfebc79568c5fffc89c7ac/src/z21aio/station.py#L309
@@ -64,6 +80,8 @@ class Z21Station(object):
         station.__transport = transport
         station.__protocol = protocol
         station.__has_connection = True
+
+        station.logger.debug(f'connected - local:{transport.get_extra_info("sockname")}')
 
         station.__keep_alive_task = asyncio.create_task(station.__keep_alive_loop())
 
@@ -102,6 +120,7 @@ class Z21Station(object):
     # ----------------------------------------------------------------------------------------------------------------
 
     def station_dataset_handler(self, dataset: Dataset) -> None:
+        self.logger.debug(f'station_dataset_handler:{dataset}')
         try:
             self.on_response(Z21EquipmentReport.construct_from_dataset(dataset))
 
@@ -166,12 +185,12 @@ class Z21Station(object):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    async def __keep_alive_loop(self) -> None:
+    async def __keep_alive_loop(self) -> None:  # TODO: move to control monitor node
         while self.has_connection:
             try:
                 await asyncio.sleep(self.__KEEP_ALIVE_INTERVAL)
                 if self.has_connection:
-                    await self.set_broadcast_flags()
+                    await self.set_broadcast_flags()  # TODO: change this to get system state
             except CancelledError:
                 break
 
