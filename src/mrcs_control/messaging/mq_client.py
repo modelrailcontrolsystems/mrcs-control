@@ -16,12 +16,12 @@ https://stackoverflow.com/questions/15150207/connection-in-rabbitmq-server-auto-
 from abc import ABC
 from enum import StrEnum, unique
 from typing import Callable
-from uuid import uuid4
 
 import pika
 from pika.exceptions import AMQPError, ChannelWrongStateError
 from pika.exchange_type import ExchangeType
 
+from mrcs_control.messaging.mq_enums import MQTopology
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.data.json import JSONify
 from mrcs_core.data.meta_enum import MetaEnum
@@ -122,22 +122,22 @@ class MQManager(MQClient):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def exchange_delete(self, exchange):
-        self.logger.debug(f'exchange_delete:{exchange}')
+    def exchange_delete(self, exchange_name: str):
+        self.logger.debug(f'exchange_delete:{exchange_name}')
 
         if self.channel is None:
             raise RuntimeError('MQManager - exchange_delete: no channel')
 
-        self.channel.exchange_delete(exchange=exchange, if_unused=True)
+        self.channel.exchange_delete(exchange=exchange_name, if_unused=True)
 
 
-    def queue_delete(self, queue):
-        self.logger.debug(f'MQManager - queue_delete:{queue}')
+    def queue_delete(self, queue_name: str):
+        self.logger.debug(f'MQManager - queue_delete:{queue_name}')
 
         if self.channel is None:
             raise RuntimeError('queue_delete: no channel')
 
-        self.channel.queue_delete(queue, if_unused=True, if_empty=False)
+        self.channel.queue_delete(queue_name, if_unused=True, if_empty=False)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -161,7 +161,7 @@ class MQPublisher(MQClient):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, exchange_name):
+    def __init__(self, exchange_name: MQMode):
         super().__init__()
 
         self.__exchange_name = exchange_name  # string
@@ -235,25 +235,19 @@ class MQSubscriber(MQPublisher):
 
 
     @classmethod
-    def queue_name(cls, exchange_name: MQMode, id: EquipmentIdentifier) -> str:
-        """Construct a unique queue name retaining the exchange and subscriber identity."""
-        return '.'.join([exchange_name, id.as_json(), uuid4().hex])
-
-
-    @classmethod
-    def construct_sub(cls, exchange_name: MQMode, id: EquipmentIdentifier, on_message: Callable):
-        queue = cls.queue_name(exchange_name, id)
-
-        return cls(exchange_name, id, queue, on_message)
+    def construct_sub(cls, exchange_name: MQMode, queuing: MQTopology, id: EquipmentIdentifier,
+                      on_message: Callable):
+        return cls(exchange_name, queuing.value, id, on_message)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, exchange_name, id: EquipmentIdentifier, queue: str, on_message: Callable):
+    def __init__(self, exchange_name: MQMode, queue_config: MQTopology.QueueConfiguration, id: EquipmentIdentifier,
+                 on_message: Callable):
         super().__init__(exchange_name)
 
         self.__id = id
-        self.__queue = queue
+        self.__queue_config = queue_config
         self.__on_message = on_message
 
 
@@ -265,41 +259,42 @@ class MQSubscriber(MQPublisher):
         if self.channel is None:
             raise RuntimeError('subscribe: no channel')
 
-        if self.queue is None:
-            raise RuntimeError('subscribe: no queue')
-
         if not routing_keys:
             raise RuntimeError('subscribe: no routing keys')
 
+        durable = self.queue_config.durable
+        exclusive = self.queue_config.exclusive
+
         while True:
             try:
-                self.channel.queue_declare(self.queue, durable=True, exclusive=False, auto_delete=False)
+                self.channel.queue_declare(self.queue_name, durable=durable, exclusive=exclusive, auto_delete=False)
 
                 for routing_key in routing_keys:
                     self.channel.queue_bind(
                         exchange=self.exchange_name,
-                        queue=self.queue,
+                        queue=self.queue_name,
                         routing_key=routing_key.as_json(),
                     )
 
                 self.channel.basic_consume(
-                    queue=self.queue,
+                    queue=self.queue_name,
                     on_message_callback=self.on_consume,
                 )
 
                 self.channel.start_consuming()
-            except AMQPError:
+            except AMQPError as exc:
+                self.logger.warn(f'subscribe: conect failed: {exc}')
                 self.close()
                 self.connect()
                 self.logger.warn('subscribe: connection re-established')
 
 
     def close(self):
-        self.logger.debug(f'MQSubscriber - close - deleting:{self.queue}')
+        self.logger.debug(f'MQSubscriber - close - deleting:{self.queue_name}')
 
         try:
             if self.channel is not None:
-                self.channel.queue_delete(queue=self.queue, if_unused=False, if_empty=False)
+                self.channel.queue_delete(queue=self.queue_name, if_unused=False, if_empty=False)
         except (AttributeError, AMQPError, ChannelWrongStateError):
             pass
         finally:
@@ -336,8 +331,13 @@ class MQSubscriber(MQPublisher):
 
 
     @property
-    def queue(self):
-        return self.__queue
+    def queue_config(self):
+        return self.__queue_config
+
+
+    @property
+    def queue_name(self):
+        return self.queue_config.queue_name(self.exchange_name, self.id)
 
 
     @property
@@ -348,5 +348,5 @@ class MQSubscriber(MQPublisher):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'MQSubscriber:{{exchange_name:{self.exchange_name}, id:{self.id}, queue:{self.queue}, '
-                f'channel:{self.channel}}}')
+        return (f'MQSubscriber:{{exchange_name:{self.exchange_name}, id:{self.id}, queue_config:{self.queue_config}, '
+                f'queue_name:{self.queue_name}, channel:{self.channel}}}')

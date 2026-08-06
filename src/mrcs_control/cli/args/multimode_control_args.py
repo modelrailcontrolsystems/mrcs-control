@@ -9,13 +9,14 @@ https://realpython.com/command-line-interfaces-python-argparse/
 from abc import ABC
 
 from mrcs_control.cli.args.control_args import ControlArgs
-from mrcs_control.operations.operation_mode import OperationMode
+from mrcs_control.operations.node_enums import NodeTopology
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
 class MultimodeControlArgs(ControlArgs, ABC):
     """unix command line handler"""
+
 
     def __init__(self, description):
         super().__init__(description)
@@ -28,8 +29,8 @@ class MultimodeControlArgs(ControlArgs, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @property
-    def mode(self) -> OperationMode:
-        return OperationMode.TEST if self.test else OperationMode.LIVE
+    def mode(self) -> NodeTopology:
+        return NodeTopology.TEST if self.test else NodeTopology.LIVE
 
 
     # ----------------------------------------------------------------------------------------------------------------

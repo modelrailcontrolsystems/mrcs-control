@@ -13,8 +13,9 @@ mrcs_publisher -vti4 -t CRN -n 3 -m '{"event_id": "abc", "on": "1930-01-02T06:25
 from datetime import timedelta
 
 from mrcs_control.db.db_client import DbClient
+from mrcs_control.messaging.mq_enums import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
-from mrcs_control.operations.operation_mode import OperationService
+from mrcs_control.operations.node_enums import NodeTopology
 from mrcs_control.operations.time.clock_manager_node import ClockManagerNode
 from mrcs_control.operations.time.cron import CRN
 from mrcs_control.operations.time.persistent_cronjob import PersistentCronjob
@@ -52,8 +53,8 @@ class CronNode(AsyncSubscriberNode):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, ops: OperationService, save_model_time: bool):
-        super().__init__(ops)
+    def __init__(self, ops: NodeTopology.ServiceConfiguration, save_model_time: bool):
+        super().__init__(ops, MQTopology.SINGLE)
 
         self.__save_model_time = save_model_time
 

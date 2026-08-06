@@ -15,7 +15,7 @@ import asyncio
 from mrcs_control.dcc.z21.command.station import Z21Station
 from mrcs_control.equipment.control_router.control_router import CRT
 from mrcs_control.operations.async_messaging_node import AsyncPublisherNode
-from mrcs_control.operations.operation_mode import OperationService
+from mrcs_control.operations.node_enums import NodeTopology
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONable
 from mrcs_core.equipment.control_router.control_router_conf import ControlRouterConf
@@ -47,7 +47,7 @@ class ControlRouterMonitorNode(AsyncPublisherNode):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, ops: OperationService, conf: ControlRouterConf):
+    def __init__(self, ops: NodeTopology.ServiceConfiguration, conf: ControlRouterConf):
         super().__init__(ops)
         self.__conf = conf
         self.__monitor_task = None

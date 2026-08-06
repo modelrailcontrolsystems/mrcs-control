@@ -23,7 +23,7 @@ RESOURCES
 import sys
 
 from mrcs_control.cli.args.subscriber_args import SubscriberArgs
-from mrcs_control.cli.internal.simple_subscriber_node import SimpleSubscriberNode
+from mrcs_control.cli.internal.topic_subscriber_node import TopicSubscriberNode
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
 from mrcs_core.sys.logging import Logging
@@ -40,10 +40,10 @@ def on_message(message):
 if __name__ == '__main__':
 
     target = '*.*.*'
+    subscriber = None
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    subscriber = None
     args = SubscriberArgs('a tool for subscribing to topics')
 
     Logging.config('mrcs_control_subscriber', verbose=args.verbose)  # verbose=args.verbose / level=logging.DEBUG
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
-        subscriber = SimpleSubscriberNode(args.mode.value, subscriptions, on_message)
+        subscriber = TopicSubscriberNode.construct_node(args.mode.value, subscriptions, on_message)
         logger.info(subscriber)
 
         subscriber.subscribe()
@@ -74,4 +74,5 @@ if __name__ == '__main__':
         print(file=sys.stderr)
 
         if subscriber is not None:
+            # noinspection unresolved-references
             subscriber.close()

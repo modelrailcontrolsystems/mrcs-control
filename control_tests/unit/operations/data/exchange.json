@@ -1,0 +1,11 @@
+{
+  "name": "mrcs.test",
+  "type": "topic",
+  "durable": true,
+  "internal": false,
+  "auto_delete": false,
+  "message_stats": {
+    "publish_in": 14637,
+    "publish_out": 14604
+  }
+}
