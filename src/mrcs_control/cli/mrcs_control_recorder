@@ -24,7 +24,6 @@ import sys
 
 from mrcs_control.cli.args.recorder_args import RecorderArgs
 from mrcs_control.operations.recorder.message_recorder_node import MessageRecorderNode
-
 from mrcs_core.data.json import JSONify
 from mrcs_core.sys.logging import Logging
 
@@ -42,11 +41,10 @@ if __name__ == '__main__':
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')
 
-
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
-        recorder_node = MessageRecorderNode.construct(args.mode)
+        recorder_node = MessageRecorderNode(args.mode.value)
         logger.info(f'recorder_node: {recorder_node}')
 
         if args.clean:

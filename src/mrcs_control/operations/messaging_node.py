@@ -9,7 +9,8 @@ Abstract blocking messaging nodes
 from abc import ABC, abstractmethod
 
 from mrcs_control.messaging.mq_client import MQClient, MQPublisher, MQSubscriber
-from mrcs_control.operations.operation_mode import OperationMode, OperationService
+from mrcs_control.messaging.mq_enums import MQTopology
+from mrcs_control.operations.node_enums import NodeTopology
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
@@ -33,7 +34,7 @@ class MessagingNode(ABC):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, ops: OperationService, mq_client: MQClient):
+    def __init__(self, ops: NodeTopology.ServiceConfiguration, mq_client: MQClient):
         self.__ops = ops
         self.__mq_client = mq_client
 
@@ -72,14 +73,15 @@ class PublisherNode(MessagingNode, ABC):
 
 
     @classmethod
-    def construct(cls, ops_mode: OperationMode):
-        return cls(ops_mode.value)
+    def construct(cls, ops: NodeTopology.ServiceConfiguration):
+        return cls(ops)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, ops: OperationService):
-        super().__init__(ops, MQPublisher.construct_pub(ops.mq_mode))
+    def __init__(self, ops: NodeTopology.ServiceConfiguration):
+        mq_client = MQPublisher.construct_pub(ops.mq_mode)
+        super().__init__(ops, mq_client)
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -91,14 +93,15 @@ class SubscriberNode(MessagingNode, ABC):
 
 
     @classmethod
-    def construct(cls, ops_mode: OperationMode):
-        return cls(ops_mode.value)
+    def construct(cls, ops: NodeTopology.ServiceConfiguration, queuing: MQTopology, id: EquipmentIdentifier):
+        return cls(ops, queuing, id)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, ops: OperationService):
-        super().__init__(ops, MQSubscriber.construct_sub(ops.mq_mode, self.id(), self.handle_message))
+    def __init__(self, ops: NodeTopology.ServiceConfiguration, queuing: MQTopology, id: EquipmentIdentifier):
+        mq_client = MQSubscriber.construct_sub(ops.mq_mode, queuing, id, self.handle_message)
+        super().__init__(ops, mq_client)
 
 
     # ----------------------------------------------------------------------------------------------------------------

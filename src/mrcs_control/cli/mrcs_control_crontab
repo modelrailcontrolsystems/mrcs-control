@@ -49,7 +49,7 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
-        crontab = CrontabNode.construct(args.mode)
+        crontab = CrontabNode(args.mode.value)
         logger.info(f'crontab: {crontab}')
 
         if args.clean:

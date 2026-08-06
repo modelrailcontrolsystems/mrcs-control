@@ -38,11 +38,11 @@ def find_filtered():
     return args.mode.value.broker_filter(items)
 
 
-def delete(item):
+def delete(item_name: str):
     if manager is None:
         return
 
-    manager.exchange_delete(item) if args.exchange else manager.queue_delete(item)
+    manager.exchange_delete(item_name) if args.exchange else manager.queue_delete(item_name)
 
 
 # --------------------------------------------------------------------------------------------------------------------

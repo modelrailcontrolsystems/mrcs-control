@@ -12,7 +12,8 @@ import asyncio
 from abc import ABC, abstractmethod
 
 from mrcs_control.messaging.mq_async_client import MQAsyncPublisher, MQAsyncSubscriber
-from mrcs_control.operations.operation_mode import OperationService
+from mrcs_control.messaging.mq_enums import MQTopology
+from mrcs_control.operations.node_enums import NodeTopology
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
@@ -35,7 +36,7 @@ class AsyncMessagingNode(ABC):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, ops: OperationService, mq_client):
+    def __init__(self, ops: NodeTopology.ServiceConfiguration, mq_client):
         self.__ops = ops
         self.__mq_client = mq_client
 
@@ -90,7 +91,7 @@ class AsyncPublisherNode(AsyncMessagingNode, ABC):
     """
 
 
-    def __init__(self, ops: OperationService):
+    def __init__(self, ops: NodeTopology.ServiceConfiguration):
         publisher = MQAsyncPublisher.construct_pub(ops.mq_mode, on_startup_complete=self.handle_startup)
         super().__init__(ops, publisher)
         self.__async_loop = None
@@ -141,8 +142,8 @@ class AsyncSubscriberNode(AsyncMessagingNode, ABC):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, ops: OperationService):
-        subscriber = MQAsyncSubscriber.construct_sub(ops.mq_mode, self.id(), self.handle_message,
+    def __init__(self, ops: NodeTopology.ServiceConfiguration, queuing: MQTopology):
+        subscriber = MQAsyncSubscriber.construct_sub(ops.mq_mode, queuing, self.id(), self.handle_message,
                                                      *self.subscription_routing_keys(),
                                                      on_startup_complete=self.handle_startup)
         super().__init__(ops, subscriber)

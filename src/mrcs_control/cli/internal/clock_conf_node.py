@@ -7,8 +7,9 @@ An AsyncSubscriberNode that requests clock conf changes to the clock manager nod
 Implements a single-shot interlock that waits for the clock manager to respond.
 """
 
+from mrcs_control.messaging.mq_enums import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
-from mrcs_control.operations.operation_mode import OperationService
+from mrcs_control.operations.node_enums import NodeTopology
 from mrcs_control.operations.time.clock_manager_node import ClockManagerNode
 from mrcs_control.operations.time.cron import CRN
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
@@ -42,8 +43,8 @@ class ClockConfNode(AsyncSubscriberNode):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, ops: OperationService, clock: Clock):
-        super().__init__(ops)
+    def __init__(self, ops: NodeTopology.ServiceConfiguration, clock: Clock):
+        super().__init__(ops, MQTopology.SINGLE)
 
         self.__clock = clock
         self.__origin = None

@@ -10,7 +10,7 @@ Environment variables may be used to communicate application configuration to ch
 import logging
 import os
 
-from mrcs_control.operations.operation_mode import OperationMode
+from mrcs_control.operations.node_enums import NodeTopology
 from mrcs_core.sys.logging import Logging
 
 
@@ -23,14 +23,14 @@ class Environment(object):
 
     __DEFAULT_LOG_NAME = ''
     __DEFAULT_LOG_LEVEL = logging.INFO
-    __DEFAULT_OPS_MODE = OperationMode.TEST
+    __DEFAULT_OPS_MODE = NodeTopology.TEST
 
 
     @classmethod
-    def set(cls, ops_mode: OperationMode):
+    def set(cls, queuing: NodeTopology):
         os.environ['MRCS_LOG_NAME'] = Logging.specification().name
         os.environ['MRCS_LOG_LEVEL'] = str(Logging.specification().level)
-        os.environ['MRCS_OPS_MODE'] = ops_mode.name
+        os.environ['MRCS_OPS_MODE'] = queuing.name
 
 
     @classmethod
@@ -38,21 +38,21 @@ class Environment(object):
         try:
             log_name = os.environ['MRCS_LOG_NAME']
             log_level = int(os.environ['MRCS_LOG_LEVEL'])
-            ops_mode = OperationMode[os.environ['MRCS_OPS_MODE']]
+            topology = NodeTopology[os.environ['MRCS_OPS_MODE']]
         except KeyError:
             log_name = cls.__DEFAULT_LOG_NAME
             log_level = cls.__DEFAULT_LOG_LEVEL
-            ops_mode = cls.__DEFAULT_OPS_MODE
+            topology = cls.__DEFAULT_OPS_MODE
 
-        return cls(log_name, log_level, ops_mode)
+        return cls(log_name, log_level, topology)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, log_name: str, log_level: int, ops_mode: OperationMode):
+    def __init__(self, log_name: str, log_level: int, queuing: NodeTopology):
         self.__log_name = log_name
         self.__log_level = log_level
-        self.__ops_mode = ops_mode
+        self.__queuing = queuing
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -68,12 +68,11 @@ class Environment(object):
 
 
     @property
-    def ops_mode(self):
-        return self.__ops_mode
+    def queuing(self):
+        return self.__queuing
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'Environment:{{log_name:{self.log_name}, log_level:{self.log_level}, '
-                f'ops_mode:{self.ops_mode}}}')
+        return f'Environment:{{log_name:{self.log_name}, log_level:{self.log_level}, queuing:{self.queuing}}}'

@@ -18,6 +18,7 @@ class SubscriberArgs(MultimodeControlArgs):
     def __init__(self, description):
         super().__init__(description)
 
+        # TODO: --list the available equipment types
         self._parser.add_argument('-s', '--sources', action='store', type=str, nargs='+', help='subscribed topics')
 
         self._args = self._parser.parse_args()
