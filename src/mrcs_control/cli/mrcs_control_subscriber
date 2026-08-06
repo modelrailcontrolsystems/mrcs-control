@@ -9,21 +9,22 @@ source repo: mrcs_control
 
 DESCRIPTION
 A tool for subscribing to topics. Multiple publisher sources can be specified. The target is always '*.*.*'.
-Messages are printed to stdout in json format.
+Messages are written to stdout in json format.
+A --list function displays the source equipment types.
 
 SYNOPSIS
-mrcs_control_subscriber [-h] [-i INDENT] [-v] [--version] [-t] [-s SOURCES [SOURCES ...]]
+mrcs_control_subscriber [-h] [-i INDENT] [-v] [--version] [-t] (-l | -s SOURCES [SOURCES ...])
 
 EXAMPLES
+mrcs_control_subscriber -l -i4
 mrcs_control_subscriber -t -v -s CRT.*.1
-
-RESOURCES
 """
 
 import sys
 
 from mrcs_control.cli.args.subscriber_args import SubscriberArgs
 from mrcs_control.cli.internal.topic_subscriber_node import TopicSubscriberNode
+from mrcs_core.data.equipment_identity import EquipmentType
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
 from mrcs_core.sys.logging import Logging
@@ -46,32 +47,40 @@ if __name__ == '__main__':
 
     args = SubscriberArgs('a tool for subscribing to topics')
 
-    Logging.config('mrcs_control_subscriber', verbose=args.verbose)  # verbose=args.verbose / level=logging.DEBUG
+    Logging.config('mrcs_control_subscriber', verbose=args.verbose)
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
-    logger.info(f'mode: {args.mode.value}')
 
-    subscriptions = []
-    for source in args.sources:
-        try:
-            subscriptions.append(SubscriptionRoutingKey.construct_from_jdict('.'.join([source, target])))
-        except ValueError:
-            logger.error(f'the source {source} is invalid.')
-            exit(2)
+    if args.sources:
+        logger.info(f'mode: {args.mode.value}')
 
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
-        subscriber = TopicSubscriberNode.construct_node(args.mode.value, subscriptions, on_message)
-        logger.info(subscriber)
+        if args.list:
+            print(JSONify.dumps(sorted(EquipmentType.keys()), indent=args.indent))
+            exit(0)
 
-        subscriber.subscribe()
+        if args.sources:
+            subscriptions = []
+            for source in args.sources:
+                try:
+                    subscriptions.append(SubscriptionRoutingKey.construct_from_jdict('.'.join([source, target])))
+                except ValueError:
+                    logger.error(f'the source {source} is invalid.')
+                    exit(2)
+
+            subscriber = TopicSubscriberNode.construct_node(args.mode.value, subscriptions, on_message)
+            logger.info(subscriber)
+
+            subscriber.subscribe()
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     finally:
-        print(file=sys.stderr)
+        if args.sources:
+            print(file=sys.stderr)
 
         if subscriber is not None:
             # noinspection unresolved-references
