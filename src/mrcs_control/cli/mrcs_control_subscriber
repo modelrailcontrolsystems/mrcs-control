@@ -8,23 +8,25 @@ Created on 1 Aug 2026
 source repo: mrcs_control
 
 DESCRIPTION
-A tool for subscribing to topics. Multiple publisher sources can be specified. The target is always '*.*.*'.
-Messages are written to stdout in json format.
-A --list function displays the source equipment types.
+A tool for subscribing to topics. Multiple publisher sources can be specified. Messages are written to stdout in
+json format. The default message recipient (target) is '*.*.*'.
+
+Warnings:
+1. if the '*' character is used in the source or target, then the parameter should be enclosed in quotation marks
+2. for sources, '*' is not a wildcard - it will only match publisher sources with the same '*' character
 
 SYNOPSIS
-mrcs_control_subscriber [-h] [-i INDENT] [-v] [--version] [-t] (-l | -s SOURCES [SOURCES ...])
+mrcs_control_subscriber [-h] [-i INDENT] [-v] [--version] [-t] [-r RECIPIENT] -s SOURCE [SOURCE ...]
 
 EXAMPLES
-mrcs_control_subscriber -l -i4
-mrcs_control_subscriber -t -v -s CRT.*.1
+mrcs_control_subscriber -t -v   -s 'TST.*.002' -r 'TST.*.003'
 """
 
 import sys
 
 from mrcs_control.cli.args.subscriber_args import SubscriberArgs
 from mrcs_control.cli.internal.topic_subscriber_node import TopicSubscriberNode
-from mrcs_core.data.equipment_identity import EquipmentType
+from mrcs_core.data.equipment_identity import EquipmentFilter
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
 from mrcs_core.sys.logging import Logging
@@ -40,7 +42,6 @@ def on_message(message):
 
 if __name__ == '__main__':
 
-    target = '*.*.*'
     subscriber = None
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -50,31 +51,42 @@ if __name__ == '__main__':
     Logging.config('mrcs_control_subscriber', verbose=args.verbose)
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
+    logger.info(f'mode: {args.mode.value}')
 
-    if args.sources:
-        logger.info(f'mode: {args.mode.value}')
+    if args.recipient == '__init__.py':  # the result of unquoted *
+        logger.error(f'the source is invalid.')
+        exit(2)
+
+    try:
+        target = EquipmentFilter.construct_from_jdict(args.recipient)
+    except ValueError:
+        logger.error(f'the recipient {args.recipient} is invalid.')
+        exit(2)
+
+    sources = []
+    for source in args.sources:
+        if source == '__init__.py':  # the result of unquoted *
+            logger.error(f'the source is invalid.')
+            exit(2)
+
+        try:
+            sources.append(EquipmentFilter.construct_from_jdict(source))
+        except ValueError:
+            logger.error(f'the source {source} is invalid.')
+            exit(2)
+
+    subscriptions = [SubscriptionRoutingKey(source, target) for source in sources]
 
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
-        if args.list:
-            print(JSONify.dumps(sorted(EquipmentType.keys()), indent=args.indent))
-            exit(0)
+        TopicSubscriberNode.set_id(target)
+        TopicSubscriberNode.set_subscription_routing_keys(subscriptions)
 
-        if args.sources:
-            subscriptions = []
-            for source in args.sources:
-                try:
-                    subscriptions.append(SubscriptionRoutingKey.construct_from_jdict('.'.join([source, target])))
-                except ValueError:
-                    logger.error(f'the source {source} is invalid.')
-                    exit(2)
+        subscriber = TopicSubscriberNode.construct_node(args.mode.value, on_message)
+        logger.info(subscriber)
 
-            TopicSubscriberNode.set_subscription_routing_keys(subscriptions)
-            subscriber = TopicSubscriberNode.construct_node(args.mode.value, on_message)
-            logger.info(subscriber)
-
-            subscriber.subscribe()
+        subscriber.subscribe()
 
 
     # ----------------------------------------------------------------------------------------------------------------

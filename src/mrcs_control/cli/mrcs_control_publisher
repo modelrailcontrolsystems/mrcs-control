@@ -12,12 +12,16 @@ A tool for publishing messages.
 Message bodies are read from stdin or from the --message argument. Messages are published with source and target
 routing specified by command-line arguments.
 
+Warnings:
+1. if the '*' character is used in the source or target, then the parameter should be enclosed in quotation marks
+2. for targets, '*' is not a wildcard - it will only match subscriber sources with the same '*' character
+
+
 SYNOPSIS
-mrcs_control_publisher [-h] [-i INDENT] [-v] [--version] [-t] [-s SOURCE_SERIAL]
-[-e TARGET_EQUIPMENT] [-b TARGET_BLOCK] [-n TARGET_SERIAL] [-m MESSAGE_BODY]
+mrcs_control_publisher [-h] [-i INDENT] [-v] [--version] [-t] [-s SOURCE] -r RECIPIENT [-m MESSAGE_BODY]
 
 EXAMPLES
-mrcs_control_publisher -t -v -e MPU -b 1 -n 2
+mrcs_control_publisher -t -s 'TST.*.002' -r 'TST.*.*'  -m '"hello"'
 
 RESOURCES
 """
@@ -31,7 +35,7 @@ from pika.exceptions import AMQPError
 from mrcs_control.cli.args.publisher_args import PublisherArgs
 from mrcs_control.messaging.mq_client import MQPublisher
 from mrcs_core.data.datum import Datum
-from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
+from mrcs_core.data.equipment_identity import EquipmentFilter
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey
@@ -71,18 +75,30 @@ if __name__ == '__main__':
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')
 
+    if args.source == '__init__.py':  # the result of unquoted *
+        logger.error(f'the source is invalid.')
+        exit(2)
+
     try:
-        target = EquipmentFilter.construct(args.target_equipment, args.target_block, args.target_serial)
-    except ValueError as ve:
-        logger.error(ve)
+        source = EquipmentFilter.construct_from_jdict(args.source)
+    except ValueError:
+        logger.error(f'the source {args.source} is invalid.')
+        exit(2)
+
+    if args.recipient == '__init__.py':  # the result of unquoted *
+        logger.error(f'the source is invalid.')
+        exit(2)
+
+    try:
+        target = EquipmentFilter.construct_from_jdict(args.recipient)
+    except ValueError:
+        logger.error(f'the recipient {args.recipient} is invalid.')
         exit(2)
 
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
-        source = EquipmentIdentifier(EquipmentType.TST, None, args.source_serial)
         routing_key = PublicationRoutingKey(source, target)
-
         publisher = MQPublisher.construct_pub(args.mode.value.mq_mode)
 
         # noinspection PyUnresolvedReferences
