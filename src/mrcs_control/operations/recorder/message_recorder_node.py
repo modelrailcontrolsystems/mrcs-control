@@ -31,17 +31,18 @@ class MessageRecorderNode(SubscriberNode):
         return EquipmentIdentifier(EquipmentType.MLG, None, 1)
 
 
+    @classmethod
+    def subscription_routing_keys(cls):
+        return (SubscriptionRoutingKey(EquipmentFilter.any(), EquipmentFilter.any()),)
+
+
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, ops: NodeTopology.ServiceConfiguration):
-        super().__init__(ops, MQTopology.SINGLE, self.id())
+        super().__init__(ops, MQTopology.SINGLE)
 
 
     # ----------------------------------------------------------------------------------------------------------------
-
-    def subscription_routing_keys(self):
-        return (SubscriptionRoutingKey(EquipmentFilter.any(), EquipmentFilter.any()),)
-
 
     def handle_message(self, message: Message):
         self.logger.info(f'handle_message: {JSONify.as_jdict(message)}')

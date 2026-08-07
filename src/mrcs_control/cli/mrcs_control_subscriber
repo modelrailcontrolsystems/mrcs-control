@@ -70,7 +70,8 @@ if __name__ == '__main__':
                     logger.error(f'the source {source} is invalid.')
                     exit(2)
 
-            subscriber = TopicSubscriberNode.construct_node(args.mode.value, subscriptions, on_message)
+            TopicSubscriberNode.set_subscription_routing_keys(subscriptions)
+            subscriber = TopicSubscriberNode.construct_node(args.mode.value, on_message)
             logger.info(subscriber)
 
             subscriber.subscribe()

@@ -160,14 +160,14 @@ class AsyncSubscriberNode(AsyncMessagingNode, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     async def publish(self, message: Message):
-        self.logger.debug('AsyncPublisherNode - publish')
+        self.logger.debug('AsyncSubscriberNode - publish')
         await self.mq_client.publish(message)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def run(self, *args):
-        self.logger.debug('AsyncPublisherNode - run')
+        self.logger.debug('AsyncSubscriberNode - run')
 
         self.__async_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.async_loop)

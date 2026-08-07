@@ -35,17 +35,18 @@ class CrontabNode(SubscriberNode):
         return EquipmentIdentifier(EquipmentType.CRN, None, CRN.Crontab)
 
 
+    @classmethod
+    def subscription_routing_keys(cls):
+        return (SubscriptionRoutingKey(EquipmentFilter.any(), cls.id()),)
+
+
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, ops: NodeTopology.ServiceConfiguration):
-        super().__init__(ops, MQTopology.SINGLE, self.id())
+        super().__init__(ops, MQTopology.SINGLE)
 
 
     # ----------------------------------------------------------------------------------------------------------------
-
-    def subscription_routing_keys(self):
-        return (SubscriptionRoutingKey(EquipmentFilter.any(), self.id()),)
-
 
     def handle_message(self, message: Message):
         self.logger.info(f'handle_message: {JSONify.as_jdict(message)}')
