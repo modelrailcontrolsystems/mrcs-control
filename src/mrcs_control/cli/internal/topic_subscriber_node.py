@@ -24,10 +24,17 @@ class TopicSubscriberNode(SubscriberNode):
     a simple subscriber node
     """
 
+    __id = EquipmentIdentifier(EquipmentType.TST, None, 1)
+
 
     @classmethod
     def id(cls):
-        return EquipmentIdentifier(EquipmentType.TST, None, 1)
+        return cls.__id
+
+
+    @classmethod
+    def set_id(cls, id: EquipmentIdentifier):
+        cls.__id = id
 
 
     __routing_keys = []

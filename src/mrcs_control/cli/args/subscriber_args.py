@@ -18,9 +18,10 @@ class SubscriberArgs(MultimodeControlArgs):
     def __init__(self, description):
         super().__init__(description)
 
-        group = self._parser.add_mutually_exclusive_group(required=True)
-        group.add_argument('-l', '--list', action='store_true', help='list equipment types')
-        group.add_argument('-s', '--sources', action='store', type=str, nargs='+', help='subscribed topics')
+        self._parser.add_argument('-r', '--recipient', action='store', type=str, default='*.*.*',
+                                  help='message target (default *.*.*)')
+        self._parser.add_argument('-s', '--sources', action='store', type=str, nargs='+', required=True,
+                                  help='subscribed topics')
 
         self._args = self._parser.parse_args()
 
@@ -28,8 +29,8 @@ class SubscriberArgs(MultimodeControlArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     @property
-    def list(self):
-        return self._args.list
+    def recipient(self):
+        return self._args.recipient
 
 
     @property
@@ -40,5 +41,5 @@ class SubscriberArgs(MultimodeControlArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'SubscriberArgs:{{test:{self.test}, list:{self.list}, sources:{self.sources}, '
+        return (f'SubscriberArgs:{{test:{self.test}, recipient:{self.recipient}, sources:{self.sources}, '
                 f'indent:{self.indent}, verbose:{self.verbose}}}')
