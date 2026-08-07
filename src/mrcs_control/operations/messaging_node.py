@@ -5,7 +5,6 @@ Created on 4 Jan 2026
 
 Abstract blocking messaging nodes
 """
-
 from abc import ABC, abstractmethod
 
 from mrcs_control.messaging.mq_client import MQClient, MQPublisher, MQSubscriber
@@ -35,6 +34,12 @@ class MessagingNode(ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, ops: NodeTopology.ServiceConfiguration, mq_client: MQClient):
+        if not isinstance(ops, NodeTopology.ServiceConfiguration):
+            raise TypeError(
+                'ops must be a NodeTopology.ServiceConfiguration instance; '
+                f'got {type(ops).__name__}. Use NodeTopology.<MODE>.value.'
+            )
+
         self.__ops = ops
         self.__mq_client = mq_client
 
@@ -93,23 +98,26 @@ class SubscriberNode(MessagingNode, ABC):
 
 
     @classmethod
-    def construct(cls, ops: NodeTopology.ServiceConfiguration, queuing: MQTopology, id: EquipmentIdentifier):
-        return cls(ops, queuing, id)
+    @abstractmethod
+    def subscription_routing_keys(cls) -> list[SubscriptionRoutingKey]:
+        pass
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, ops: NodeTopology.ServiceConfiguration, queuing: MQTopology, id: EquipmentIdentifier):
-        mq_client = MQSubscriber.construct_sub(ops.mq_mode, queuing, id, self.handle_message)
+    @classmethod
+    def construct(cls, ops: NodeTopology.ServiceConfiguration, queuing: MQTopology):
+        return cls(ops, queuing)
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def __init__(self, ops: NodeTopology.ServiceConfiguration, queuing: MQTopology):
+        mq_client = MQSubscriber.construct_sub(ops.mq_mode, queuing, self.id(), self.handle_message)
         super().__init__(ops, mq_client)
 
 
     # ----------------------------------------------------------------------------------------------------------------
-
-    @abstractmethod
-    def subscription_routing_keys(self) -> list[SubscriptionRoutingKey]:
-        pass
-
 
     @abstractmethod
     def subscribe(self):

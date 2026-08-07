@@ -38,17 +38,18 @@ class ClockManagerNode(SubscriberNode):
         return PublicationRoutingKey(cls.id(), EquipmentFilter.any())
 
 
+    @classmethod
+    def subscription_routing_keys(cls):
+        return (SubscriptionRoutingKey(EquipmentFilter.any(), cls.id()),)
+
+
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, ops: NodeTopology.ServiceConfiguration):
-        super().__init__(ops, MQTopology.SINGLE, self.id())
+        super().__init__(ops, MQTopology.SINGLE)
 
 
     # ----------------------------------------------------------------------------------------------------------------
-
-    def subscription_routing_keys(self):
-        return (SubscriptionRoutingKey(EquipmentFilter.any(), self.id()),)
-
 
     def handle_message(self, message: Message):
         self.logger.debug(f'handle_message - incoming:{JSONify.as_jdict(message)}')

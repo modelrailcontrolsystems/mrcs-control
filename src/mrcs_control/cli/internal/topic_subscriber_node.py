@@ -30,26 +30,37 @@ class TopicSubscriberNode(SubscriberNode):
         return EquipmentIdentifier(EquipmentType.TST, None, 1)
 
 
+    __routing_keys = []
+
+
     @classmethod
-    def construct_node(cls, ops: NodeTopology.ServiceConfiguration, routing_keys: list[SubscriptionRoutingKey],
-                       on_message: Callable[JSONable]):
-        return cls(ops, MQTopology.MULTIPLE, cls.id(), routing_keys, on_message)
+    def subscription_routing_keys(cls):
+        return cls.__routing_keys
+
+
+    @classmethod
+    def set_subscription_routing_keys(cls, routing_keys: list[SubscriptionRoutingKey]):
+        cls.__routing_keys = routing_keys
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, ops: NodeTopology.ServiceConfiguration, queuing: MQTopology, id: EquipmentIdentifier,
-                 routing_keys: list[SubscriptionRoutingKey], on_message: Callable[JSONable]):
-        super().__init__(ops, queuing, id)
+    @classmethod
+    def construct_node(cls, ops: NodeTopology.ServiceConfiguration, on_message: Callable[JSONable]):
+        return cls(ops, MQTopology.MULTIPLE, on_message)
 
-        self.__routing_keys = routing_keys
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def __init__(self, ops: NodeTopology.ServiceConfiguration, queuing: MQTopology, on_message: Callable[JSONable]):
+        super().__init__(ops, queuing)
         self.__on_message = on_message
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def subscription_routing_keys(self):
-        return self.routing_keys
+    def handle_startup(self):
+        self.logger.info('TopicSubscriberNode - handle_startup')
 
 
     def handle_message(self, message: Message):
@@ -70,11 +81,6 @@ class TopicSubscriberNode(SubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     @property
-    def routing_keys(self):
-        return self.__routing_keys
-
-
-    @property
     def on_message(self):
         return self.__on_message
 
@@ -83,7 +89,7 @@ class TopicSubscriberNode(SubscriberNode):
 
     def __str__(self, *args, **kwargs):
         on_message = self.on_message.__name__
-        routing_keys = '[' + ', '.join([str(key) for key in self.routing_keys]) + ']'
+        routing_keys = '[' + ', '.join([str(key) for key in self.subscription_routing_keys()]) + ']'
 
         return (f'TopicSubscriberNode:{{routing_keys:{routing_keys}, on_message:{on_message}, '
                 f'ops:{self.ops}, mq_client:{self.mq_client}}}')
