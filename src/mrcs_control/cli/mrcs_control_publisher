@@ -11,19 +11,16 @@ DESCRIPTION
 A tool for publishing messages.
 Message bodies are read from stdin or from the --message argument. Messages are published with source and target
 routing specified by command-line arguments.
+The source must be fully-specified. The default source is TST.*.001 The target may contain wildcards.
+The default target is *.*.*
 
-Warnings:
-1. if the '*' character is used in the source or target, then the parameter should be enclosed in quotation marks
-2. for targets, '*' is not a wildcard - it will only match subscriber sources with the same '*' character
-
+Warning: if the '*' character is used in the source or target, then the parameter should be enclosed in quotation marks.
 
 SYNOPSIS
-mrcs_control_publisher [-h] [-i INDENT] [-v] [--version] [-t] [-s SOURCE] -r RECIPIENT [-m MESSAGE_BODY]
+mrcs_control_publisher [-h] [-i INDENT] [-v] [--version] [-t] [-s SOURCE] [-r RECIPIENT] [-m MESSAGE_BODY]
 
 EXAMPLES
 mrcs_control_publisher -t -s 'TST.*.002' -r 'TST.*.*'  -m '"hello"'
-
-RESOURCES
 """
 
 import json
@@ -35,7 +32,7 @@ from pika.exceptions import AMQPError
 from mrcs_control.cli.args.publisher_args import PublisherArgs
 from mrcs_control.messaging.mq_client import MQPublisher
 from mrcs_core.data.datum import Datum
-from mrcs_core.data.equipment_identity import EquipmentFilter
+from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey
@@ -80,12 +77,12 @@ if __name__ == '__main__':
         exit(2)
 
     try:
-        source = EquipmentFilter.construct_from_jdict(args.source)
+        source = EquipmentIdentifier.construct_from_jdict(args.source)
     except ValueError:
         logger.error(f'the source {args.source} is invalid.')
         exit(2)
 
-    if args.recipient == '__init__.py':  # the result of unquoted *
+    if args.recipient == '__init__.py':  # the result of unquoted '*'
         logger.error(f'the source is invalid.')
         exit(2)
 

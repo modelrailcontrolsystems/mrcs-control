@@ -19,9 +19,9 @@ class PublisherArgs(MultimodeControlArgs):
     def __init__(self, description):
         super().__init__(description)
 
-        self._parser.add_argument('-s', '--source', action='store', type=str, default='TST.*.1',
-                                  help='message source (default TST.*.1)')
-        self._parser.add_argument('-r', '--recipient', action='store', type=str, default='*.*.*', required=True,
+        self._parser.add_argument('-s', '--source', action='store', type=str, default='TST.*.001',
+                                  help='message source (default TST.*.001)')
+        self._parser.add_argument('-r', '--recipient', action='store', type=str, default='*.*.*',
                                   help='message target (default *.*.*)')
 
         self._parser.add_argument('-m', '--message_body', action='store', help='use this body instead of stdin')
