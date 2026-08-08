@@ -14,6 +14,7 @@ https://stackoverflow.com/questions/15150207/connection-in-rabbitmq-server-auto-
 
 import asyncio
 import functools
+import inspect
 from abc import ABC, abstractmethod
 from typing import Callable
 
@@ -66,7 +67,7 @@ class MQAsyncClient(ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     def connect(self):
-        self.logger.debug(f'MQAsyncClient - connect - url:{self.__URL}')
+        self.logger.debug(f'connect:{self.__URL}')
 
         AsyncioConnection(
             parameters=pika.URLParameters(self.__URL),
@@ -76,6 +77,7 @@ class MQAsyncClient(ABC):
 
 
     def close(self):
+        self.logger.debug(f'close:{self.__URL}')
         try:
             self.channel.close()
         except (AttributeError, ChannelWrongStateError):
@@ -95,28 +97,28 @@ class MQAsyncClient(ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     def on_connection_open(self, connection):
-        self.logger.debug(f'MQAsyncClient - on_connection_open - connection:{connection}')
+        self.logger.debug(f'on_connection_open:{connection}')
 
         self.__connection = connection
         self.__connection.channel(on_open_callback=self.on_channel_open)
 
 
     def on_connection_open_error(self, _unused_connection, err):
-        self.logger.warning(f'MQAsyncClient - on_connection_open_error - err:{err}')
+        self.logger.warning(f'on_connection_open_error:{err}')
 
 
     def on_connection_closed(self, _unused_connection, reason):
-        self.logger.debug(f'MQAsyncClient - on_connection_closed - reason:{reason}')
+        self.logger.debug(f'on_connection_closed{reason}')
         self._channel = None
 
 
     def add_on_channel_close_callback(self):
-        self.logger.debug(f'MQAsyncClient - add_on_channel_close_callback')
+        self.logger.debug(f'add_on_channel_close_callback')
         self.channel.add_on_close_callback(self.on_channel_closed)
 
 
     def on_channel_closed(self, _channel, reason):
-        self.logger.debug(f'MQAsyncClient - on_channel_closed - reason:{reason}')
+        self.logger.debug(f'on_channel_closed:{reason}')
 
         self._channel = None
         self.connection.close()
@@ -168,7 +170,7 @@ class MQAsyncPublisher(MQAsyncClient):
     # ----------------------------------------------------------------------------------------------------------------
 
     async def publish(self, message: Message):
-        self.logger.debug(f'MQAsyncPublisher - publish - message:{message}')
+        self.logger.debug(f'publish:{message}')
 
         try:
             routing_key = JSONify.as_jdict(message.routing_key)
@@ -196,18 +198,18 @@ class MQAsyncPublisher(MQAsyncClient):
                 break
 
             except (AttributeError, AMQPError):
-                self.logger.warn('* A * remaking connection')
+                self.logger.info('remaking connection')
                 self._is_connected = False
                 self.close()
                 self.connect()
                 await self.connection_is_available()
-                self.logger.warn('* A * connection re-established')
+                self.logger.info('connection re-established')
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def on_channel_open(self, channel):
-        self.logger.debug(f'MQAsyncPublisher - on_channel_open - channel:{channel}')
+        self.logger.debug(f'on_channel_open:{channel}')
 
         self._channel = channel
         self.add_on_channel_close_callback()
@@ -215,30 +217,30 @@ class MQAsyncPublisher(MQAsyncClient):
 
 
     def setup_exchange(self, exchange_name):
-        self.logger.debug(f'MQAsyncPublisher - setup_exchange - exchange_name:{exchange_name}')
+        self.logger.debug(f'setup_exchange:{exchange_name}')
 
         self.channel.exchange_declare(exchange=exchange_name, exchange_type=ExchangeType.topic, durable=True,
                                       callback=self.on_exchange_declare_ok)
 
 
     def on_exchange_declare_ok(self, _unused_frame):
-        self.logger.debug(f'MQAsyncPublisher - on_exchange_declare_ok')
+        self.logger.debug(f'on_exchange_declare_ok')
         self.start_publishing()
 
 
-    def start_publishing(self):
-        self.logger.debug(f'MQAsyncPublisher - start_publishing')
+    def start_publishing(self, notify_startup=True):
+        self.logger.debug(f'start_publishing')
 
         self.channel.confirm_delivery(self.on_delivery_confirmation)
         self._is_connected = True
 
-        if self.on_startup_complete is not None:
+        if notify_startup and self.on_startup_complete is not None:
             self.on_startup_complete()
 
 
     def on_delivery_confirmation(self, method_frame):
         confirmation_type = method_frame.method.NAME.split('.')[1].lower()
-        self.logger.debug(f'MQAsyncPublisher - on_delivery_confirmation - confirmation_type:{confirmation_type}')
+        self.logger.debug(f'on_delivery_confirmation:{confirmation_type}')
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -289,12 +291,12 @@ class MQAsyncSubscriber(MQAsyncPublisher):
     # subscribing is initiated with connect()
 
     def on_exchange_declare_ok(self, _unused_frame):
-        self.logger.debug(f'MQAsyncSubscriber - on_exchange_declare_ok')
+        self.logger.debug(f'on_exchange_declare_ok')
         self.setup_queue()
 
 
     def setup_queue(self):
-        self.logger.debug(f'MQAsyncSubscriber - setup_queue - queue_name:{self.queue_name}')
+        self.logger.debug(f'setup_queue:{self.queue_name}')
 
         durable = self.queue_config.durable
         exclusive = self.queue_config.exclusive
@@ -304,7 +306,7 @@ class MQAsyncSubscriber(MQAsyncPublisher):
 
 
     def on_queue_declare_ok(self, _unused_frame):
-        self.logger.debug(f'MQAsyncSubscriber - on_queue_declare_ok - exchange_name:{self.exchange_name}, '
+        self.logger.debug(f'on_queue_declare_ok - exchange_name:{self.exchange_name}, '
                           f'queue_name:{self.queue_name}')
 
         last_index = len(self.subscription_routing_keys) - 1
@@ -315,18 +317,19 @@ class MQAsyncSubscriber(MQAsyncPublisher):
 
 
     def on_bind_ok(self, _unused_frame, start):
-        self.logger.debug('MQAsyncSubscriber - on_bind_ok')
+        self.logger.debug('on_bind_ok')
 
         if start:
             self.logger.debug('on_bind_ok - starting')
-            self.start_publishing()
+            self.start_publishing(notify_startup=False)
             self.start_consuming()
 
 
     def start_consuming(self):
-        self.logger.debug('MQAsyncSubscriber - start_consuming')
+        self.logger.debug('start_consuming')
 
         self.add_on_cancel_callback()
+        self.channel.basic_qos(prefetch_count=1)
         self.channel.basic_consume(self.queue_name, self.on_consume)
 
         if self.on_startup_complete is not None:
@@ -334,24 +337,24 @@ class MQAsyncSubscriber(MQAsyncPublisher):
 
 
     def add_on_cancel_callback(self):
-        self.logger.debug('MQAsyncSubscriber - add_on_cancel_callback')
+        self.logger.debug('add_on_cancel_callback')
         self.channel.add_on_cancel_callback(self.on_consumer_cancelled)
 
 
     def on_consumer_cancelled(self, method_frame):
-        self.logger.debug(f'MQAsyncSubscriber - on_consumer_cancelled - method_frame:{method_frame}')
+        self.logger.debug(f'on_consumer_cancelled:{method_frame}')
         self.channel.close()
 
 
     def acknowledge_message(self, delivery_tag):
-        self.logger.debug(f'MQAsyncSubscriber - acknowledge_message - delivery_tag:{delivery_tag}')
+        self.logger.debug(f'acknowledge_message:{delivery_tag}')
         self.channel.basic_ack(delivery_tag)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def on_consume(self, _channel, delivery, _props, payload):
-        self.logger.debug(f'MQAsyncSubscriber - on_consume - delivery_tag:{delivery.delivery_tag}')
+        self.logger.debug(f'on_consume:{delivery.delivery_tag}')
 
         try:
             routing_key = PublicationRoutingKey.construct_from_jdict(delivery.routing_key)
@@ -360,16 +363,26 @@ class MQAsyncSubscriber(MQAsyncPublisher):
             return
 
         if routing_key.source == self.id:
+            self.acknowledge_message(delivery.delivery_tag)
             return  # do not send message to self
 
         message = Message.construct_from_callback(routing_key, payload)
+        asyncio.create_task(self.process_message(delivery.delivery_tag, message))
+
+
+    async def process_message(self, delivery_tag, message):
+        self.logger.debug(f'process_message:{message}')
 
         try:
-            self.on_message(message)
-            self.acknowledge_message(delivery.delivery_tag)
-        except Exception:
-            self.logger.warn(f'on_consume - exception:{message}')
-            # self.channel.basic_nack(delivery_tag=delivery.delivery_tag)   # TODO: enable as required
+            result = self.on_message(message)
+            if inspect.isawaitable(result):
+                await result
+
+            self.acknowledge_message(delivery_tag)
+
+        except Exception as exc:
+            self.logger.warn(f'process_message:{type(exc).__name__}:{exc} - message:{message}')
+            # Leave the message unacknowledged so it is requeued when the channel closes.
 
 
     # ----------------------------------------------------------------------------------------------------------------

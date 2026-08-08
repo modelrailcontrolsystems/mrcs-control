@@ -15,7 +15,7 @@ https://gitlab.com/z21-fpm/z21_python
 
 import asyncio
 import errno
-from asyncio import CancelledError, DatagramTransport
+from asyncio import DatagramTransport
 from typing import Any, Callable, Self
 
 from mrcs_control.dcc.z21.command.broadcast import Broadcast
@@ -39,10 +39,6 @@ class Z21Station(object):
 
     DEFAULT_IP_ADDRESS = IPv4Address.construct('192.168.1.111')
     DEFAULT_PORT = 21105
-    # The Z21 associates broadcast delivery with the client's UDP endpoint.
-    # Keep this port stable across process restarts instead of allowing the OS
-    # to allocate a new ephemeral source port each time.
-    DEFAULT_CLIENT_PORT = 21106
     DEFAULT_TIMEOUT = 2.0
     DEFAULT_SUBSCRIPTION = ControlRouterSubscription(Broadcast.CAN_DETECTOR, Broadcast.RAILCOM_DATA_ALL,
                                                      Broadcast.TRACK, Broadcast.X_LOCO_INFO_ALL)
@@ -70,7 +66,7 @@ class Z21Station(object):
         except OSError as exc:
             if exc.errno == errno.EADDRINUSE:
                 raise RuntimeError(
-                    f'Z21 client UDP port {cls.DEFAULT_CLIENT_PORT} is already in use; '
+                    f'Z21 client UDP port {cls.DEFAULT_PORT} is already in use; '
                     'stop the other MRCS Z21 client before starting this utility.') from exc
             raise
 
@@ -81,9 +77,7 @@ class Z21Station(object):
         station.__protocol = protocol
         station.__has_connection = True
 
-        station.logger.debug(f'connected - local:{transport.get_extra_info("sockname")}')
-
-        station.__keep_alive_task = asyncio.create_task(station.__keep_alive_loop())
+        station.logger.debug(f'connected:{transport.get_extra_info("sockname")}')
 
         return station
 
@@ -98,8 +92,7 @@ class Z21Station(object):
         self.__transport: DatagramTransport | None = None
         self.__protocol: Z21Protocol | None = None
         self.__has_connection = False
-
-        self.__keep_alive_task: asyncio.Task[None] | None = None
+        self.__response_event = asyncio.Event()
 
         self.__logger = Logging.getLogger()
 
@@ -121,6 +114,10 @@ class Z21Station(object):
 
     def station_dataset_handler(self, dataset: Dataset) -> None:
         self.logger.debug(f'station_dataset_handler:{dataset}')
+
+        if dataset.header == Header.LAN_SYSTEMSTATE_DATACHANGED:
+            self.__response_event.set()
+
         try:
             self.on_response(Z21EquipmentReport.construct_from_dataset(dataset))
 
@@ -128,8 +125,13 @@ class Z21Station(object):
             self.logger.warning(f'dataset_handler unsupported: {dataset}')
 
 
-    def station_connection_lost_handler(self, exc: Exception | None) -> None:
-        self.on_connection_lost(exc)
+    def station_connection_lost_handler(self) -> None:
+        if not self.__has_connection:
+            return
+
+        self.__has_connection = False
+        self.logger.warning(f'station_connection_lost_handler')
+        self.on_connection_lost()
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -141,9 +143,17 @@ class Z21Station(object):
         await self.send_command(command)
 
 
-    async def get_system_state(self) -> None:
+    async def get_system_state(self, timeout: float = DEFAULT_TIMEOUT) -> None:
+        self.__response_event.clear()
+
         command = Command.construct(Header.LAN_SYSTEMSTATE_GETDATA)
         await self.send_command(command)
+
+        try:
+            await asyncio.wait_for(self.__response_event.wait(), timeout)
+        except asyncio.TimeoutError as exc:
+            self.station_connection_lost_handler()
+            raise ConnectionError('Z21 control router did not respond') from exc
 
 
     async def logout(self) -> None:
@@ -158,7 +168,7 @@ class Z21Station(object):
             raise ConnectionError('not connected to a Z21 station')
 
         chars = command.dataset.as_bytes()
-        self.logger.info(f'*** station - send_command:{chars.hex(" ")}')
+        self.logger.debug(f'send_command:{chars.hex(" ")}')
 
         self.__transport.sendto(command.dataset.as_bytes())
         await asyncio.sleep(self.__DEFAULT_TIME_BETWEEN_SENDS)
@@ -167,35 +177,14 @@ class Z21Station(object):
     async def close(self) -> None:
         self.__has_connection = False
 
-        if self.__keep_alive_task is not None:
-            self.__keep_alive_task.cancel()
-            try:
-                await self.__keep_alive_task
-            except asyncio.CancelledError as exc:
-                self.logger.warning(f'error while canceling keep alive task:{exc}')
-
         try:
             await self.logout()
         except (OSError, ConnectionError) as exc:
-            self.logger.warning(f'error while logging out:{exc}')
+            self.logger.warning(f'send_command:{exc}')
 
         if self.__transport is not None:
             self.__transport.close()
-
-
-    # ----------------------------------------------------------------------------------------------------------------
-
-    async def __keep_alive_loop(self) -> None:  # TODO: move to control monitor node
-        while self.has_connection:
-            try:
-                await asyncio.sleep(self.__KEEP_ALIVE_INTERVAL)
-                if self.has_connection:
-                    await self.set_broadcast_flags()  # TODO: change this to get system state
-            except CancelledError:
-                break
-
-            except (OSError, ConnectionError) as exc:
-                self.logger.debug(f'keep-alive failed: {exc}')
+            self.__transport = None
 
 
     # ----------------------------------------------------------------------------------------------------------------

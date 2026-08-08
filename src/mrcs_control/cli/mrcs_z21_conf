@@ -24,6 +24,7 @@ FILES
 ~/MRCS/conf/control_router_conf.json
 
 SEE ALSO
+mrcs_control_router
 mrcs_z21_control
 """
 

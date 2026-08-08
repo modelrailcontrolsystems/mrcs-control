@@ -62,7 +62,7 @@ class MQClient(ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     def connect(self):
-        self.logger.debug('MQClient - connect')
+        self.logger.debug('connect')
 
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(host=self.__DEFAULT_HOST),
@@ -72,7 +72,7 @@ class MQClient(ABC):
 
 
     def close(self):
-        self.logger.debug('MQClient - close')
+        self.logger.debug('close')
 
         try:
             self.channel.close()
@@ -81,7 +81,7 @@ class MQClient(ABC):
             return False
 
         except AMQPError as exc:
-            self.logger.warn(f'close: {exc.__class__.__name__}:{exc}')
+            self.logger.warn(f'close:{exc.__class__.__name__}:{exc}')
             return False
 
         finally:
@@ -132,7 +132,7 @@ class MQManager(MQClient):
 
 
     def queue_delete(self, queue_name: str):
-        self.logger.debug(f'MQManager - queue_delete:{queue_name}')
+        self.logger.debug(f'queue_delete:{queue_name}')
 
         if self.channel is None:
             raise RuntimeError('queue_delete: no channel')
@@ -170,7 +170,7 @@ class MQPublisher(MQClient):
     # ----------------------------------------------------------------------------------------------------------------
 
     def connect(self):
-        self.logger.debug(f'MQPublisher - connect')
+        self.logger.debug(f'connect')
 
         super().connect()
         self.channel.exchange_declare(exchange=self.exchange_name, exchange_type=ExchangeType.topic, durable=True)
@@ -178,7 +178,7 @@ class MQPublisher(MQClient):
 
 
     def publish(self, message: Message):
-        self.logger.debug(f'MQPublisher - publish - message:{message}')
+        self.logger.debug(f'publish:{message}')
 
         try:
             routing_key = JSONify.as_jdict(message.routing_key)
@@ -205,12 +205,11 @@ class MQPublisher(MQClient):
                     properties=properties)
                 break
 
-            except (AttributeError, AMQPError):
-                self.logger.warn('* B * remaking connection')
+            except (AttributeError, AMQPError) as exc:
+                self.logger.info(f'publish - conect failed:{exc}')
                 self.close()
                 self.connect()
-
-                self.logger.warn('* B * connection re-established')
+                self.logger.info('publish - connection re-established')
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -254,7 +253,7 @@ class MQSubscriber(MQPublisher):
     # ----------------------------------------------------------------------------------------------------------------
 
     def subscribe(self, *routing_keys: RoutingKey):
-        self.logger.debug('MQSubscriber - subscribe')
+        self.logger.debug('subscribe')
 
         if self.channel is None:
             raise RuntimeError('subscribe: no channel')
@@ -283,14 +282,14 @@ class MQSubscriber(MQPublisher):
 
                 self.channel.start_consuming()
             except AMQPError as exc:
-                self.logger.warn(f'subscribe: conect failed: {exc}')
+                self.logger.info(f'subscribe - conect failed:{exc}')
                 self.close()
                 self.connect()
-                self.logger.warn('subscribe: connection re-established')
+                self.logger.info('subscribe - connection re-established')
 
 
     def close(self):
-        self.logger.debug(f'MQSubscriber - close - deleting:{self.queue_name}')
+        self.logger.debug(f'close - deleting:{self.queue_name}')
 
         try:
             if self.channel is not None:
@@ -302,7 +301,7 @@ class MQSubscriber(MQPublisher):
 
 
     def on_consume(self, ch, method, _properties, payload):
-        self.logger.debug(f'MQSubscriber - on_consume - payload:{str(payload)}')
+        self.logger.debug(f'on_consume:{str(payload)}')
 
         try:
             routing_key = PublicationRoutingKey.construct_from_jdict(method.routing_key)
@@ -318,8 +317,8 @@ class MQSubscriber(MQPublisher):
         try:
             self.on_message_message(message)
             ch.basic_ack(delivery_tag=method.delivery_tag)
-        except Exception:
-            self.logger.warn(f'on_consume - exception:{message}')
+        except Exception as exc:
+            self.logger.warn(f'on_consume:{type(exc).__name__}:{exc} - message:{message}')
             # ch.basic_nack(delivery_tag=method.delivery_tag)   # TODO: enable as required
 
 

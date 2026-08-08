@@ -21,6 +21,7 @@ mrcs_control_publisher [-h] [-i INDENT] [-v] [--version] [-t] [-s SOURCE] [-r RE
 
 EXAMPLES
 mrcs_control_publisher -t -s 'TST.*.002' -r 'TST.*.*'  -m '"hello"'
+mrcs_control_publisher -t -v -r 'CRT.*.1' -m '{"type": "XCommand", "x_header": "LAN_X_SET_TRACK_POWER", "argv": [128]}'
 """
 
 import json

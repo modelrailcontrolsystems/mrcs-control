@@ -18,7 +18,7 @@ class RouterArgs(MultimodeControlArgs):
     def __init__(self, description):
         super().__init__(description)
 
-        group = self._parser.add_mutually_exclusive_group(required=False)
+        group = self._parser.add_mutually_exclusive_group(required=True)
         group.add_argument('-r', '--run', action='store_true', help='run the cron')
         group.add_argument('-s', '--run-save', action='store_true', help='run the cron with save on')
 
