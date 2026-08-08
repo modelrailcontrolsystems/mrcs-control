@@ -18,7 +18,8 @@ SYNOPSIS
 mrcs_control_subscriber [-h] [-i INDENT] [-v] [--version] [-t] [-r RECIPIENT] -s SOURCE [SOURCE ...]
 
 EXAMPLES
-mrcs_control_subscriber -t -v   -s 'TST.*.002' -r 'TST.*.003'
+mrcs_control_subscriber -t -v -s 'TST.*.002' -r 'TST.*.003'
+mrcs_control_subscriber -t -v -s 'CRT.*.*'
 """
 
 import sys

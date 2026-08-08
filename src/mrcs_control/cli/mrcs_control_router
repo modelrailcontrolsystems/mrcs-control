@@ -8,12 +8,22 @@ Created on 31 Jul 2026
 source repo: mrcs_control
 
 DESCRIPTION
-A service providing the interface between a Z21 control router and the messaging system.
-Note that in --run modes, the utility runs forever.
+A service providing an interface between a control router and the messaging system. The control router process
+accepts command messages on CRT.*.1 and publishes report messages on CRT.*.1.
+In --verbose mode, the reports are written to the logger.
+
+The control router process runs a keep-alive, periodically interrogating the control router station.  If the station
+is not available, incomming messages will remain on the queue until the station is available again. Note that -
+in the current regime - command messages may be lost during the interval between the station being unavailable and its
+unavailability being established.
+
+Note that the utility runs forever.
 
 SYNOPSIS
+mrcs_control_router [-h] [-i INDENT] [-v] [--version] [-t] (-r | -s)
 
 EXAMPLES
+mrcs_control_router -t -r -v
 
 FILES
 ~/MRCS/conf/control_router_conf.json
@@ -26,7 +36,7 @@ mrcs_z21_control
 import sys
 
 from mrcs_control.cli.args.router_args import RouterArgs
-from mrcs_control.equipment.control_router.control_router_monitor_node import ControlRouterMonitorNode
+from mrcs_control.equipment.control_router.control_router_node import ControlRouterNode
 from mrcs_core.equipment.control_router.control_router_conf import ControlRouterConf
 from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging
@@ -36,7 +46,7 @@ from mrcs_core.sys.logging import Logging
 
 if __name__ == '__main__':
 
-    monitor = None
+    router = None
 
     # ----------------------------------------------------------------------------------------------------------------
 
@@ -55,11 +65,11 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
-        monitor = ControlRouterMonitorNode(args.mode.value, conf)
-        logger.info(f'monitor: {monitor}')
+        router = ControlRouterNode(args.mode.value, conf)
+        logger.info(f'router: {router}')
 
         if args.run:
-            monitor.run()
+            router.run()
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -68,5 +78,5 @@ if __name__ == '__main__':
         print(file=sys.stderr)
 
     finally:
-        if monitor is not None:
-            monitor.close()
+        if router is not None:
+            router.close()

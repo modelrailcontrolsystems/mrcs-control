@@ -32,7 +32,7 @@ class Z21Protocol(DatagramProtocol):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, dataset_handler: Callable[[Dataset], None],
-                 connection_lost_handler: Callable[[Exception | None], None]):
+                 connection_lost_handler: Callable):
         self.__dataset_handler = dataset_handler
         self.__connection_lost_handler = connection_lost_handler
 
@@ -42,14 +42,18 @@ class Z21Protocol(DatagramProtocol):
     # ----------------------------------------------------------------------------------------------------------------
 
     def connection_made(self, transport):
+        self.logger.debug('protocol - connection_made')
         pass
 
 
     def connection_lost(self, exc):
+        self.logger.debug('connection_lost')
         self.__connection_lost_handler(exc)
 
 
     def datagram_received(self, data: bytes, addr: tuple[str, int]):
+        self.logger.debug('protocol - datagram_received')
+
         offset = 0
         while offset < len(data):
             try:
@@ -64,7 +68,7 @@ class Z21Protocol(DatagramProtocol):
 
 
     def error_received(self, exc):
-        self.logger.warn(f'error_received - exc:{exc}')
+        self.logger.warn(f'protocol - error_received:{exc}')
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -81,5 +85,4 @@ class Z21Protocol(DatagramProtocol):
         connection_lost_handler = None if self.__connection_lost_handler is None \
             else self.__connection_lost_handler.__name__
 
-        return (f'Z21Protocol:{{dataset_handler:{dataset_handler}, '
-                f'connection_lost_handler:{connection_lost_handler}}}')
+        return f'Z21Protocol:{{dataset_handler:{dataset_handler}, connection_lost_handler:{connection_lost_handler}}}'

@@ -22,6 +22,7 @@ FILES
 ~/MRCS/conf/z21_conf.json
 
 SEE ALSO
+mrcs_control_router
 mrcs_z21_conf
 """
 
@@ -63,6 +64,7 @@ async def monitor():
 
         if args.has_command:
             command = args.command
+            print(f'command: {JSONify.dumps(command)}')
             await station.send_command(command)
             # if command.report_type is None:
             #     exit(0)
