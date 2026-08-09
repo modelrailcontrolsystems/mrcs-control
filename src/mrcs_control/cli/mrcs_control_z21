@@ -15,11 +15,12 @@ The mrcs_z21_conf utility should be used before the first use of this utility in
 configuration.
 
 SYNOPSIS
-mrcs_control_z21 [-h] [-i INDENT] [-v] [--version] [-m | -s | -p POWER | -t TURNOUT TURNOUT]
+mrcs_control_z21 [-h] [-i INDENT] [-v] [--version]
+[-m | -s | -p POWER | -t TURNOUT TURNOUT | -g GET_LOCO | -l SET_LOCO SET_LOCO SET_LOCO]
 
 EXAMPLES
-mrcs_control_router
-mrcs_control_z21_conf
+mrcs_control_z21 -v -m
+mrcs_control_z21 -v -p 0
 
 FILES
 ~/MRCS/conf/z21_conf.json
@@ -30,7 +31,6 @@ mrcs_control_z21_conf
 """
 
 import asyncio
-import logging
 import sys
 
 from mrcs_control.cli.args.z21_control_args import Z21ControlArgs
@@ -41,23 +41,21 @@ from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging
 
 
-# TODO: implement a keep-alive, like ControlRouterNode
 # --------------------------------------------------------------------------------------------------------------------
 
 def mrcs_control_on_dataset(report: JSONable):
-    print(JSONify.dumps(report))
-    # if args.monitor:
-    #     print(JSONify.dumps(report))
-    #     return
-    #
-    # if isinstance(report, args.command.report_type):
-    #     print(JSONify.dumps(report))
-    #     exit(0)
+    if args.monitor:
+        print(JSONify.dumps(report))
+        return
+
+    if isinstance(report, args.command.report_type):
+        print(JSONify.dumps(report))
+        exit(0)
 
 
-def mrcs_control_on_connection_lost(exc: Exception):
+def mrcs_control_on_connection_lost(ex: Exception):
     if exc:
-        logger.warning(f'connection lost - exc: {exc}')  # TODO: when does this happen?
+        logger.warning(f'connection lost: {ex}')
 
 
 async def monitor():
@@ -70,11 +68,12 @@ async def monitor():
             command = args.command
             print(f'command: {JSONify.dumps(command)}')
             await station.send_command(command)
-            # if command.report_type is None:
-            #     exit(0)
+            if command.report_type is None:
+                return
 
         while True:
-            await asyncio.sleep(1)  # TODO: test connection here?
+            await asyncio.sleep(2)
+            await station.set_broadcast_flags(conf.subscription)
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -85,7 +84,7 @@ if __name__ == '__main__':
 
     args = Z21ControlArgs('a utility to excercise a Roco Z21 control router station')
 
-    Logging.config('mrcs_control_z21', level=logging.DEBUG)  # level=logging.DEBUG / verbose=args.verbose
+    Logging.config('mrcs_control_z21', verbose=args.verbose)
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
 
@@ -105,3 +104,11 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt:
         print(file=sys.stderr)
+
+    except RuntimeError as exc:
+        logger.error(f'{type(exc).__name__}: {exc}')
+        sys.exit(1)
+
+    except Exception:
+        logger.exception('unexpected failure')
+        sys.exit(1)

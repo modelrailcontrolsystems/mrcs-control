@@ -46,6 +46,19 @@ class AsyncMessagingNode(ABC):
 
     # ----------------------------------------------------------------------------------------------------------------
 
+    @abstractmethod
+    async def halt(self):
+        pass
+
+
+    @property
+    @abstractmethod
+    def async_loop(self):
+        pass
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
     def connect(self):
         self.mq_client.connect()
 

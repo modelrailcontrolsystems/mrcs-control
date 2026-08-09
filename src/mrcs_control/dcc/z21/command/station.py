@@ -130,13 +130,15 @@ class Z21Station(object):
             return
 
         self.__has_connection = False
-        self.logger.warning(f'station_connection_lost_handler')
+        self.logger.warning('station_connection_lost_handler')
         self.on_connection_lost()
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     async def set_broadcast_flags(self, subscription: ControlRouterSubscription | None = None) -> None:
+        self.logger.debug('set_broadcast_flags')
+
         subscription = self.conf.subscription if subscription is None else subscription
         command = Command.construct(Header.LAN_SET_BROADCAST_FLAGS, subscription.value)
 
@@ -144,6 +146,8 @@ class Z21Station(object):
 
 
     async def get_system_state(self, timeout: float = DEFAULT_TIMEOUT) -> None:
+        self.logger.debug('set_broadcast_flags')
+
         self.__response_event.clear()
 
         command = Command.construct(Header.LAN_SYSTEMSTATE_GETDATA)
@@ -157,6 +161,8 @@ class Z21Station(object):
 
 
     async def logout(self) -> None:
+        self.logger.debug('logout')
+
         command = Command.construct(Header.LAN_LOGOFF)
         await self.send_command(command)
 
@@ -175,6 +181,11 @@ class Z21Station(object):
 
 
     async def close(self) -> None:
+        self.logger.debug('close')
+
+        if self.__transport is None:
+            return
+
         self.__has_connection = False
 
         try:
