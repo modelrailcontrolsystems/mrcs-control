@@ -5,7 +5,7 @@ Created on 5 Jun 2026
 
 An enumeration of all the LAN and XLAN header values
 
-Classes in support of the Rocco Z21 DCC command station:
+Classes in support of the Rocco Z21 DCC control router station:
 https://www.z21.eu/en/products/z21
 
 Based on code:

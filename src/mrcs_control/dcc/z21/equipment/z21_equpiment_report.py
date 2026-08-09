@@ -5,7 +5,7 @@ Created on 20 Jun 2026
 
 A constructor to unmarshall equipment reports from Z21 datasets
 
-Classes in support of the Rocco Z21 DCC command station:
+Classes in support of the Rocco Z21 DCC control router station:
 https://www.z21.eu/en/products/z21
 
 Based on code:

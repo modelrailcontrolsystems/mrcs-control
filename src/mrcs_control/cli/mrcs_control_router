@@ -8,7 +8,7 @@ Created on 31 Jul 2026
 source repo: mrcs_control
 
 DESCRIPTION
-A service providing an interface between a control router and the messaging system. The control router process
+A service providing an interface between a control router station and the messaging system. The control router process
 accepts command messages on CRT.*.1 and publishes report messages on CRT.*.1.
 In --verbose mode, the reports are written to the logger.
 
@@ -16,6 +16,9 @@ The control router process runs a keep-alive, periodically interrogating the con
 is not available, incomming messages will remain on the queue until the station is available again. Note that -
 in the current regime - command messages may be lost during the interval between the station being unavailable and its
 unavailability being established.
+
+The mrcs_control_router utility should be used before the first use of this utility in order to establish a control
+station configuration.
 
 Note that the utility runs forever.
 
@@ -29,8 +32,8 @@ FILES
 ~/MRCS/conf/control_router_conf.json
 
 SEE ALSO
-mrcs_z21_conf
-mrcs_z21_control
+mrcs_control_z21_conf
+mrcs_control_z21
 """
 
 import sys
@@ -59,7 +62,7 @@ if __name__ == '__main__':
 
     conf = ControlRouterConf.load(Host)
     if conf is None:
-        logger.error('no configuration found - use mrcs_z21_conf to create one.')
+        logger.error('no configuration found - use mrcs_control_z21_conf to create one.')
         exit(1)
 
     # ----------------------------------------------------------------------------------------------------------------

@@ -3,9 +3,9 @@ Created on 13 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-The track state, as reported by a Z21 DCC command station
+The track state, as reported by a Z21 DCC control router station
 
-Classes in support of the Rocco Z21 DCC command station:
+Classes in support of the Rocco Z21 DCC control router station:
 https://www.z21.eu/en/products/z21
 
 Based on code:
@@ -22,7 +22,7 @@ from mrcs_core.equipment.track.track_report import TrackReport
 
 class Z21TrackReport(object):
     """
-    The track state, as reported by a Z21 DCC command station
+    The track state, as reported by a Z21 DCC control router station
     """
 
 

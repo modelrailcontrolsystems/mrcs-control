@@ -15,8 +15,8 @@ unavailabily is determined - may be lost.
 
 Test with:
 mrcs_control_router -t -r -v
-mrcs_control_publisher -t -v -r 'CRT.*.1' -m '{"type": "XCommand", "x_header": "LAN_X_SET_TRACK_POWER", "argv": [129]}'
 mrcs_control_subscriber -t -v   -s 'CRT.*.*'
+mrcs_control_publisher -t -v -r 'CRT.*.1' -m '{"type": "XCommand", "x_header": "LAN_X_SET_TRACK_POWER", "argv": [129]}'
 """
 
 import asyncio

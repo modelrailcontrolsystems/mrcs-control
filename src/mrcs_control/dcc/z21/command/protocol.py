@@ -5,7 +5,7 @@ Created on 6 Jun 2026
 
 Z21 communications handler
 
-Classes in support of the Rocco Z21 DCC command station:
+Classes in support of the Rocco Z21 DCC control router station:
 https://www.z21.eu/en/products/z21
 
 Based on code:
