@@ -8,11 +8,11 @@ Created on 29 Jun 2026
 source repo: mrcs_control
 
 DESCRIPTION
-A utility to configure acces to the Roco Z21 control router station. The --factory-reset option will reset this configuration
-to factory defaults.
+A utility to configure acces to the Roco Z21 control router station. The --factory-reset option will reset this
+configuration to factory defaults.
 
-Note that this utility does not alter the IP configuration of the Z21 DCC control router station itself. This should be done
-using the Z21 Maintenance Tool: https://www.z21.eu/en/products/z21-maintenance-tool
+Note that this utility does not alter the IP configuration of the Z21 DCC control router station itself. This should
+be done using the Z21 Maintenance Tool: https://www.z21.eu/en/products/z21-maintenance-tool
 
 SYNOPSIS
 mrcs_control_z21_conf [-h] [-i INDENT] [-v] [--version] [-f | [-a IP_ADDRESS] [-p PORT] [-t TIMEOUT] [-s SUBSCRIPTION]]
