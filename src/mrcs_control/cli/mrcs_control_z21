@@ -8,22 +8,22 @@ Created on 6 Jun 2026
 source repo: mrcs_control
 
 DESCRIPTION
-A utility to excercise a Roco Z21 control station. The mrcs_z21_conf utility should be used before the first use of
-this utility in order to establish an access control configuration.
+A utility to excercise a Roco Z21 control router station. The mrcs_z21_conf utility should be used before the first
+use of this utility in order to establish a control router configuration.
 
 SYNOPSIS
-mrcs_z21_control [-h] [-i INDENT] [-v] [--version] [-m | -s | -p POWER | -t TURNOUT TURNOUT]
+mrcs_control_z21 [-h] [-i INDENT] [-v] [--version] [-m | -s | -p POWER | -t TURNOUT TURNOUT]
 
 EXAMPLES
-mrcs_z21_control -p 1
-mrcs_z21_control -t 3 0
+mrcs_control_z21 -p 1
+mrcs_control_z21 -t 3 0
 
 FILES
 ~/MRCS/conf/z21_conf.json
 
 SEE ALSO
 mrcs_control_router
-mrcs_z21_conf
+mrcs_control_z21_conf
 """
 
 import asyncio
@@ -38,6 +38,7 @@ from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging
 
 
+# TODO: implement a keep-alive, like ControlRouterNode
 # --------------------------------------------------------------------------------------------------------------------
 
 def mrcs_control_on_dataset(report: JSONable):
@@ -81,13 +82,13 @@ if __name__ == '__main__':
 
     args = Z21ControlArgs('a utility to excercise a Roco Z21 control station')
 
-    Logging.config('mrcs_z21_control', level=logging.DEBUG)  # level=logging.DEBUG / verbose=args.verbose
+    Logging.config('mrcs_control_z21', level=logging.DEBUG)  # level=logging.DEBUG / verbose=args.verbose
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
 
     conf = ControlRouterConf.load(Host)
     if conf is None:
-        logger.error('no configuration found - use mrcs_z21_conf to create one.')
+        logger.error('no configuration found - use mrcs_control_z21_conf to create one.')
         exit(1)
 
     logger.info(f'conf: {conf}')

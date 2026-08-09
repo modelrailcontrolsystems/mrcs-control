@@ -3,9 +3,9 @@ Created on 6 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-Z21 command station
+Z21 control router station
 
-Classes in support of the Rocco Z21 DCC command station:
+Classes in support of the Rocco Z21 DCC control router station:
 https://www.z21.eu/en/products/z21
 
 Based on code:
@@ -34,7 +34,7 @@ from mrcs_core.sys.logging import Logging
 
 class Z21Station(object):
     """
-    Z21 command station
+    Z21 control router station
     """
 
     DEFAULT_IP_ADDRESS = IPv4Address.construct('192.168.1.111')

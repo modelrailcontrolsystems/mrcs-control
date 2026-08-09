@@ -3,9 +3,9 @@ Created on 6 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-The state of a command station, as reported by a Z21 DCC command station
+The state of a command station, as reported by a Z21 DCC control router station
 
-Classes in support of the Rocco Z21 DCC command station:
+Classes in support of the Rocco Z21 DCC control router station:
 https://www.z21.eu/en/products/z21
 
 Based on code:
@@ -23,7 +23,7 @@ from mrcs_core.equipment.control_router.control_router_report import ControlRout
 
 class Z21ControlRouterReport(object):
     """
-    The state of a command station, as reported by a Z21 DCC command station
+    The state of a command station, as reported by a Z21 DCC control router station
     """
 
 

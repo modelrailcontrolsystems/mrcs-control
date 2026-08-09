@@ -12,7 +12,7 @@ Other arguments may be supplied by a custom argv builder method.
 
 https://docs.python.org/3/library/struct.html#format-characters
 
-Classes in support of the Rocco Z21 DCC command station:
+Classes in support of the Rocco Z21 DCC control router station:
 https://www.z21.eu/en/products/z21
 """
 

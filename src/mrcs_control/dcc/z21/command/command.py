@@ -5,7 +5,7 @@ Created on 26 Jun 2026
 
 An abstraction over Rocco Z21 DCC command datasets
 
-Classes in support of the Rocco Z21 DCC command station:
+Classes in support of the Rocco Z21 DCC control router station:
 https://www.z21.eu/en/products/z21
 """
 

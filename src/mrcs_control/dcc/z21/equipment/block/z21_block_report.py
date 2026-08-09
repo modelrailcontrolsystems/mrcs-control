@@ -3,12 +3,12 @@ Created on 13 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-Block occupany detector reports, as reported by a Z21 DCC command station
+Block occupany detector reports, as reported by a Z21 DCC control router station
 
 Based on the Roco 10808 detector:
 https://www.roco.cc/ren/products/control/accessories/10808-z21-detector.html
 
-Classes in support of the Rocco Z21 DCC command station:
+Classes in support of the Rocco Z21 DCC control router station:
 https://www.z21.eu/en/products/z21
 """
 
@@ -25,7 +25,7 @@ from mrcs_core.equipment.block.block_report import BlockOccupancyReport, BlockVo
 
 class Z21BlockReport(object):
     """
-    Block occupany detector reports, as reported by a Z21 DCC command station
+    Block occupany detector reports, as reported by a Z21 DCC control router station
     """
 
 

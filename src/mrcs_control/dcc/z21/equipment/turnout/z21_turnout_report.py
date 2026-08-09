@@ -3,9 +3,9 @@ Created on 13 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-A turnout state, as reported by a Z21 DCC command station
+A turnout state, as reported by a Z21 DCC control router station
 
-Classes in support of the Rocco Z21 DCC command station:
+Classes in support of the Rocco Z21 DCC control router station:
 https://www.z21.eu/en/products/z21
 
 Based on code:
@@ -24,7 +24,7 @@ from mrcs_core.equipment.turnout.turnout_report import TurnoutReport
 
 class Z21TurnoutReport(object):
     """
-    A turnout state, as reported by a Z21 DCC command station
+    A turnout state, as reported by a Z21 DCC control router station
     """
 
 
