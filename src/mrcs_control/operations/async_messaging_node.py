@@ -9,6 +9,7 @@ The AsyncMessagingNode class provides asyncio loop utilities to support concrete
 """
 
 import asyncio
+import signal
 from abc import ABC, abstractmethod
 
 from mrcs_control.messaging.mq_async_client import MQAsyncPublisher, MQAsyncSubscriber
@@ -51,6 +52,32 @@ class AsyncMessagingNode(ABC):
 
     def handle_startup(self):
         pass
+
+
+    def install_signal_handlers(self):
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            try:
+                self.async_loop.add_signal_handler(sig, self.request_shutdown)
+            except (NotImplementedError, RuntimeError):
+                # Signal handlers are unavailable outside the main thread or on
+                # platforms that do not support asyncio signal handlers.
+                pass
+
+
+    def request_shutdown(self):
+        if self.async_loop.is_running():
+            self.async_loop.create_task(self.halt())
+
+
+    async def cancel_tasks(self):
+        current = asyncio.current_task()
+        tasks = [task for task in asyncio.all_tasks(self.async_loop) if task is not current]
+
+        for task in tasks:
+            task.cancel()
+
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -111,11 +138,13 @@ class AsyncPublisherNode(AsyncMessagingNode, ABC):
 
         self.__async_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.async_loop)
+        self.install_signal_handlers()
         self.connect()
         self.async_loop.run_forever()
 
 
     async def halt(self):
+        await self.cancel_tasks()
         self.async_loop.stop()
 
 
@@ -171,12 +200,14 @@ class AsyncSubscriberNode(AsyncMessagingNode, ABC):
 
         self.__async_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.async_loop)
+        self.install_signal_handlers()
         self.connect()
         self.async_loop.run_forever()
 
 
     async def halt(self):
-        self.logger.debug('AsyncPublisherNode - halt')
+        self.logger.debug('AsyncSubscriberNode - halt')
+        await self.cancel_tasks()
         self.async_loop.stop()
 
 

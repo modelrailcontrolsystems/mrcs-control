@@ -9,8 +9,8 @@ source repo: mrcs_control
 
 DESCRIPTION
 A tool to manage message broker exchanges and queues.
-It is essential to delete a queue if the routing key has changed - the queue is durable, and so are its routing keys!
-No process may be attached to the broker when deleting takes place.
+It is essential to delete a queue if the routing key has changed - the queue is normally durable, and so are its
+routing keys! No process may be attached to the broker when deleting takes place.
 Note that exchanges cannot be deleted if any queues exist for that exchange - delete the queues first.
 
 SYNOPSIS

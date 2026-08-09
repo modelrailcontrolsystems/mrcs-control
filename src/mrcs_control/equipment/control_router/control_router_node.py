@@ -191,6 +191,9 @@ class ControlRouterNode(AsyncSubscriberNode):
     def close(self):
         self.logger.debug('close')
 
+        if self.async_loop is not None and self.async_loop.is_closed():
+            return
+
         if self.async_loop is None or self.async_loop.is_running():
             # If the node is running, shutdown must be awaited by the loop.
             if self.async_loop is not None:
@@ -198,7 +201,7 @@ class ControlRouterNode(AsyncSubscriberNode):
             return
 
         self.async_loop.run_until_complete(self.shutdown())
-        self.logger.debug('closed')
+        self.logger.info('closed')
 
 
     # ----------------------------------------------------------------------------------------------------------------

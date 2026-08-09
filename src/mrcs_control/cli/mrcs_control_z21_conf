@@ -8,7 +8,7 @@ Created on 29 Jun 2026
 source repo: mrcs_control
 
 DESCRIPTION
-A utility to configure acces to the Roco Z21 control station. The --factory-reset option will reset this configuration
+A utility to configure acces to the Roco Z21 control router station. The --factory-reset option will reset this configuration
 to factory defaults.
 
 Note that this utility does not alter the IP configuration of the Z21 DCC control router station itself. This should be done
@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    args = Z21ConfArgs('a utility to configure acces to the Roco Z21 control station')
+    args = Z21ConfArgs('a utility to configure acces to the Roco Z21 control router station')
 
     Logging.config('mrcs_control_z21_conf', verbose=args.verbose)
     logger = Logging.getLogger()
