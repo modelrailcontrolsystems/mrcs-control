@@ -13,7 +13,7 @@ import json
 import unittest
 from pathlib import Path
 
-from mrcs_control.operations.node_enums import NodeTopology
+from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_core.messaging.exchange import Exchange
 
 

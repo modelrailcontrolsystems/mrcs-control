@@ -8,9 +8,9 @@ This is a single point in the system where the clock configuration is persisted 
 the change is broadcasted.
 """
 
-from mrcs_control.messaging.mq_enums import MQTopology
+from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.messaging_node import SubscriberNode
-from mrcs_control.operations.node_enums import NodeTopology
+from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_control.operations.time.cron_serial import CronSerial
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONify

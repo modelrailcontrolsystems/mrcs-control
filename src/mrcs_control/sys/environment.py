@@ -10,7 +10,7 @@ Environment variables may be used to communicate application configuration to ch
 import logging
 import os
 
-from mrcs_control.operations.node_enums import NodeTopology
+from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_core.sys.logging import Logging
 
 

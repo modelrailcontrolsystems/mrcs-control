@@ -10,6 +10,7 @@ A structured representation of a message
     "body": "hello"
 }
 """
+
 from typing import Self
 
 from mrcs_control.data.persistence import PersistentObject

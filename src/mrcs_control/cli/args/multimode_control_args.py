@@ -9,7 +9,7 @@ https://realpython.com/command-line-interfaces-python-argparse/
 from abc import ABC
 
 from mrcs_control.cli.args.control_args import ControlArgs
-from mrcs_control.operations.node_enums import NodeTopology
+from mrcs_control.operations.node_topology import NodeTopology
 
 
 # --------------------------------------------------------------------------------------------------------------------

@@ -11,9 +11,9 @@ mrcs_publisher -vti4 -t CRN -n 3 -m '{"event_id": "abc", "on": "1930-01-02T06:25
 """
 
 from mrcs_control.db.db_client import DbClient
-from mrcs_control.messaging.mq_enums import MQTopology
+from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.messaging_node import SubscriberNode
-from mrcs_control.operations.node_enums import NodeTopology
+from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_control.operations.time.cron_serial import CronSerial
 from mrcs_control.operations.time.persistent_cronjob import PersistentCronjob
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType

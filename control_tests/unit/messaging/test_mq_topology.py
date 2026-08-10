@@ -11,7 +11,7 @@ https://www.jetbrains.com/help/pycharm/creating-tests.html
 
 import unittest
 
-from mrcs_control.messaging.mq_enums import MQMode, MQTopology
+from mrcs_control.messaging.mq_topology import MQMode, MQTopology
 from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType
 
 

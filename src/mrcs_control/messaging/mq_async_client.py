@@ -24,7 +24,7 @@ from pika.exceptions import AMQPError, ChannelWrongStateError
 from pika.exchange_type import ExchangeType
 
 from mrcs_control.messaging.mq_client import MQMode
-from mrcs_control.messaging.mq_enums import MQTopology
+from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
