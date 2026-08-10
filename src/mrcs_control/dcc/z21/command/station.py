@@ -22,8 +22,8 @@ from mrcs_control.dcc.z21.command.broadcast import Broadcast
 from mrcs_control.dcc.z21.command.command import Command
 from mrcs_control.dcc.z21.command.dataset import Dataset
 from mrcs_control.dcc.z21.command.header import Header
-from mrcs_control.dcc.z21.command.protocol import Z21Protocol
-from mrcs_control.dcc.z21.equipment.z21_equpiment_report import Z21EquipmentReport
+from mrcs_control.dcc.z21.command.protocol import Protocol
+from mrcs_control.dcc.z21.equipment.equpiment_report import EquipmentReport
 from mrcs_core.equipment.control_router.control_router_conf import ControlRouterConf
 from mrcs_core.equipment.control_router.control_router_subscription import ControlRouterSubscription
 from mrcs_core.sys.ipv4_address import IPv4Address
@@ -32,7 +32,7 @@ from mrcs_core.sys.logging import Logging
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class Z21Station(object):
+class Station(object):
     """
     Z21 control router station
     """
@@ -49,7 +49,7 @@ class Z21Station(object):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    async def connect(cls, conf: ControlRouterConf, on_response: Callable, on_connection_lost: Callable) -> Z21Station:
+    async def connect(cls, conf: ControlRouterConf, on_response: Callable, on_connection_lost: Callable) -> Station:
         loop = asyncio.get_running_loop()
 
         station = cls(conf, on_response, on_connection_lost)
@@ -58,7 +58,7 @@ class Z21Station(object):
             # Binding without SO_REUSEPORT makes the client endpoint exclusive:
             # a second MRCS Z21 client cannot silently share this port.
             transport, protocol = await loop.create_datagram_endpoint(
-                lambda: Z21Protocol(station.station_dataset_handler, station.station_connection_lost_handler),
+                lambda: Protocol(station.station_dataset_handler, station.station_connection_lost_handler),
                 local_addr=('0.0.0.0', conf.port),
                 remote_addr=(conf.ip_address.dot_decimal, conf.port),
             )
@@ -90,7 +90,7 @@ class Z21Station(object):
         self.__on_connection_lost = on_connection_lost
 
         self.__transport: DatagramTransport | None = None
-        self.__protocol: Z21Protocol | None = None
+        self.__protocol: Protocol | None = None
         self.__has_connection = False
         self.__response_event = asyncio.Event()
 
@@ -119,7 +119,7 @@ class Z21Station(object):
             self.__response_event.set()
 
         try:
-            self.on_response(Z21EquipmentReport.construct_from_dataset(dataset))
+            self.on_response(EquipmentReport.construct_from_dataset(dataset))
 
         except TypeError:
             self.logger.warning(f'dataset_handler unsupported: {dataset}')
@@ -231,6 +231,6 @@ class Z21Station(object):
         on_response = None if self.__on_response is None else self.__on_response.__name__
         on_connection_lost = None if self.__on_connection_lost is None else self.__on_connection_lost.__name__
 
-        return (f'Z21Station:{{conf:{self.conf}, on_response:{on_response}, '
+        return (f'Station:{{conf:{self.conf}, on_response:{on_response}, '
                 f'on_connection_lost:{on_connection_lost}, has_connection:{self.has_connection}, '
                 f'transport:{bool(self.__transport)}, protocol:{self.__protocol}}}')

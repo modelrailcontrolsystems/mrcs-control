@@ -1,0 +1,71 @@
+"""
+Created on 9 Aug 2026
+
+@author: Bruno Beloff (bbeloff@me.com)
+
+A mapping of Z21 reports to control router messaging source serial numbers.
+The mapping should be kept in sync with the source code in Z21EquipmentReport.
+"""
+
+from enum import IntEnum, unique
+
+from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType
+from mrcs_core.data.json import JSONable
+from mrcs_core.data.meta_enum import MetaEnum
+from mrcs_core.equipment.block.block_report import BlockOccupancyReport, BlockVoltageReport
+from mrcs_core.equipment.control_router.control_router_report import ControlRouterReport
+from mrcs_core.equipment.motive_power_unit.mpu_configuration_report import MPUConfigurationReport
+from mrcs_core.equipment.motive_power_unit.mpu_decoder_report import MPUDecoderReport
+from mrcs_core.equipment.track.track_report import TrackReport
+from mrcs_core.equipment.turnout.turnout_report import TurnoutReport
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+@unique
+class ControlRouterSerial(IntEnum, metaclass=MetaEnum):
+    """
+    An enumeration of all the control router serial numbers
+    """
+
+    Common = 10
+
+    Unclassified = 11
+    System = 12
+    Block = 13
+    MPU = 14
+    TrackPower = 15
+    Turnout = 16
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def __str__(self, *args, **kwargs):
+        return f'{self.name}{{{self.value}}}'
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+@unique
+class ControlRouterIdentity(IntEnum, metaclass=MetaEnum):
+    """
+    a mapping of Z21 reports to control router messaging source serial numbers
+    """
+
+    __MAPPING: dict[type[JSONable], EquipmentIdentifier] = {
+        ControlRouterReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.System),
+        BlockOccupancyReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Block),
+        BlockVoltageReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Block),
+        MPUDecoderReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.MPU),
+        MPUConfigurationReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.MPU),
+        TrackReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.TrackPower),
+        TurnoutReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Turnout)
+    }
+
+
+    @classmethod
+    def get(cls, report: JSONable) -> EquipmentIdentifier:
+        try:
+            return cls.__MAPPING[type(report)]
+        except KeyError:
+            return EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Unclassified)

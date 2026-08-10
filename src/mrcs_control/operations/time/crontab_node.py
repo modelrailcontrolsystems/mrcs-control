@@ -14,7 +14,7 @@ from mrcs_control.db.db_client import DbClient
 from mrcs_control.messaging.mq_enums import MQTopology
 from mrcs_control.operations.messaging_node import SubscriberNode
 from mrcs_control.operations.node_enums import NodeTopology
-from mrcs_control.operations.time.cron import CRN
+from mrcs_control.operations.time.cron_serial import CronSerial
 from mrcs_control.operations.time.persistent_cronjob import PersistentCronjob
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONify
@@ -32,7 +32,7 @@ class CrontabNode(SubscriberNode):
 
     @classmethod
     def id(cls):
-        return EquipmentIdentifier(EquipmentType.CRN, None, CRN.Crontab)
+        return EquipmentIdentifier(EquipmentType.CRN, None, CronSerial.Crontab)
 
 
     @classmethod

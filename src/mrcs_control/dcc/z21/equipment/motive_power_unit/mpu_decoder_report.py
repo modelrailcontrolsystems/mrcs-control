@@ -3,7 +3,7 @@ Created on 18 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-A DCC motive power unit (MPU) decoder state, as reported by a Z21 DCC control router station
+Reports a motive power unit (MPU) decoder state from a Z21 DCC control router station
 
 Classes in support of the Rocco Z21 DCC control router station:
 https://www.z21.eu/en/products/z21
@@ -21,9 +21,9 @@ from mrcs_core.equipment.motive_power_unit.mpu_decoder_report import MPUDecoderR
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class Z21MPUDecoderReport(object):
+class MPUDecoderReportBuilder(object):
     """
-    A DCC motive power unit (MPU) decoder state, as reported by a Z21 DCC control router station
+    Reports a motive power unit (MPU) decoder state with a Dataset supplied by a Z21 DCC control router station
     """
 
 

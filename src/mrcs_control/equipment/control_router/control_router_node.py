@@ -22,14 +22,14 @@ mrcs_control_publisher -t -v -r 'CRT.*.1' -m '{"type": "XCommand", "x_header": "
 import asyncio
 
 from mrcs_control.dcc.z21.command.command import Command
-from mrcs_control.dcc.z21.command.station import Z21Station
+from mrcs_control.dcc.z21.command.station import Station
+from mrcs_control.equipment.control_router.control_router_identity import ControlRouterIdentity
 from mrcs_control.messaging.mq_enums import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
 from mrcs_control.operations.node_enums import NodeTopology
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONable, JSONify
 from mrcs_core.equipment.control_router.control_router_conf import ControlRouterConf
-from mrcs_core.equipment.control_router.control_router_report import ControlRouterReport
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
 
@@ -41,7 +41,7 @@ class ControlRouterNode(AsyncSubscriberNode):
     an interface between a Z21 control router and the messaging system
     """
 
-    __KEEP_ALIVE_INTERVAL = 10.0  # seconds
+    __KEEP_ALIVE_INTERVAL = 30.0  # seconds
     __RETRY_INTERVAL = 5.0  # seconds
 
 
@@ -55,11 +55,6 @@ class ControlRouterNode(AsyncSubscriberNode):
     @classmethod
     def subscription_routing_keys(cls):
         return (SubscriptionRoutingKey(EquipmentFilter.any(), cls.id()),)
-
-
-    @classmethod
-    def publication_routing_key(cls):
-        return PublicationRoutingKey(cls.id(), EquipmentFilter.any())
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -112,12 +107,10 @@ class ControlRouterNode(AsyncSubscriberNode):
     def on_dataset(self, report: JSONable):
         self.logger.info(f'on_dataset:{report}')
 
-        if isinstance(report, ControlRouterReport):
-            return
+        source = ControlRouterIdentity.get(report)
+        routing_key = PublicationRoutingKey(source, EquipmentFilter.any())
 
-        # TODO: publish with different IDs, depending on the report type?
-
-        outgoing = Message(self.publication_routing_key(), report)
+        outgoing = Message(routing_key, report)
         self.async_loop.create_task(self.mq_client.publish(outgoing))
 
 
@@ -133,7 +126,7 @@ class ControlRouterNode(AsyncSubscriberNode):
 
         while True:
             try:
-                self.__station = await Z21Station.connect(self.conf, self.on_dataset, self.on_connection_lost)
+                self.__station = await Station.connect(self.conf, self.on_dataset, self.on_connection_lost)
 
                 await self.station.set_broadcast_flags(self.conf.subscription)
                 await self.station.get_system_state()
@@ -223,7 +216,7 @@ class ControlRouterNode(AsyncSubscriberNode):
 
     @station_ready.setter
     def station_ready(self, ready: bool):
-        if self.__station_ready == ready:
+        if ready == self.__station_ready:
             return
 
         self.__station_ready = ready

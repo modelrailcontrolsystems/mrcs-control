@@ -3,7 +3,7 @@ Created on 10 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-A motive power unit (MPU) configuration, as reported by a Z21 DCC control router station
+Reports a motive power unit (MPU) configuration with a Dataset supplied by a Z21 DCC control router station
 
 Classes in support of the Rocco Z21 DCC control router station:
 https://www.z21.eu/en/products/z21
@@ -21,9 +21,9 @@ from mrcs_core.equipment.motive_power_unit.mpu_functions import MPUFunctions
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class Z21MPUConfigurationReport(object):
+class MPUConfigurationReportBuilder(object):
     """
-    A motive power unit (MPU) configuration, as reported by a Z21 DCC control router station
+    Reports a motive power unit (MPU) configuration with a Dataset supplied by a Z21 DCC control router station
     """
 
 

@@ -31,7 +31,7 @@ mrcs_control_z21
 import sys
 
 from mrcs_control.cli.args.z21_conf_args import Z21ConfArgs
-from mrcs_control.dcc.z21.command.station import Z21Station
+from mrcs_control.dcc.z21.command.station import Station
 from mrcs_core.data.json import JSONify
 from mrcs_core.equipment.control_router.control_router_conf import ControlRouterConf
 from mrcs_core.sys.host import Host
@@ -72,8 +72,8 @@ if __name__ == '__main__':
         exit(0)
 
     if conf is None:
-        conf = ControlRouterConf(Z21Station.DEFAULT_IP_ADDRESS, Z21Station.DEFAULT_PORT, Z21Station.DEFAULT_TIMEOUT,
-                                 Z21Station.DEFAULT_SUBSCRIPTION)
+        conf = ControlRouterConf(Station.DEFAULT_IP_ADDRESS, Station.DEFAULT_PORT, Station.DEFAULT_TIMEOUT,
+                                 Station.DEFAULT_SUBSCRIPTION)
 
     if args.ip_address:
         conf.ip_address = args.ip_address
