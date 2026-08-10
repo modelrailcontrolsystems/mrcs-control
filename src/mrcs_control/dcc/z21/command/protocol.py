@@ -23,7 +23,7 @@ from mrcs_core.sys.logging import Logging
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class Z21Protocol(DatagramProtocol):
+class Protocol(DatagramProtocol):
     """
     Z21 communications handler
     """
@@ -85,4 +85,4 @@ class Z21Protocol(DatagramProtocol):
         connection_lost_handler = None if self.__connection_lost_handler is None \
             else self.__connection_lost_handler.__name__
 
-        return f'Z21Protocol:{{dataset_handler:{dataset_handler}, connection_lost_handler:{connection_lost_handler}}}'
+        return f'Protocol:{{dataset_handler:{dataset_handler}, connection_lost_handler:{connection_lost_handler}}}'

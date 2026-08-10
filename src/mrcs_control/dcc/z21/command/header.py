@@ -84,7 +84,7 @@ class Header(IntEnum, metaclass=MetaEnum):
 
 
     def __str__(self, *args, **kwargs):
-        return f'{self.name}:[0x{self.value:02x}]'
+        return f'{self.name}:{{0x{self.value:02x}}}'
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -134,4 +134,4 @@ class XHeader(IntEnum, metaclass=MetaEnum):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return f'{self.name}[0x{self.value:02x}]'
+        return f'{self.name}{{0x{self.value:02x}}}'

@@ -46,4 +46,4 @@ class Broadcast(IntEnum, metaclass=MetaEnum):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return f'{self.name}[0x{self.value:08x}]'
+        return f'{self.name}{{0x{self.value:08x}}}'

@@ -34,7 +34,7 @@ import asyncio
 import sys
 
 from mrcs_control.cli.args.z21_control_args import Z21ControlArgs
-from mrcs_control.dcc.z21.command.station import Z21Station
+from mrcs_control.dcc.z21.command.station import Station
 from mrcs_core.data.json import JSONable, JSONify
 from mrcs_core.equipment.control_router.control_router_conf import ControlRouterConf
 from mrcs_core.sys.host import Host
@@ -59,7 +59,7 @@ def mrcs_control_on_connection_lost(ex: Exception):
 
 
 async def monitor():
-    async with await Z21Station.connect(conf, mrcs_control_on_dataset, mrcs_control_on_connection_lost) as station:
+    async with await Station.connect(conf, mrcs_control_on_dataset, mrcs_control_on_connection_lost) as station:
         logger.info(f'station: {station}')
 
         await station.set_broadcast_flags(conf.subscription)

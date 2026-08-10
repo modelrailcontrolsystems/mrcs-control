@@ -10,7 +10,7 @@ import argparse
 
 from mrcs_control.cli.args.control_args import ControlArgs
 from mrcs_control.dcc.z21.command.broadcast import Broadcast
-from mrcs_control.dcc.z21.command.station import Z21Station
+from mrcs_control.dcc.z21.command.station import Station
 from mrcs_core.sys.ipv4_address import IPv4Address
 
 
@@ -35,13 +35,13 @@ class Z21ConfArgs(ControlArgs):
         self._parser.add_argument('-f', '--factory-reset', action='store_true', help='restore default configuration')
 
         self._parser.add_argument('-a', '--ip-address', action='store', type=str,
-                                  help=f'host IP address (default {Z21Station.DEFAULT_IP_ADDRESS.dot_decimal})')
+                                  help=f'host IP address (default {Station.DEFAULT_IP_ADDRESS.dot_decimal})')
         self._parser.add_argument('-p', '--port', action='store', type=str,
-                                  help=f'host port (default {Z21Station.DEFAULT_PORT})')
+                                  help=f'host port (default {Station.DEFAULT_PORT})')
         self._parser.add_argument('-t', '--timeout', action='store', type=float,
-                                  help=f'host port (default {Z21Station.DEFAULT_TIMEOUT})')
+                                  help=f'host port (default {Station.DEFAULT_TIMEOUT})')
         self._parser.add_argument('-s', '--subscription', action='store', type=str, nargs='*',
-                                  help=f'host port (default {" ".join(Z21Station.DEFAULT_SUBSCRIPTION.flag_names)})')
+                                  help=f'host port (default {" ".join(Station.DEFAULT_SUBSCRIPTION.flag_names)})')
 
         self._args = self._parser.parse_args()
 

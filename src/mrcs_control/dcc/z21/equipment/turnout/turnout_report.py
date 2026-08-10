@@ -3,7 +3,7 @@ Created on 13 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-A turnout state, as reported by a Z21 DCC control router station
+Reports a turnout state with a Dataset supplied by a Z21 DCC control router station
 
 Classes in support of the Rocco Z21 DCC control router station:
 https://www.z21.eu/en/products/z21
@@ -22,9 +22,9 @@ from mrcs_core.equipment.turnout.turnout_report import TurnoutReport
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class Z21TurnoutReport(object):
+class TurnoutReportBuilder(object):
     """
-    A turnout state, as reported by a Z21 DCC control router station
+    Reports a turnout state with a Dataset supplied by a Z21 DCC control router station
     """
 
 

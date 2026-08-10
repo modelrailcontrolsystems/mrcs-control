@@ -14,7 +14,7 @@ from mrcs_core.data.meta_enum import MetaEnum
 # --------------------------------------------------------------------------------------------------------------------
 
 @unique
-class CRN(IntEnum, metaclass=MetaEnum):
+class CronSerial(IntEnum, metaclass=MetaEnum):
     """
     An enumeration of all the cron nodes
     """
@@ -28,4 +28,4 @@ class CRN(IntEnum, metaclass=MetaEnum):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return f'{self.name}[{self.value}]'
+        return f'{self.name}{{{self.value}}}'

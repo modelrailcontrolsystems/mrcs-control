@@ -3,7 +3,7 @@ Created on 13 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-Block occupany detector reports, as reported by a Z21 DCC control router station
+Reports block occupany with a Dataset supplied by a Z21 DCC control router station
 
 Based on the Roco 10808 detector:
 https://www.roco.cc/ren/products/control/accessories/10808-z21-detector.html
@@ -23,9 +23,9 @@ from mrcs_core.equipment.block.block_report import BlockOccupancyReport, BlockVo
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class Z21BlockReport(object):
+class BlockReportBuilder(object):
     """
-    Block occupany detector reports, as reported by a Z21 DCC control router station
+    Reports block occupany with a Dataset supplied by a Z21 DCC control router station
     """
 
 

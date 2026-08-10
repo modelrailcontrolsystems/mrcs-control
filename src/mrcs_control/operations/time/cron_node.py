@@ -17,7 +17,7 @@ from mrcs_control.messaging.mq_enums import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
 from mrcs_control.operations.node_enums import NodeTopology
 from mrcs_control.operations.time.clock_manager_node import ClockManagerNode
-from mrcs_control.operations.time.cron import CRN
+from mrcs_control.operations.time.cron_serial import CronSerial
 from mrcs_control.operations.time.persistent_cronjob import PersistentCronjob
 from mrcs_control.sys.interval_timer import AsyncIntervalTimer
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
@@ -43,7 +43,7 @@ class CronNode(AsyncSubscriberNode):
 
     @classmethod
     def id(cls):
-        return EquipmentIdentifier(EquipmentType.CRN, None, CRN.Cron)  # TODO: non-numeric 'serial_number'
+        return EquipmentIdentifier(EquipmentType.CRN, None, CronSerial.Cron)
 
 
     @classmethod

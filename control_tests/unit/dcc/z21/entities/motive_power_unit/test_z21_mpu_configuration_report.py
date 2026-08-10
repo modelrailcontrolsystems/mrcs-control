@@ -12,7 +12,7 @@ https://www.jetbrains.com/help/pycharm/creating-tests.html
 import unittest
 
 from mrcs_control.dcc.z21.command.dataset import Dataset
-from mrcs_control.dcc.z21.equipment.motive_power_unit.z21_mpu_configuration_report import Z21MPUConfigurationReport
+from mrcs_control.dcc.z21.equipment.motive_power_unit.mpu_configuration_report import MPUConfigurationReportBuilder
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -22,7 +22,7 @@ class TestZ21MPUConfigurationReport(unittest.TestCase):
     def test_construct(self):
         chars = bytes([0x0f, 0x00, 0x40, 0x00, 0xef, 0x00, 0x04, 0x0c, 0xb5, 0x01, 0x00, 0x00, 0x00, 0x00, 0x53])
         obj1 = Dataset.construct_from_bytes(chars)
-        obj2 = Z21MPUConfigurationReport.construct_from_dataset(obj1)
+        obj2 = MPUConfigurationReportBuilder.construct_from_dataset(obj1)
         self.assertEqual('MPUConfigurationReport:{mpu_address:4, functions:-+------------------------------, '
                          'is_busy:True, stepping:STEPS_128, speed_setting:53, reverse:False, '
                          'double_traction:False, smart_search:False}', str(obj2))
@@ -31,7 +31,7 @@ class TestZ21MPUConfigurationReport(unittest.TestCase):
     def test_is_emergency_stop(self):
         chars = bytes([0x0f, 0x00, 0x40, 0x00, 0xef, 0x00, 0x04, 0x0c, 0xb5, 0x01, 0x00, 0x00, 0x00, 0x00, 0x53])
         obj1 = Dataset.construct_from_bytes(chars)
-        obj2 = Z21MPUConfigurationReport.construct_from_dataset(obj1)
+        obj2 = MPUConfigurationReportBuilder.construct_from_dataset(obj1)
         self.assertEqual(False, obj2.is_emergency_stop)
 
 
