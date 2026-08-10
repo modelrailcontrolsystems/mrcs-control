@@ -8,8 +8,8 @@ Abstract blocking messaging nodes
 from abc import ABC, abstractmethod
 
 from mrcs_control.messaging.mq_client import MQClient, MQPublisher, MQSubscriber
-from mrcs_control.messaging.mq_enums import MQTopology
-from mrcs_control.operations.node_enums import NodeTopology
+from mrcs_control.messaging.mq_topology import MQTopology
+from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message

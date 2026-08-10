@@ -13,8 +13,8 @@ import signal
 from abc import ABC, abstractmethod
 
 from mrcs_control.messaging.mq_async_client import MQAsyncPublisher, MQAsyncSubscriber
-from mrcs_control.messaging.mq_enums import MQTopology
-from mrcs_control.operations.node_enums import NodeTopology
+from mrcs_control.messaging.mq_topology import MQTopology
+from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import SubscriptionRoutingKey

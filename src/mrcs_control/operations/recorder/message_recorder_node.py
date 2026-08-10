@@ -7,9 +7,9 @@ A universal message logger
 """
 
 from mrcs_control.db.db_client import DbClient
-from mrcs_control.messaging.mq_enums import MQTopology
+from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.messaging_node import SubscriberNode
-from mrcs_control.operations.node_enums import NodeTopology
+from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_control.operations.recorder.persistent_message import PersistentMessage
 from mrcs_control.operations.recorder.persistent_message_record import PersistentMessageRecord
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
