@@ -32,16 +32,18 @@ class Z21ConfArgs(ControlArgs):
     def __init__(self, description):
         super().__init__(description, custom_formatter=CustomFormatter)
 
+        conf = Station.default_conf()
+
         self._parser.add_argument('-f', '--factory-reset', action='store_true', help='restore default configuration')
 
         self._parser.add_argument('-a', '--ip-address', action='store', type=str,
-                                  help=f'host IP address (default {Station.DEFAULT_IP_ADDRESS.dot_decimal})')
+                                  help=f'host IP address (default {conf.ip_address.dot_decimal})')
         self._parser.add_argument('-p', '--port', action='store', type=str,
-                                  help=f'host port (default {Station.DEFAULT_PORT})')
+                                  help=f'host port (default {conf.port})')
         self._parser.add_argument('-t', '--timeout', action='store', type=float,
-                                  help=f'host port (default {Station.DEFAULT_TIMEOUT})')
+                                  help=f'host port (default {conf.timeout})')
         self._parser.add_argument('-s', '--subscription', action='store', type=str, nargs='*',
-                                  help=f'host port (default {" ".join(Station.DEFAULT_SUBSCRIPTION.flag_names)})')
+                                  help=f'host port (default {" ".join(conf.subscription.flag_names)})')
 
         self._args = self._parser.parse_args()
 
