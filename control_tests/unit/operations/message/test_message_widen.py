@@ -37,7 +37,7 @@ class TestMessageWiden(unittest.TestCase):
         target = EquipmentFilter.construct_from_jdict('MPU.*.*')
         rk = PublicationRoutingKey(source, target)
         obj1 = Message(rk, 'hello', origin='12345678')
-        obj2 = PersistentMessage.widen(obj1)
+        obj2 = PersistentMessage.narrow(obj1)
         self.assertEqual('PersistentMessage:{origin:12345678, routing_key:PublicationRoutingKey:{'
                          'source:EquipmentIdentifier:{equipment_type:BOS, sector_number:1, serial_number:2}, '
                          'target:EquipmentFilter:{equipment_type:MPU, sector_number:None, serial_number:None}}, '

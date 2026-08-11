@@ -27,7 +27,7 @@ class PersistentBlockOccupant(BlockOccupant, BlockStatusPersistence, PersistentO
 
 
     @classmethod
-    def widen(cls, occupant: BlockOccupant):
+    def narrow(cls, occupant: BlockOccupant) -> Self:
         return cls(occupant.mpu_address, occupant.face)
 
 
