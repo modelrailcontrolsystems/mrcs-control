@@ -121,12 +121,13 @@ class ControlRouterNode(AsyncSubscriberNode):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    async def monitor(self):
+    async def monitor(self) -> None:
         self.logger.debug('monitor')
 
         while True:
             try:
-                self.__station = await Station.connect(self.conf, self.on_dataset, self.on_connection_lost)
+                self.__station = Station(self.conf, self.on_dataset, self.on_connection_lost)
+                await self.station.connect()
 
                 await self.station.set_broadcast_flags(self.conf.subscription)
                 await self.station.get_system_state()
@@ -157,14 +158,14 @@ class ControlRouterNode(AsyncSubscriberNode):
                     self.__station = None
 
 
-    async def halt(self):
+    async def halt(self) -> None:
         self.logger.debug('halt')
 
         await self.shutdown()
         await super().halt()
 
 
-    async def shutdown(self):
+    async def shutdown(self) -> None:
         self.logger.debug('shutdown')
 
         task = self.__monitor_task
@@ -181,7 +182,7 @@ class ControlRouterNode(AsyncSubscriberNode):
                 raise exception
 
 
-    def close(self):
+    def close(self) -> None:
         self.logger.debug('close')
 
         if self.async_loop is not None and self.async_loop.is_closed():

@@ -59,14 +59,15 @@ def mrcs_control_on_connection_lost(ex: Exception):
 
 
 async def monitor():
-    async with await Station.connect(conf, mrcs_control_on_dataset, mrcs_control_on_connection_lost) as station:
-        logger.info(f'station: {station}')
+    station = Station(conf, mrcs_control_on_dataset, mrcs_control_on_connection_lost)
+    await station.connect()
+    logger.info(f'station: {station}')
 
+    async with station:
         await station.set_broadcast_flags(conf.subscription)
 
         if args.has_command:
             command = args.command
-            print(f'command: {JSONify.dumps(command)}')
             await station.send_command(command)
             if command.report_type is None:
                 return
