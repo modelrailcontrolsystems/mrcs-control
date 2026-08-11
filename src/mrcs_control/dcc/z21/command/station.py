@@ -90,7 +90,7 @@ class Station(object):
         except OSError as exc:
             if exc.errno == errno.EADDRINUSE:
                 raise RuntimeError(
-                    f'Z21 client UDP port {self.DEFAULT_PORT} is already in use; '
+                    f'Z21 client UDP port {self.conf.port} is already in use; '
                     'stop the other MRCS Z21 client before starting this utility.') from exc
             raise
 
