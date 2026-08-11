@@ -29,7 +29,7 @@ class PersistentMessage(Message, MessagePersistence, PersistentObject):
 
 
     @classmethod
-    def widen(cls, message: Message) -> PersistentMessage:  # 'TODO: 'widen' or 'narrow'?
+    def narrow(cls, message: Message) -> Self:
         return cls(message.routing_key, message.body, message.origin)
 
 

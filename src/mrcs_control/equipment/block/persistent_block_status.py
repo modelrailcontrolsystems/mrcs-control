@@ -82,4 +82,4 @@ class PersistentBlockStatus(BlockStatus, BlockStatusPersistence, PersistentObjec
 
 
     def children(self) -> List[PersistentBlockOccupant]:
-        return [PersistentBlockOccupant.widen(occupant) for occupant in self.occupants]
+        return [PersistentBlockOccupant.narrow(occupant) for occupant in self.occupants]
