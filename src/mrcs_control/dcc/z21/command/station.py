@@ -43,43 +43,6 @@ class Station(object):
     DEFAULT_SUBSCRIPTION = ControlRouterSubscription(Broadcast.CAN_DETECTOR, Broadcast.RAILCOM_DATA_ALL,
                                                      Broadcast.TRACK, Broadcast.X_LOCO_INFO_ALL)
     __DEFAULT_TIME_BETWEEN_SENDS = 0.1
-    __KEEP_ALIVE_INTERVAL = 30.0
-
-
-    # ----------------------------------------------------------------------------------------------------------------
-
-    @classmethod
-    async def connect(cls, conf: ControlRouterConf, on_response: Callable, on_connection_lost: Callable) -> Station:
-        loop = asyncio.get_running_loop()
-
-        station = cls(conf, on_response, on_connection_lost)
-
-        try:
-            # Binding without SO_REUSEPORT makes the client endpoint exclusive:
-            # a second MRCS Z21 client cannot silently share this port.
-            transport, protocol = await loop.create_datagram_endpoint(
-                lambda: Protocol(station.station_dataset_handler, station.station_connection_lost_handler),
-                local_addr=('0.0.0.0', conf.port),
-                remote_addr=(conf.ip_address.dot_decimal, conf.port),
-            )
-
-        except OSError as exc:
-            if exc.errno == errno.EADDRINUSE:
-                raise RuntimeError(
-                    f'Z21 client UDP port {cls.DEFAULT_PORT} is already in use; '
-                    'stop the other MRCS Z21 client before starting this utility.') from exc
-            raise
-
-        # TODO: use conf.timeout? Do we need receive_packet() if broadcast is off?
-        # https://github.com/botmonster/z21aio/blob/a615edc27021955ed3bfebc79568c5fffc89c7ac/src/z21aio/station.py#L309
-
-        station.__transport = transport
-        station.__protocol = protocol
-        station.__has_connection = True
-
-        station.logger.debug(f'connected:{transport.get_extra_info("sockname")}')
-
-        return station
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -111,6 +74,35 @@ class Station(object):
 
 
     # ----------------------------------------------------------------------------------------------------------------
+
+    async def connect(self) -> None:
+        loop = asyncio.get_running_loop()
+
+        try:
+            # Binding without SO_REUSEPORT makes the client endpoint exclusive:
+            # a second MRCS Z21 client cannot silently share this port.
+            transport, protocol = await loop.create_datagram_endpoint(
+                lambda: Protocol(self.station_dataset_handler, self.station_connection_lost_handler),
+                local_addr=('0.0.0.0', self.conf.port),
+                remote_addr=(self.conf.ip_address.dot_decimal, self.conf.port),
+            )
+
+        except OSError as exc:
+            if exc.errno == errno.EADDRINUSE:
+                raise RuntimeError(
+                    f'Z21 client UDP port {self.DEFAULT_PORT} is already in use; '
+                    'stop the other MRCS Z21 client before starting this utility.') from exc
+            raise
+
+        # TODO: use conf.timeout? Do we need receive_packet() if broadcast is off?
+        # https://github.com/botmonster/z21aio/blob/a615edc27021955ed3bfebc79568c5fffc89c7ac/src/z21aio/station.py#L309
+
+        self.__transport = transport
+        self.__protocol = protocol
+        self.__has_connection = True
+
+        self.logger.debug(f'connected:{transport.get_extra_info("sockname")}')
+
 
     def station_dataset_handler(self, dataset: Dataset) -> None:
         self.logger.debug(f'station_dataset_handler:{dataset}')
