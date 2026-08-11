@@ -72,8 +72,7 @@ if __name__ == '__main__':
         exit(0)
 
     if conf is None:
-        conf = ControlRouterConf(Station.DEFAULT_IP_ADDRESS, Station.DEFAULT_PORT, Station.DEFAULT_TIMEOUT,
-                                 Station.DEFAULT_SUBSCRIPTION)
+        conf = Station.default_conf()
 
     if args.ip_address:
         conf.ip_address = args.ip_address

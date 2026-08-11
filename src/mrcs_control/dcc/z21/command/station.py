@@ -37,12 +37,18 @@ class Station(object):
     Z21 control router station
     """
 
-    DEFAULT_IP_ADDRESS = IPv4Address.construct('192.168.1.111')
-    DEFAULT_PORT = 21105
-    DEFAULT_TIMEOUT = 2.0
-    DEFAULT_SUBSCRIPTION = ControlRouterSubscription(Broadcast.CAN_DETECTOR, Broadcast.RAILCOM_DATA_ALL,
-                                                     Broadcast.TRACK, Broadcast.X_LOCO_INFO_ALL)
+    __DEFAULT_IP_ADDRESS = IPv4Address.construct('192.168.1.111')
+    __DEFAULT_PORT = 21105
+    __DEFAULT_TIMEOUT = 2.0
+    __DEFAULT_SUBSCRIPTION = ControlRouterSubscription(Broadcast.CAN_DETECTOR, Broadcast.RAILCOM_DATA_ALL,
+                                                       Broadcast.TRACK, Broadcast.X_LOCO_INFO_ALL)
     __DEFAULT_TIME_BETWEEN_SENDS = 0.1
+
+
+    @classmethod
+    def default_conf(cls) -> ControlRouterConf:
+        return ControlRouterConf(cls.__DEFAULT_IP_ADDRESS, cls.__DEFAULT_PORT, cls.__DEFAULT_TIMEOUT,
+                                 cls.__DEFAULT_SUBSCRIPTION)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -79,8 +85,7 @@ class Station(object):
         loop = asyncio.get_running_loop()
 
         try:
-            # Binding without SO_REUSEPORT makes the client endpoint exclusive:
-            # a second MRCS Z21 client cannot silently share this port.
+            # binding without SO_REUSEPORT makes the client endpoint exclusive
             transport, protocol = await loop.create_datagram_endpoint(
                 lambda: Protocol(self.station_dataset_handler, self.station_connection_lost_handler),
                 local_addr=('0.0.0.0', self.conf.port),
@@ -94,7 +99,7 @@ class Station(object):
                     'stop the other MRCS Z21 client before starting this utility.') from exc
             raise
 
-        # TODO: use conf.timeout? Do we need receive_packet() if broadcast is off?
+        # TODO: Do we need receive_packet() if broadcast is off?
         # https://github.com/botmonster/z21aio/blob/a615edc27021955ed3bfebc79568c5fffc89c7ac/src/z21aio/station.py#L309
 
         self.__transport = transport
@@ -137,7 +142,7 @@ class Station(object):
         await self.send_command(command)
 
 
-    async def get_system_state(self, timeout: float = DEFAULT_TIMEOUT) -> None:
+    async def get_system_state(self) -> None:
         self.logger.debug('set_broadcast_flags')
 
         self.__response_event.clear()
@@ -146,7 +151,7 @@ class Station(object):
         await self.send_command(command)
 
         try:
-            await asyncio.wait_for(self.__response_event.wait(), timeout)
+            await asyncio.wait_for(self.__response_event.wait(), self.conf.timeout)
         except asyncio.TimeoutError as exc:
             self.station_connection_lost_handler()
             raise ConnectionError('Z21 control router did not respond') from exc
