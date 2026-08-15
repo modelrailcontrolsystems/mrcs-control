@@ -22,3 +22,4 @@ class DbName(StrEnum):
     MPU = 'MPU'  # motive power units
     Test = 'Test'  # used by unit tests
     Track = 'Track'  # BlockStatus
+    Turnout = 'Turnout'  # TurnoutStatus

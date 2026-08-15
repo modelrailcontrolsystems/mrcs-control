@@ -22,13 +22,15 @@ class Z21ControlArgs(ControlArgs):
     def __init__(self, description):
         super().__init__(description)
 
+        self._parser.add_argument('-m', '--monitor', action='store_true', help='monitor broadcast messages')
+
         group = self._parser.add_mutually_exclusive_group(required=False)
-        group.add_argument('-m', '--monitor', action='store_true', help='monitor broadcast messages')
-        group.add_argument('-s', '--system', action='store_true', help='get system state')
+        group.add_argument('-r', '--router', action='store_true', help='get control router state')
         group.add_argument('-p', '--power', action='store', type=int, nargs=1, help='set track power')
-        group.add_argument('-t', '--turnout', action='store', type=int, nargs=2, help='set turnout state')
-        group.add_argument('-g', '--get-loco', action='store', type=int, nargs=1, help='get loco configuration')
-        group.add_argument('-l', '--set-loco', action='store', type=int, nargs=3, help='set loco velocity')
+        group.add_argument('-t', '--turnout', action='store', type=int, nargs=2, help='set turnout ADDR DIR')
+        group.add_argument('-d', '--get-decoder', action='store', type=int, nargs=1, help='get loco decoder')
+        group.add_argument('-g', '--get-loco', action='store', type=int, nargs=1, help='get loco ADDR')
+        group.add_argument('-s', '--set-loco', action='store', type=int, nargs=3, help='set loco ADDR DIR SPEED')
 
         self._args = self._parser.parse_args()
 
@@ -37,14 +39,14 @@ class Z21ControlArgs(ControlArgs):
 
     @property
     def has_command(self):
-        return (self.system or self.power is not None or self.turnout is not None or
-                self.get_loco is not None or self.set_loco is not None)
+        return (self.router or self.power is not None or self.turnout is not None or
+                self.get_decoder is not None or self.get_loco is not None or self.set_loco is not None)
 
 
     @property
     def command(self):
-        if self.system:
-            return Command.construct(Header.LAN_SYSTEMSTATE_GETDATA)
+        if self.router:
+            return Command.construct(Header.LAN_SYSTEM_GETDATA)
 
         if self.power is not None:
             mode = TrackMode.COMMAND_POWER_ON if self.power else TrackMode.COMMAND_POWER_OFF
@@ -54,11 +56,14 @@ class Z21ControlArgs(ControlArgs):
             positon = TurnoutPosition.P0 if self.turnout[1] == 0 else TurnoutPosition.P1
             return XCommand.construct_x(XHeader.LAN_X_SET_TURNOUT, self.turnout[0], positon)
 
+        if self.get_decoder is not None:
+            return Command.construct(Header.LAN_RAILCOM_GETDATA, *self.get_decoder)
+
         if self.get_loco is not None:
             return XCommand.construct_x(XHeader.LAN_X_GET_LOCO, *self.get_loco)
 
         if self.set_loco is not None:
-            return XCommand.construct_x(XHeader.LAN_X_SET_LOCO_FUNCTION, *self.set_loco)
+            return XCommand.construct_x(XHeader.LAN_X_SET_LOCO_FUNC, *self.set_loco)
 
         return None
 
@@ -71,8 +76,8 @@ class Z21ControlArgs(ControlArgs):
 
 
     @property
-    def system(self):
-        return self._args.system
+    def router(self):
+        return self._args.router
 
 
     @property
@@ -83,6 +88,11 @@ class Z21ControlArgs(ControlArgs):
     @property
     def turnout(self):
         return self._args.turnout
+
+
+    @property
+    def get_decoder(self):
+        return self._args.get_decoder
 
 
     @property
@@ -99,6 +109,6 @@ class Z21ControlArgs(ControlArgs):
 
     def __str__(self, *args, **kwargs):
         return (
-            f'Z21ControlArgs:{{monitor:{self.monitor}, system:{self.system}, power:{self.power}, '
-            f'turnout:{self.turnout}, get_loco:{self.get_loco}, set_loco:{self.set_loco}, '
-            f'indent:{self.indent}, verbose:{self.verbose}}}')
+            f'Z21ControlArgs:{{monitor:{self.monitor}, router:{self.router}, power:{self.power}, '
+            f'turnout:{self.turnout}, get_decoder:{self.get_decoder}, get_loco:{self.get_loco}, '
+            f'set_loco:{self.set_loco}, indent:{self.indent}, verbose:{self.verbose}}}')

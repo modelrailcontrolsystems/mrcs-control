@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+
+"""
+Created on 12 Aug 2026
+
+@author: Bruno Beloff (bbeloff@me.com)
+
+source repo: mrcs_control
+
+DESCRIPTION
+A service that manages turnouts.
+
+SYNOPSIS
+mrcs_control_turnout [-h] [-i INDENT] [-v] [--version] [-t] (-l | -p | -r)
+
+EXAMPLES
+mrcs_control_turnout -t -v -r
+"""
+
+import sys
+
+from mrcs_control.cli.args.turnout_args import TurnoutArgs
+from mrcs_control.cli.inventory.turnout_inventory import TurnoutInventory
+from mrcs_control.equipment.turnout.turnout_node import TurnoutNode
+from mrcs_core.data.json import JSONify
+from mrcs_core.sys.host import Host
+from mrcs_core.sys.logging import Logging
+
+
+# TODO: rename mrcs_control_track
+# --------------------------------------------------------------------------------------------------------------------
+
+def control_turnout_on_message(message):
+    print(JSONify.dumps(message, indent=args.indent))
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+
+    node = None
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    args = TurnoutArgs('a service that manages turnouts')
+
+    Logging.config('mrcs_control_turnout', verbose=args.verbose)  # verbose=args.verbose / level=logging.DEBUG
+    logger = Logging.getLogger()
+    logger.info(f'args: {args}')
+    logger.info(f'mode: {args.mode.value}')
+
+    message_handler = control_turnout_on_message if args.verbose else None
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    try:
+        node = TurnoutNode(args.mode.value, on_message=message_handler)
+        logger.info(node)
+
+        if args.list:
+            turnouts = node.find_all()
+            print(JSONify.dumps(turnouts, indent=args.indent))
+
+        if args.populate:
+            inventory = TurnoutInventory.load(Host)
+            turnouts = node.populate(inventory.items)
+            print(JSONify.dumps(turnouts, indent=args.indent))
+
+        if args.run:
+            node.subscribe()
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    finally:
+        if args.run:
+            print(file=sys.stderr)
+
+            if node is not None:
+                # noinspection unresolved-references
+                node.close()

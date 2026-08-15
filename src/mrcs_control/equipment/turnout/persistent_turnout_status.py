@@ -12,6 +12,7 @@ SQLite database management for TurnoutStatus
     "position": "P1"
 }
 """
+
 from typing import Self
 
 from mrcs_control.data.persistence import PersistentObject
@@ -26,6 +27,11 @@ class PersistentTurnoutStatus(TurnoutStatus, TurnoutStatusPersistence, Persisten
     """
     SQLite database management for TurnoutStatus
     """
+
+
+    @classmethod
+    def narrow(cls, turnout: TurnoutStatus) -> Self:
+        return cls(turnout.label, turnout.block_label, turnout.turnout_address, turnout.position)
 
 
     @classmethod

@@ -23,14 +23,14 @@ from mrcs_core.equipment.track.track_enums import TrackMode
 class TestCommand(unittest.TestCase):
 
     def test_construct(self):
-        obj1 = Command.construct(Header.LAN_SYSTEMSTATE_GETDATA)
-        self.assertEqual('Command:{header:LAN_SYSTEMSTATE_GETDATA, argv:()}', str(obj1))
+        obj1 = Command.construct(Header.LAN_SYSTEM_GETDATA)
+        self.assertEqual('Command:{header:LAN_SYSTEM_GETDATA, argv:()}', str(obj1))
 
 
     def test_dataset(self):
-        obj1 = Command.construct(Header.LAN_SYSTEMSTATE_GETDATA)
+        obj1 = Command.construct(Header.LAN_SYSTEM_GETDATA)
         obj2 = obj1.dataset
-        self.assertEqual('Dataset:{header:0x0085 [LAN_SYSTEMSTATE_GETDATA], total_len:4, data:}', str(obj2))
+        self.assertEqual('Dataset:{header:0x0085 [LAN_SYSTEM_GETDATA], total_len:4, data:}', str(obj2))
 
 
     def test_x_construct(self):
@@ -52,13 +52,13 @@ class TestCommand(unittest.TestCase):
 
 
     def test_json(self):
-        obj1 = Command.construct(Header.LAN_SYSTEMSTATE_GETDATA)
+        obj1 = Command.construct(Header.LAN_SYSTEM_GETDATA)
         jstr = JSONify.dumps(obj1)
-        self.assertEqual('{"type": "Command", "header": "LAN_SYSTEMSTATE_GETDATA", "argv": []}', jstr)
+        self.assertEqual('{"type": "Command", "header": "LAN_SYSTEM_GETDATA", "argv": []}', jstr)
 
 
     def test_json_eq(self):
-        obj1 = Command.construct(Header.LAN_SYSTEMSTATE_GETDATA)
+        obj1 = Command.construct(Header.LAN_SYSTEM_GETDATA)
         jstr = JSONify.dumps(obj1)
         obj2 = Command.construct_from_jdict(json.loads(jstr))
         self.assertEqual(obj1, obj2)

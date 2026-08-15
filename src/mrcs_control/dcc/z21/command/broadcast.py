@@ -18,6 +18,7 @@ from enum import IntEnum, unique
 from mrcs_core.data.meta_enum import MetaEnum
 
 
+# TODO: needs test coverage
 # --------------------------------------------------------------------------------------------------------------------
 
 @unique

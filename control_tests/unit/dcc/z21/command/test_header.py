@@ -26,7 +26,7 @@ class TestHeader(unittest.TestCase):
 
     def test_header_construct(self):
         obj1 = Header.construct(0xDB)
-        self.assertEqual('LAN_DECODER_SYSTEMSTATE_GETDATA', obj1.name)
+        self.assertEqual('LAN_DECODER_SYSTEM_GETDATA', obj1.name)
         self.assertEqual(0xDB, obj1.value)
 
 

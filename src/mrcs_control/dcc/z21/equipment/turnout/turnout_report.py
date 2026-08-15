@@ -3,7 +3,8 @@ Created on 13 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-Reports a turnout state with a Dataset supplied by a Z21 DCC control router station
+Reports a turnout state with a Dataset supplied by a Z21 DCC control router station.
+Note that the turnout address is 1-based, not 0-based.
 
 Classes in support of the Rocco Z21 DCC control router station:
 https://www.z21.eu/en/products/z21
@@ -35,7 +36,7 @@ class TurnoutReportBuilder(object):
         if len(data) != 3:
             raise ValueError(f'Z21TurnoutReport data requires 3 bytes, got {data.hex(" ")}')
 
-        turnout_address = struct.unpack('>H', data[:2])[0]
+        turnout_address = struct.unpack('>H', data[:2])[0] + 1  # we use 1-based turnout addresses
 
         # may raise ValueError
         position = TurnoutPosition(data[2] & 0x03)

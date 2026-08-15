@@ -12,7 +12,7 @@ A service to raise cron events according to model time
 Note that in --run mode, the utility runs forever.
 
 SYNOPSIS
-mrcs_control_cron [-h] [-i INDENT] [-v] [--version] [-t] [-c] (-r | -s)
+mrcs_control_cron [-h] [-i INDENT] [-v] [--version] [-t] [-c] [-l | -r | -s]
 
 EXAMPLES
 mrcs_control_cron --verbose --run-save --test

@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
     args = SubscriberArgs('a tool for subscribing to topics')
 
-    Logging.config('mrcs_control_subscriber', verbose=args.verbose)
+    Logging.config('mrcs_control_subscriber', verbose=args.verbose)  # verbose=args.verbose / level=logging.DEBUG
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')

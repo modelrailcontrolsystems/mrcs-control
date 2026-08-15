@@ -12,7 +12,6 @@ from typing import List, Self
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.db.db_name import DbName
-from mrcs_control.equipment.block.block_status_persistence import BlockStatusPersistence
 from mrcs_core.equipment.turnout.turnout_report import TurnoutReport
 
 
@@ -44,16 +43,17 @@ class TurnoutStatusPersistence(PersistentObject, ABC):
     # TODO: BlockStatusPersistence must be built before this table
 
     @classmethod
-    def _create_tables(cls, client):
+    def _create_tables(cls, client: DbClient):
         table = cls.table()
         sql = f'''
             CREATE TABLE IF NOT EXISTS {table} (
             label TEXT PRIMARY KEY, 
             block_label TEXT, 
             address INTEGER UNIQUE, 
-            position TEXT,
-            FOREIGN KEY (block_label) REFERENCES {BlockStatusPersistence.block_table()}(label) ON DELETE CASCADE)
+            position TEXT)
             '''
+        # TODO: re-instate constraint when block_node is built
+        # FOREIGN KEY (block_label) REFERENCES {BlockStatusPersistence.block_table()}(label) ON DELETE CASCADE)
         client.execute(sql)
 
 

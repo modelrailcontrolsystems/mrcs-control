@@ -40,9 +40,17 @@ import sys
 
 from mrcs_control.cli.args.router_args import RouterArgs
 from mrcs_control.equipment.control_router.control_router_node import ControlRouterNode
+from mrcs_core.data.json import JSONify
 from mrcs_core.equipment.control_router.control_router_conf import ControlRouterConf
 from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+def on_message(message):
+    if args.verbose:
+        print(JSONify.dumps(message, indent=args.indent))
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -68,7 +76,7 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
-        router = ControlRouterNode(args.mode.value, conf)
+        router = ControlRouterNode(args.mode.value, conf, on_message=on_message)
         logger.info(f'router: {router}')
 
         if args.run:
@@ -82,4 +90,5 @@ if __name__ == '__main__':
 
     finally:
         if router is not None:
+            # noinspection unresolved-references
             router.close()

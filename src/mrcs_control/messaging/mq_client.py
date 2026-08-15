@@ -61,7 +61,7 @@ class MQClient(ABC):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def connect(self):
+    def connect(self) -> None:
         self.logger.debug('connect')
 
         connection = pika.BlockingConnection(
@@ -71,7 +71,7 @@ class MQClient(ABC):
         self.__channel = connection.channel()
 
 
-    def close(self):
+    def close(self) -> bool:
         self.logger.debug('close')
 
         try:
@@ -288,20 +288,8 @@ class MQSubscriber(MQPublisher):
                 self.logger.info('subscribe - connection re-established')
 
 
-    def close(self):
-        self.logger.debug(f'close - deleting:{self.queue_name}')
-
-        try:
-            if self.channel is not None:
-                self.channel.queue_delete(queue=self.queue_name, if_unused=False, if_empty=False)
-        except (AttributeError, AMQPError, ChannelWrongStateError):
-            pass
-        finally:
-            super().close()
-
-
     def on_consume(self, ch, method, _properties, payload):
-        self.logger.debug(f'on_consume:{str(payload)}')
+        self.logger.debug(f'on_consume:{method.delivery_tag}')
 
         try:
             routing_key = PublicationRoutingKey.construct_from_jdict(method.routing_key)

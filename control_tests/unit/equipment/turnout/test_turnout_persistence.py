@@ -32,9 +32,9 @@ class TestTurnoutPersistence(unittest.TestCase):
 
     def test_setup(self):
         obj1, obj2 = self.__setup_db()
-        self.assertEqual('TurnoutStatus:{label:TE01, block_label:BN01, turnout_address:13, position:P0}',
+        self.assertEqual('PersistentTurnoutStatus:{label:TE01, block_label:BN01, turnout_address:13, position:P0}',
                          str(obj1))
-        self.assertEqual('TurnoutStatus:{label:TE02, block_label:BN01, turnout_address:14, position:P0}',
+        self.assertEqual('PersistentTurnoutStatus:{label:TE02, block_label:BN01, turnout_address:14, position:P0}',
                          str(obj2))
 
 
@@ -89,7 +89,7 @@ class TestTurnoutPersistence(unittest.TestCase):
         obj2 = TurnoutReport.construct_from_jdict(jdict)
 
         obj3 = PersistentTurnoutStatus.update_from_turnout_report(obj2)
-        self.assertEqual('TurnoutStatus:{label:TE01, block_label:BN01, turnout_address:13, position:P1}',
+        self.assertEqual('PersistentTurnoutStatus:{label:TE01, block_label:BN01, turnout_address:13, position:P1}',
                          str(obj3))
 
 
