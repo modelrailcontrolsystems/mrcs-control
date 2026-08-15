@@ -291,7 +291,7 @@ class MQAsyncSubscriber(MQAsyncPublisher):
     # subscribing is initiated with connect()
 
     def on_exchange_declare_ok(self, _unused_frame):
-        self.logger.debug(f'on_exchange_declare_ok')
+        self.logger.debug('on_exchange_declare_ok')
         self.setup_queue()
 
 

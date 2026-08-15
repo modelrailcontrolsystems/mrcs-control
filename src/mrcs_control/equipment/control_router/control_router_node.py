@@ -21,6 +21,8 @@ mrcs_control_publisher -t -v -r 'CRT.*.1' -m '{"type": "XCommand", "x_header": "
 
 import asyncio
 
+from mypy.nodes import Callable
+
 from mrcs_control.dcc.z21.command.command import Command
 from mrcs_control.dcc.z21.command.station import Station
 from mrcs_control.equipment.control_router.control_router_identity import ControlRouterIdentity
@@ -28,7 +30,7 @@ from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
 from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
-from mrcs_core.data.json import JSONable, JSONify
+from mrcs_core.data.json import JSONable
 from mrcs_core.equipment.control_router.control_router_conf import ControlRouterConf
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
@@ -59,9 +61,12 @@ class ControlRouterNode(AsyncSubscriberNode):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, ops: NodeTopology.ServiceConfiguration, conf: ControlRouterConf):
+    def __init__(self, ops: NodeTopology.ServiceConfiguration,
+                 conf: ControlRouterConf, on_message: Callable[JSONable] | None = None):
         super().__init__(ops, MQTopology.SINGLE)
+
         self.__conf = conf
+        self.__on_message = on_message
 
         self.__station = None
         self.__monitor_task = None
@@ -79,7 +84,10 @@ class ControlRouterNode(AsyncSubscriberNode):
 
 
     async def handle_message(self, message: Message):
-        self.logger.info(f'handle_message:{JSONify.as_jdict(message)}')
+        self.logger.info('handle_message')
+
+        if self.on_message:
+            self.on_message(message)
 
         await self.__wait_until_station_ready()
 
@@ -206,6 +214,11 @@ class ControlRouterNode(AsyncSubscriberNode):
 
 
     @property
+    def on_message(self):
+        return self.__on_message
+
+
+    @property
     def station(self):
         return self.__station
 
@@ -232,5 +245,9 @@ class ControlRouterNode(AsyncSubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'ControlRouterNode:{{conf:{self.conf}, station:{self.station}, station_ready:{self.station_ready}, '
+        on_message = self.on_message.__name__
+        routing_keys = '[' + ', '.join([str(key) for key in self.subscription_routing_keys()]) + ']'
+
+        return (f'ControlRouterNode:{{conf:{self.conf}, routing_keys:{routing_keys}, on_message:{on_message}, '
+                f'station:{self.station}, station_ready:{self.station_ready}, '
                 f'ops:{self.ops}, mq_client:{self.mq_client}}}')

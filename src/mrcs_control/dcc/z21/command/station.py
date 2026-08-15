@@ -112,12 +112,11 @@ class Station(object):
     def station_dataset_handler(self, dataset: Dataset) -> None:
         self.logger.debug(f'station_dataset_handler:{dataset}')
 
-        if dataset.header == Header.LAN_SYSTEMSTATE_DATACHANGED:
+        if dataset.header == Header.LAN_SYSTEM_DATACHANGED:
             self.__response_event.set()
 
         try:
             self.on_response(EquipmentReport.construct_from_dataset(dataset))
-
         except TypeError:
             self.logger.warning(f'dataset_handler unsupported: {dataset}')
 
@@ -147,7 +146,7 @@ class Station(object):
 
         self.__response_event.clear()
 
-        command = Command.construct(Header.LAN_SYSTEMSTATE_GETDATA)
+        command = Command.construct(Header.LAN_SYSTEM_GETDATA)
         await self.send_command(command)
 
         try:

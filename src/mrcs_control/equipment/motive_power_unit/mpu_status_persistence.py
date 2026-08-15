@@ -42,7 +42,7 @@ class MPUStatusPersistence(PersistentObject, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def _create_tables(cls, client):
+    def _create_tables(cls, client: DbClient):
         table = cls.table()
         sql = f'''
             CREATE TABLE IF NOT EXISTS {table} (

@@ -26,6 +26,7 @@ from mrcs_control.dcc.z21.equipment.turnout.turnout_report import TurnoutReportB
 from mrcs_core.data.json import JSONable
 
 
+# TODO: needs test coverage
 # --------------------------------------------------------------------------------------------------------------------
 
 class EquipmentReport(object):
@@ -35,7 +36,7 @@ class EquipmentReport(object):
 
     __HEADER_MAPPING = {
         Header.LAN_CAN_DETECTOR: BlockReportBuilder,
-        Header.LAN_SYSTEMSTATE_DATACHANGED: ControlRouterReportBuilder,
+        Header.LAN_SYSTEM_DATACHANGED: ControlRouterReportBuilder,
         Header.LAN_RAILCOM_DATACHANGED: MPUDecoderReportBuilder,
     }
 
@@ -47,7 +48,7 @@ class EquipmentReport(object):
 
 
     @classmethod
-    def __class_find(cls, header: Header, x_header: XHeader):
+    def __find_builder(cls, header: Header, x_header: XHeader):
         if header == Header.LAN_X:
             return cls.__X_HEADER_MAPPING[x_header]
 
@@ -59,8 +60,7 @@ class EquipmentReport(object):
     @classmethod
     def construct_from_dataset(cls, dataset: Dataset) -> JSONable:
         try:
-            builder = cls.__class_find(dataset.header, dataset.x_header)
-
+            builder = cls.__find_builder(dataset.header, dataset.x_header)
         except KeyError:
             raise TypeError(f'unsupported header:{dataset.header}, x_header:{dataset.x_header}')
 

@@ -12,7 +12,7 @@ A service to manage the model time clock configuration
 Note that in --run mode, the utility runs forever.
 
 SYNOPSIS
-usage: mrcs_control_clock_manager [-h] [-i INDENT] [-v] [--version] [-t] (-n | -s)
+mrcs_control_clock_manager [-h] [-i INDENT] [-v] [--version] [-t] (-c | -n | -s)
 
 EXAMPLES
 mrcs_control_clock_manager --verbose --subscribe --test

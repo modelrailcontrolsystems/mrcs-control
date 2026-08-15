@@ -14,6 +14,7 @@ from mrcs_control.db.db_client import DbClient
 from mrcs_control.db.db_name import DbName
 
 
+# TODO: needs test coverage of table management
 # --------------------------------------------------------------------------------------------------------------------
 
 class PersistenceManager(ABC):

@@ -11,12 +11,14 @@ DESCRIPTION
 A utility to excercise a Roco Z21 control router station. This utility is provided for test purposes - the interface
 to the Z21 is provided by the mrcs_control_router messaging interface in live environments.
 
+Note that the turnout address is 1-based, not 0-based.
+
 The mrcs_z21_conf utility should be used before the first use of this utility in order to establish a control router
 configuration.
 
 SYNOPSIS
-mrcs_control_z21 [-h] [-i INDENT] [-v] [--version]
-[-m | -s | -p POWER | -t TURNOUT TURNOUT | -g GET_LOCO | -l SET_LOCO SET_LOCO SET_LOCO]
+mrcs_control_z21 [-h] [-i INDENT] [-v] [--version] [-m]
+[-r | -p POWER | -t TURNOUT TURNOUT | -d GET_DECODER | -g GET_LOCO | -s SET_LOCO SET_LOCO SET_LOCO]
 
 EXAMPLES
 mrcs_control_z21 -v -m
@@ -43,9 +45,13 @@ from mrcs_core.sys.logging import Logging
 
 # --------------------------------------------------------------------------------------------------------------------
 
+
 def mrcs_control_on_dataset(report: JSONable):
     if args.monitor:
         print(JSONify.dumps(report))
+        return
+
+    if args.command is None or args.command.report_type is None:
         return
 
     if isinstance(report, args.command.report_type):
@@ -54,7 +60,7 @@ def mrcs_control_on_dataset(report: JSONable):
 
 
 def mrcs_control_on_connection_lost(ex: Exception):
-    if exc:
+    if ex:
         logger.warning(f'connection lost: {ex}')
 
 
