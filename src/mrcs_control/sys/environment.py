@@ -14,7 +14,6 @@ from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_core.sys.logging import Logging
 
 
-# TODO: needs test coverage
 # --------------------------------------------------------------------------------------------------------------------
 
 class Environment(object):
