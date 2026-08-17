@@ -3,6 +3,8 @@ Created on 13 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
+EquipmentReport: Header.LAN_CAN_DETECTOR
+
 Reports block occupany with a Dataset supplied by a Z21 DCC control router station
 
 Based on the Roco 10808 detector:

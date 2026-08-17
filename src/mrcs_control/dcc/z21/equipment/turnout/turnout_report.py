@@ -3,6 +3,8 @@ Created on 13 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
+EquipmentReport: XHeader.LAN_X_TURNOUT_INFO
+
 Reports a turnout state with a Dataset supplied by a Z21 DCC control router station.
 Note that the turnout address is 1-based, not 0-based.
 

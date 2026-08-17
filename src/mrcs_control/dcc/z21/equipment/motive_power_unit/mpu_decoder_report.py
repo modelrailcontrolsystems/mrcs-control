@@ -3,6 +3,8 @@ Created on 18 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
+EquipmentReport: Header.LAN_RAILCOM_DATACHANGED
+
 Reports a motive power unit (MPU) decoder state from a Z21 DCC control router station
 
 Classes in support of the Rocco Z21 DCC control router station:

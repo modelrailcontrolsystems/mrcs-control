@@ -3,6 +3,8 @@ Created on 6 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
+EquipmentReport: Header.LAN_SYSTEM_DATACHANGED
+
 Reports the state of a command station with a Dataset supplied by a Z21 DCC control router station
 
 Classes in support of the Rocco Z21 DCC control router station:

@@ -3,6 +3,8 @@ Created on 13 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
+EquipmentReport: XHeader.LAN_X_BC_TRACK_POWER
+
 Reports the track state with a Dataset supplied by a Z21 DCC control router station
 
 Classes in support of the Rocco Z21 DCC control router station:
