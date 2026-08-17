@@ -28,14 +28,15 @@ class ControlRouterSerial(IntEnum, metaclass=MetaEnum):
     An enumeration of all the control router serial numbers
     """
 
-    Common = 10
+    Router = 1
 
-    Unclassified = 11
-    System = 12
-    Block = 13
-    MPU = 14
-    TrackPower = 15
-    Turnout = 16
+    Unclassified = 2
+    Common = 3
+
+    System = 4
+    Track = 5
+    Signal = 6
+    MPU = 7
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -54,12 +55,12 @@ class ControlRouterIdentity(IntEnum, metaclass=MetaEnum):
 
     __MAPPING: dict[type[JSONable], EquipmentIdentifier] = {
         ControlRouterReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.System),
-        BlockOccupancyReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Block),
-        BlockVoltageReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Block),
+        BlockOccupancyReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Track),
+        BlockVoltageReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Track),
         MPUDecoderReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.MPU),
         MPUConfigurationReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.MPU),
-        TrackReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.TrackPower),
-        TurnoutReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Turnout)
+        TrackReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Track),
+        TurnoutReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Track)
     }
 
 
