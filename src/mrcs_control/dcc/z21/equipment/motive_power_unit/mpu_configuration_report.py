@@ -3,6 +3,8 @@ Created on 10 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
+EquipmentReport: XHeader.LAN_X_LOCO_INFO
+
 Reports a motive power unit (MPU) configuration with a Dataset supplied by a Z21 DCC control router station
 
 Classes in support of the Rocco Z21 DCC control router station:
