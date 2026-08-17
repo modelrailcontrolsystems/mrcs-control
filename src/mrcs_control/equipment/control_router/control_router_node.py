@@ -25,7 +25,7 @@ from mypy.nodes import Callable
 
 from mrcs_control.dcc.z21.command.command import Command
 from mrcs_control.dcc.z21.command.station import Station
-from mrcs_control.equipment.control_router.control_router_identity import ControlRouterIdentity
+from mrcs_control.equipment.control_router.control_router_identity import ControlRouterIdentity, ControlRouterSerial
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
 from mrcs_control.operations.node_topology import NodeTopology
@@ -51,7 +51,7 @@ class ControlRouterNode(AsyncSubscriberNode):
 
     @classmethod
     def id(cls):
-        return EquipmentIdentifier(EquipmentType.CRT, None, 1)
+        return EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Router)
 
 
     @classmethod

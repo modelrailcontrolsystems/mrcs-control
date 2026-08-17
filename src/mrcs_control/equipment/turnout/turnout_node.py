@@ -39,7 +39,7 @@ class TurnoutNode(SubscriberNode):
 
     @classmethod
     def subscription_routing_keys(cls):
-        router_source = EquipmentFilter.construct(EquipmentType.CRT, None, ControlRouterSerial.Turnout)
+        router_source = EquipmentFilter.construct(EquipmentType.CRT, None, ControlRouterSerial.Track)
 
         return (SubscriptionRoutingKey(EquipmentFilter.any(), cls.id()),
                 SubscriptionRoutingKey(router_source, EquipmentFilter.any()))

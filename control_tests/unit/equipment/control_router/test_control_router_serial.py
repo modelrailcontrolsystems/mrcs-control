@@ -20,34 +20,29 @@ class TestControlRouterSerial(unittest.TestCase):
 
     def test_serial_common(self):
         obj1 = ControlRouterSerial.Common
-        self.assertEqual('Common{10}', str(obj1))
+        self.assertEqual('Common{3}', str(obj1))
 
 
     def test_serial_unclassified(self):
         obj1 = ControlRouterSerial.Unclassified
-        self.assertEqual('Unclassified{11}', str(obj1))
+        self.assertEqual('Unclassified{2}', str(obj1))
 
 
     def test_serial_system(self):
         obj1 = ControlRouterSerial.System
-        self.assertEqual('System{12}', str(obj1))
+        self.assertEqual('System{4}', str(obj1))
 
 
-    def test_serial_block(self):
-        obj1 = ControlRouterSerial.Block
-        self.assertEqual('Block{13}', str(obj1))
+    def test_serial_track(self):
+        obj1 = ControlRouterSerial.Track
+        self.assertEqual('Track{5}', str(obj1))
+
+
+    def test_serial_signal(self):
+        obj1 = ControlRouterSerial.Signal
+        self.assertEqual('Signal{6}', str(obj1))
 
 
     def test_serial_mpu(self):
         obj1 = ControlRouterSerial.MPU
-        self.assertEqual('MPU{14}', str(obj1))
-
-
-    def test_serial_track_power(self):
-        obj1 = ControlRouterSerial.TrackPower
-        self.assertEqual('TrackPower{15}', str(obj1))
-
-
-    def test_serial_turnout(self):
-        obj1 = ControlRouterSerial.Turnout
-        self.assertEqual('Turnout{16}', str(obj1))
+        self.assertEqual('MPU{7}', str(obj1))
