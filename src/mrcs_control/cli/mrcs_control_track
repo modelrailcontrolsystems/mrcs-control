@@ -8,29 +8,28 @@ Created on 12 Aug 2026
 source repo: mrcs_control
 
 DESCRIPTION
-A service that manages turnouts.
+A service that manages track equipment.
 
 SYNOPSIS
-mrcs_control_turnout [-h] [-i INDENT] [-v] [--version] [-t] (-l | -p | -r)
+mrcs_control_track [-h] [-i INDENT] [-v] [--version] [-t] (-l | -p | -r)
 
 EXAMPLES
-mrcs_control_turnout -t -v -r
+mrcs_control_track -t -v -r
 """
 
 import sys
 
-from mrcs_control.cli.args.turnout_args import TurnoutArgs
+from mrcs_control.cli.args.track_args import TrackArgs
 from mrcs_control.cli.inventory.turnout_inventory import TurnoutInventory
-from mrcs_control.equipment.turnout.turnout_node import TurnoutNode
+from mrcs_control.operations.track.track_node import TrackNode
 from mrcs_core.data.json import JSONify
 from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging
 
 
-# TODO: rename mrcs_control_track
 # --------------------------------------------------------------------------------------------------------------------
 
-def control_turnout_on_message(message):
+def control_track_on_message(message):
     print(JSONify.dumps(message, indent=args.indent))
 
 
@@ -42,19 +41,19 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    args = TurnoutArgs('a service that manages turnouts')
+    args = TrackArgs('a service that manages track equipment')
 
-    Logging.config('mrcs_control_turnout', verbose=args.verbose)  # verbose=args.verbose / level=logging.DEBUG
+    Logging.config('mrcs_control_track', verbose=args.verbose)  # verbose=args.verbose / level=logging.DEBUG
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')
 
-    message_handler = control_turnout_on_message if args.verbose else None
+    message_handler = control_track_on_message if args.verbose else None
 
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
-        node = TurnoutNode(args.mode.value, on_message=message_handler)
+        node = TrackNode(args.mode.value, on_message=message_handler)
         logger.info(node)
 
         if args.list:
