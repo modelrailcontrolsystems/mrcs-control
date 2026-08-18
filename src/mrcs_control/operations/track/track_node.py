@@ -3,7 +3,7 @@ Created on 12 Aug 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-A service that manages turnouts
+A service that manages track equipment
 """
 
 from typing import List
@@ -11,9 +11,9 @@ from typing import List
 from mypy.nodes import Callable
 
 from mrcs_control.db.db_client import DbClient
-from mrcs_control.equipment.control_router.control_router_identity import ControlRouterSerial
 from mrcs_control.equipment.turnout.persistent_turnout_status import PersistentTurnoutStatus
 from mrcs_control.messaging.mq_topology import MQTopology
+from mrcs_control.operations.control_router.control_router_identity import ControlRouterSerial
 from mrcs_control.operations.messaging_node import SubscriberNode
 from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
@@ -26,9 +26,9 @@ from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class TurnoutNode(SubscriberNode):
+class TrackNode(SubscriberNode):
     """
-    a service that manages turnouts
+    a service that manages track equipment
     """
 
 
@@ -123,5 +123,5 @@ class TurnoutNode(SubscriberNode):
         on_message = self.on_message.__name__
         routing_keys = '[' + ', '.join([str(key) for key in self.subscription_routing_keys()]) + ']'
 
-        return (f'TurnoutNode:{{routing_keys:{routing_keys}, on_message:{on_message}, '
+        return (f'TrackNode:{{routing_keys:{routing_keys}, on_message:{on_message}, '
                 f'ops:{self.ops}, mq_client:{self.mq_client}}}')

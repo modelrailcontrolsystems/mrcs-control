@@ -11,7 +11,7 @@ from mrcs_control.cli.args.multimode_control_args import MultimodeControlArgs
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class TurnoutArgs(MultimodeControlArgs):
+class TrackArgs(MultimodeControlArgs):
     """unix command line handler"""
 
 
@@ -47,5 +47,5 @@ class TurnoutArgs(MultimodeControlArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'TurnoutArgs:{{test:{self.test}, populate:{self.populate}, list:{self.list}, run:{self.run}, '
+        return (f'TrackArgs:{{test:{self.test}, populate:{self.populate}, list:{self.list}, run:{self.run}, '
                 f'indent:{self.indent}, verbose:{self.verbose}}}')

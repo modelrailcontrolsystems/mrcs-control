@@ -25,9 +25,9 @@ from mypy.nodes import Callable
 
 from mrcs_control.dcc.z21.command.command import Command
 from mrcs_control.dcc.z21.command.station import Station
-from mrcs_control.equipment.control_router.control_router_identity import ControlRouterIdentity, ControlRouterSerial
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
+from mrcs_control.operations.control_router.control_router_identity import ControlRouterIdentity, ControlRouterSerial
 from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONable

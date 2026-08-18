@@ -39,7 +39,7 @@ mrcs_control_z21_conf
 import sys
 
 from mrcs_control.cli.args.router_args import RouterArgs
-from mrcs_control.equipment.control_router.control_router_node import ControlRouterNode
+from mrcs_control.operations.control_router.control_router_node import ControlRouterNode
 from mrcs_core.data.json import JSONify
 from mrcs_core.equipment.control_router.control_router_conf import ControlRouterConf
 from mrcs_core.sys.host import Host

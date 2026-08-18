@@ -11,7 +11,7 @@ https://www.jetbrains.com/help/pycharm/creating-tests.html
 
 import unittest
 
-from mrcs_control.equipment.control_router.control_router_identity import ControlRouterIdentity
+from mrcs_control.operations.control_router.control_router_identity import ControlRouterIdentity
 from mrcs_core.equipment.block.block_enums import BlockVoltage
 from mrcs_core.equipment.block.block_id import BlockID
 from mrcs_core.equipment.block.block_report import BlockOccupancyReport, BlockVoltageReport
