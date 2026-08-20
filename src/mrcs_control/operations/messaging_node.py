@@ -120,18 +120,18 @@ class SubscriberNode(MessagingNode, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @abstractmethod
-    def subscribe(self):
+    def subscribe(self) -> None:
         pass
 
 
     @abstractmethod
-    def handle_message(self, message: Message):
+    def handle_message(self, message: Message) -> None:
         pass
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def close(self):
+    def close(self) -> None:
         self.mq_client.close()
 
 

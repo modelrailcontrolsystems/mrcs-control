@@ -9,17 +9,17 @@ a temporary inventory of turnouts
 from typing import Any, List
 
 from mrcs_core.data.json import PersistentJSONable
-from mrcs_core.equipment.turnout.turnout_status import TurnoutStatus
+from mrcs_core.equipment.block.block_status import BlockStatus
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class TurnoutInventory(PersistentJSONable):
+class BlockInventory(PersistentJSONable):
     """
     a temporary inventory of turnouts
     """
 
-    __FILENAME = "turnouts.json"
+    __FILENAME = "blocks.json"
 
 
     @classmethod
@@ -29,13 +29,13 @@ class TurnoutInventory(PersistentJSONable):
 
     @classmethod
     def construct_from_jdict(cls, jdict: Any):
-        items = [TurnoutStatus.construct_from_jdict(item) for item in jdict]
+        items = [BlockStatus.construct_from_jdict(item) for item in jdict]
         return cls(items)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, items: List[TurnoutStatus]):
+    def __init__(self, items: List[BlockStatus]):
         super().__init__()
         self.__items = items
 
@@ -61,4 +61,4 @@ class TurnoutInventory(PersistentJSONable):
 
     def __str__(self, *args, **kwargs):
         items = '[' + ', '.join(str(item) for item in self.items) + ']'
-        return f'TurnoutInventory:{{items:{items}}}'
+        return f'BlockInventory:{{items:{items}}}'

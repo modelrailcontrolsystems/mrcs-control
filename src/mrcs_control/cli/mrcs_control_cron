@@ -56,7 +56,7 @@ if __name__ == '__main__':
             cron.clean()
 
         if args.list:
-            jobs = cron.list()
+            jobs = cron.find_all()
             print(JSONify.dumps(list(jobs), indent=args.indent))
             logger.info(f'found {len(jobs)} items.')
 

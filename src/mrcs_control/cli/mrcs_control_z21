@@ -17,8 +17,8 @@ The mrcs_z21_conf utility should be used before the first use of this utility in
 configuration.
 
 SYNOPSIS
-mrcs_control_z21 [-h] [-i INDENT] [-v] [--version] [-m]
-[-r | -p POWER | -t TURNOUT TURNOUT | -d GET_DECODER | -g GET_LOCO | -s SET_LOCO SET_LOCO SET_LOCO]
+usage: mrcs_control_z21 [-h] [-i INDENT] [-v] [--version] [-m] [-r | -p {0,1} | -t TURNOUT TURNOUT |
+-d GET_DECODER | -g GET_LOCO | -s SET_LOCO SET_LOCO SET_LOCO]
 
 EXAMPLES
 mrcs_control_z21 -v -m

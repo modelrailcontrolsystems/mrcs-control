@@ -10,17 +10,18 @@ A structured representation of a BlockOccupant
     "face": "REV"
 }
 """
+
 from typing import Self
 
 from mrcs_control.data.persistence import PersistentObject
-from mrcs_control.equipment.block.block_status_persistence import BlockStatusPersistence
+from mrcs_control.equipment.block.block_persistence import BlockPersistence
 from mrcs_core.equipment.block.block_enums import BlockOccupantFace
 from mrcs_core.equipment.block.block_occupant import BlockOccupant
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class PersistentBlockOccupant(BlockOccupant, BlockStatusPersistence, PersistentObject):
+class PersistentBlockOccupant(BlockOccupant, BlockPersistence, PersistentObject):
     """
     A structured representation of a BlockOccupant
     """
@@ -33,9 +34,9 @@ class PersistentBlockOccupant(BlockOccupant, BlockStatusPersistence, PersistentO
 
     @classmethod
     def construct_from_db(cls, row, *child_rows) -> Self:
-        address, face = row
+        mpu_address, face = row
 
-        return cls(int(address), BlockOccupantFace[face])
+        return cls(int(mpu_address), BlockOccupantFace[face])
 
 
     # ----------------------------------------------------------------------------------------------------------------

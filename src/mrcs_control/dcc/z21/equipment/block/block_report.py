@@ -53,5 +53,6 @@ class BlockReportBuilder(object):
         occupant1 = Z21BlockOccupant.construct_from_data(value_1)
         occupant2 = Z21BlockOccupant.construct_from_data(value_2)
         occupants = sorted([occupant for occupant in (occupant1, occupant2) if occupant.has_mpu_address()])
+        # TODO: check what happens if this is a subsequent Z21BlockOccupant
 
         return BlockOccupancyReport(id, occupant_group, occupants)
