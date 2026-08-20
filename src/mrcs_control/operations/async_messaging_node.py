@@ -47,13 +47,13 @@ class AsyncMessagingNode(ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @abstractmethod
-    async def halt(self):
+    async def halt(self) -> None:
         pass
 
 
     @property
     @abstractmethod
-    def async_loop(self):
+    def async_loop(self) -> asyncio.AbstractEventLoop:
         pass
 
 
@@ -195,7 +195,7 @@ class AsyncSubscriberNode(AsyncMessagingNode, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @abstractmethod
-    def handle_message(self, message: Message):
+    def handle_message(self, message: Message) -> None:
         pass
 
 

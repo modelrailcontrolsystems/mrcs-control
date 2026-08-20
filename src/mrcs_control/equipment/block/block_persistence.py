@@ -12,12 +12,13 @@ from typing import List, Self
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.db.db_name import DbName
+from mrcs_core.equipment.block.block_id import BlockID
 from mrcs_core.equipment.block.block_report import BlockVoltageReport
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class BlockStatusPersistence(PersistentObject, ABC):
+class BlockPersistence(PersistentObject, ABC):
     """
     SQLite database management for BlockStatus
     """
@@ -64,9 +65,9 @@ class BlockStatusPersistence(PersistentObject, ABC):
         sql = f'''
             CREATE TABLE IF NOT EXISTS {table} (
             block_label TEXT, 
-            address TEXT, 
+            mpu_address TEXT, 
             face TEXT,
-            CONSTRAINT pk_{table} PRIMARY KEY (block_label, address),
+            CONSTRAINT pk_{table} PRIMARY KEY (block_label, mpu_address),
             FOREIGN KEY (block_label) REFERENCES {cls.block_table()}(label) ON DELETE CASCADE)
             '''
         client.execute(sql)
@@ -104,7 +105,7 @@ class BlockStatusPersistence(PersistentObject, ABC):
             return []
 
         table = cls.occupant_table()
-        sql = f'SELECT block_label, address, face FROM {table}'
+        sql = f'SELECT block_label, mpu_address, face FROM {table}'
         client.execute(sql)
         occupant_rows = client.fetchall()
 
@@ -129,7 +130,7 @@ class BlockStatusPersistence(PersistentObject, ABC):
             return None
 
         table = cls.occupant_table()
-        sql = f'SELECT address, face FROM {table} WHERE block_label = ?'
+        sql = f'SELECT mpu_address, face FROM {table} WHERE block_label = ?'
         client.execute(sql, data=(label,))
         occupant_rows = client.fetchall()
 
@@ -167,7 +168,7 @@ class BlockStatusPersistence(PersistentObject, ABC):
 
             table = cls.occupant_table()
             for occupant in item.children():
-                sql = f'INSERT INTO {table} (block_label, address, face) VALUES (?, ?, ?)'
+                sql = f'INSERT INTO {table} (block_label, mpu_address, face) VALUES (?, ?, ?)'
                 client.execute(sql, data=(label, *occupant.as_db_insert()))
 
             client.txCOMMIT()
@@ -197,7 +198,7 @@ class BlockStatusPersistence(PersistentObject, ABC):
                 raise KeyError(f'no BlockStatus with address {report.block_address}')
 
             table = cls.occupant_table()
-            sql = f'SELECT address, face FROM {table} WHERE block_label = ?'
+            sql = f'SELECT mpu_address, face FROM {table} WHERE block_label = ?'
             client.execute(sql, data=(block_row[0],))
             occupant_rows = client.fetchall()
 
@@ -211,7 +212,7 @@ class BlockStatusPersistence(PersistentObject, ABC):
 
 
     @classmethod
-    def delete(cls, label: str) -> None:
+    def delete_block(cls, label: str) -> None:
         client = DbClient.instance(cls.db_name())
 
         try:
@@ -220,6 +221,27 @@ class BlockStatusPersistence(PersistentObject, ABC):
             table = cls.block_table()
             sql = f'DELETE FROM {table} WHERE label = ?'
             client.execute(sql, data=(label,))
+
+            client.txCOMMIT()
+
+        except Exception as exc:
+            client.txROLLBACK(exc)
+            raise
+
+
+    @classmethod
+    def delete_occupants(cls, block_id: BlockID) -> None:
+        client = DbClient.instance(cls.db_name())
+
+        try:
+            client.txIMMEDIATE()
+
+            occupant_table = cls.occupant_table()
+            block_table = cls.block_table()
+
+            sql = (f'DELETE FROM {occupant_table} '
+                   f'WHERE block_label = (SELECT label FROM {block_table} WHERE address = ?)')
+            client.execute(sql, data=(block_id.block_address,))
 
             client.txCOMMIT()
 

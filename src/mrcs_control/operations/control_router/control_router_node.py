@@ -99,14 +99,14 @@ class ControlRouterNode(AsyncSubscriberNode):
             raise
 
 
-    async def __wait_until_station_ready(self):
-        await self.__station_ready_event.wait()
-
-
     def run(self, *args):
         self.logger.debug('run')
         # TODO: db table management here
         super().run()
+
+
+    async def __wait_until_station_ready(self):
+        await self.__station_ready_event.wait()
 
 
     # ----------------------------------------------------------------------------------------------------------------

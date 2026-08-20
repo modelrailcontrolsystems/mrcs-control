@@ -108,7 +108,7 @@ class TestBlockPersistence(unittest.TestCase):
 
     def test_delete(self):
         _, obj2 = self.__setup_db()
-        PersistentBlockStatus.delete(obj2.label)
+        PersistentBlockStatus.delete_block(obj2.label)
         obj3 = PersistentBlockStatus.find(obj2.label)
 
         self.assertEqual(obj3, None)

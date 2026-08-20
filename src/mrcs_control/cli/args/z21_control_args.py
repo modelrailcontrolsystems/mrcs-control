@@ -26,7 +26,7 @@ class Z21ControlArgs(ControlArgs):
 
         group = self._parser.add_mutually_exclusive_group(required=False)
         group.add_argument('-r', '--router', action='store_true', help='get control router state')
-        group.add_argument('-p', '--power', action='store', type=int, nargs=1, help='set track power')
+        group.add_argument('-p', '--power', action='store', type=int, nargs=1, choices=[0, 1], help='set track power')
         group.add_argument('-t', '--turnout', action='store', type=int, nargs=2, help='set turnout ADDR DIR')
         group.add_argument('-d', '--get-decoder', action='store', type=int, nargs=1, help='get loco decoder')
         group.add_argument('-g', '--get-loco', action='store', type=int, nargs=1, help='get loco ADDR')

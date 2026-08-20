@@ -5,6 +5,7 @@ Created on 16 Nov 2025
 
 A universal message logger
 """
+from typing import List
 
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.messaging.mq_topology import MQTopology
@@ -53,25 +54,28 @@ class MessageRecorderNode(SubscriberNode):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def clean(self):
+    def clean(self) -> None:
         DbClient.set_client_db_mode(self.ops.db_mode)
         PersistentMessageRecord.recreate_tables()
 
 
-    def find_latest(self, limit: int):
-        DbClient.set_client_db_mode(self.ops.db_mode)
-        PersistentMessageRecord.create_tables()
-
+    def find_latest(self, limit: int) -> List[PersistentMessageRecord]:
+        self.__setup()
         return PersistentMessageRecord.find_latest(limit)
 
 
-    def subscribe(self):
-        DbClient.set_client_db_mode(self.ops.db_mode)
-        PersistentMessageRecord.create_tables()
+    def subscribe(self) -> None:
+        self.__setup()
 
         self.mq_client.connect()
+        self.logger.info('subscribed')
 
         try:
             self.mq_client.subscribe(*self.subscription_routing_keys())
         except KeyboardInterrupt:
             return
+
+
+    def __setup(self):
+        DbClient.set_client_db_mode(self.ops.db_mode)
+        PersistentMessageRecord.create_tables()

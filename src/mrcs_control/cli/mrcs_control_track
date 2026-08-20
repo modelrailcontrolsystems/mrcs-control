@@ -11,7 +11,7 @@ DESCRIPTION
 A service that manages track equipment.
 
 SYNOPSIS
-mrcs_control_track [-h] [-i INDENT] [-v] [--version] [-t] (-l | -p | -r)
+mrcs_control_track [-h] [-i INDENT] [-v] [--version] [-t] (-l {B,T} | -p | -r)
 
 EXAMPLES
 mrcs_control_track -t -v -r
@@ -20,6 +20,7 @@ mrcs_control_track -t -v -r
 import sys
 
 from mrcs_control.cli.args.track_args import TrackArgs
+from mrcs_control.cli.inventory.block_inventory import BlockInventory
 from mrcs_control.cli.inventory.turnout_inventory import TurnoutInventory
 from mrcs_control.operations.track.track_node import TrackNode
 from mrcs_core.data.json import JSONify
@@ -57,13 +58,15 @@ if __name__ == '__main__':
         logger.info(node)
 
         if args.list:
-            turnouts = node.find_all()
-            print(JSONify.dumps(turnouts, indent=args.indent))
+            equipment = node.find_all_blocks() if args.list == 'B' else node.find_all_turnouts()
+            print(JSONify.dumps(equipment, indent=args.indent))
+            logger.info(f'found {len(equipment)} items.')
 
         if args.populate:
-            inventory = TurnoutInventory.load(Host)
-            turnouts = node.populate(inventory.items)
-            print(JSONify.dumps(turnouts, indent=args.indent))
+            blocks = BlockInventory.load(Host)
+            turnouts = TurnoutInventory.load(Host)
+            node.populate(blocks, turnouts)
+            print(JSONify.dumps([blocks, turnouts], indent=args.indent))
 
         if args.run:
             node.subscribe()

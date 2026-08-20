@@ -19,7 +19,8 @@ class TrackArgs(MultimodeControlArgs):
         super().__init__(description)
 
         group = self._parser.add_mutually_exclusive_group(required=True)
-        group.add_argument('-l', '--list', action='store_true', help='list turnouts')
+        group.add_argument('-l', '--list', action='store', type=str, choices=['B', 'T'],
+                           help='list blocks or turnouts')
         group.add_argument('-p', '--populate', action='store_true', help='populate database')
         group.add_argument('-r', '--run', action='store_true', help='run the monitor')
 

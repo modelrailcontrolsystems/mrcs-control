@@ -26,7 +26,7 @@ A structured representation of a BlockStatus
 from typing import List, Self
 
 from mrcs_control.data.persistence import PersistentObject
-from mrcs_control.equipment.block.block_status_persistence import BlockStatusPersistence
+from mrcs_control.equipment.block.block_persistence import BlockPersistence
 from mrcs_control.equipment.block.persistent_block_occupant import PersistentBlockOccupant
 from mrcs_control.equipment.turnout.persistent_turnout_status import PersistentTurnoutStatus
 from mrcs_core.equipment.block.block_enums import BlockDirection, BlockVoltage
@@ -37,10 +37,15 @@ from mrcs_core.equipment.turnout.turnout_status import TurnoutStatus
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class PersistentBlockStatus(BlockStatus, BlockStatusPersistence, PersistentObject):
+class PersistentBlockStatus(BlockStatus, BlockPersistence, PersistentObject):
     """
     a structured representation of a BlockStatus
     """
+
+
+    @classmethod
+    def narrow(cls, block: BlockStatus) -> Self:
+        return cls(block.label, block.block_address, block.direction, block.voltage)
 
 
     @classmethod

@@ -9,6 +9,7 @@ Note that the cron components work in model time, not true time.
 Test with:
 mrcs_publisher -vti4 -t CRN -n 3 -m '{"event_id": "abc", "on": "1930-01-02T06:25:00.000+00:00"}'
 """
+from typing import List
 
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.messaging.mq_topology import MQTopology
@@ -62,25 +63,28 @@ class CrontabNode(SubscriberNode):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def clean(self):
+    def clean(self) -> None:
         DbClient.set_client_db_mode(self.ops.db_mode)
         PersistentCronjob.recreate_tables()
 
 
-    def find_all(self):
-        DbClient.set_client_db_mode(self.ops.db_mode)
-        PersistentCronjob.create_tables()
-
+    def find_all(self) -> List[PersistentCronjob]:
+        self.__setup()
         return PersistentCronjob.find_all()
 
 
-    def subscribe(self):
-        DbClient.set_client_db_mode(self.ops.db_mode)
-        PersistentCronjob.create_tables()
+    def subscribe(self) -> None:
+        self.__setup()
 
         self.mq_client.connect()
+        self.logger.info('subscribed')
 
         try:
             self.mq_client.subscribe(*self.subscription_routing_keys())
         except KeyboardInterrupt:
             return
+
+
+    def __setup(self):
+        DbClient.set_client_db_mode(self.ops.db_mode)
+        PersistentCronjob.create_tables()
