@@ -13,7 +13,7 @@ import unittest
 
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.db.db_name import DbName
-from mrcs_control.test.db_test_manager import DBTestManager
+from mrcs_control.test.test_helper import TestHelper
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -24,12 +24,12 @@ class TestDB(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        DBTestManager.dbSetup()
+        TestHelper.dbSetup()
 
 
     @classmethod
     def tearDownClass(cls):
-        DBTestManager.dbTeardown()
+        TestHelper.dbTeardown()
 
 
     def test_instance(self):

@@ -3,7 +3,7 @@ Created on 19 Dec 2025
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-Set up tests to use the test DB
+Setup and tear down for tests using DB
 """
 
 from mrcs_control.db.db_client import DbClient, DbMode
@@ -11,9 +11,9 @@ from mrcs_control.db.db_client import DbClient, DbMode
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class DBTestManager(object):
+class TestHelper(object):
     """
-    Set up tests to use the test DB
+    Setup and tear down for tests using DB
     """
 
 

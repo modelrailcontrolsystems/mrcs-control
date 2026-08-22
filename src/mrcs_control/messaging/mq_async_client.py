@@ -86,6 +86,14 @@ class MQAsyncClient(ABC):
         finally:
             self._channel = None
 
+        try:
+            self.connection.close()
+        except (AttributeError, AMQPError):
+            pass
+
+        finally:
+            self.__connection = None
+
 
     # ----------------------------------------------------------------------------------------------------------------
 
@@ -197,7 +205,7 @@ class MQAsyncPublisher(MQAsyncClient):
                     properties=properties)
                 break
 
-            except (AttributeError, AMQPError):
+            except (AttributeError, AMQPError, RuntimeError):
                 self.logger.info('remaking connection')
                 self._is_connected = False
                 self.close()
