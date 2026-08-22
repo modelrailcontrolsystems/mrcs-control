@@ -155,14 +155,24 @@ class DbClient(object):
 
     def __open(self):
         filename = '.'.join([self.db_name, 'db'])
-
         os.makedirs(Host.mrcs_db_abs_dir(self.db_mode), exist_ok=True)
 
-        # isolation_level=None to enable manual TX control
-        self.__connection = sqlite3.connect(Host.mrcs_db_abs_file(self.db_mode, filename), isolation_level=None)
+        self.__connection = sqlite3.connect(
+            Host.mrcs_db_abs_file(self.db_mode, filename),
+            timeout=30.0,
+            isolation_level=None)
 
-        # foreign keys enabled
+        # 1. Enforce referential integrity
         self.__connection.execute("PRAGMA foreign_keys = ON;")
+
+        # 2. Enable Write-Ahead Logging for concurrent reads & writes
+        self.__connection.execute("PRAGMA journal_mode = WAL;")
+
+        # 3. Optimize WAL disk sync (safe and much faster than FULL)
+        self.__connection.execute("PRAGMA synchronous = NORMAL;")
+
+        # 4. Set busy timeout at SQLite engine level (in milliseconds)
+        self.__connection.execute("PRAGMA busy_timeout = 30000;")
 
         self.__cursor = self.connection.cursor()
 
