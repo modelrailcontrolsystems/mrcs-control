@@ -15,7 +15,7 @@ from pathlib import Path
 
 from mrcs_control.admin.user.persistent_user import PersistentUser
 from mrcs_control.db.db_client import DbClient, DbMode
-from mrcs_control.test.db_test_manager import DBTestManager
+from mrcs_control.test.test_helper import TestHelper
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -25,12 +25,12 @@ class TestUserPersistence(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         DbClient.set_client_db_mode(DbMode.TEST)
-        DBTestManager.dbSetup()
+        TestHelper.dbSetup()
 
 
     @classmethod
     def tearDownClass(cls):
-        DBTestManager.dbTeardown()
+        TestHelper.dbTeardown()
 
 
     def test_insert(self):
