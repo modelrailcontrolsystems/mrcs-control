@@ -23,9 +23,10 @@ configuration.
 Note that the utility runs forever.
 
 SYNOPSIS
-mrcs_control_router [-h] [-i INDENT] [-v] [--version] [-t] (-r | -s)
+mrcs_control_router [-h] [-i INDENT] [-v] [--version] [-t] (-s | -r)
 
 EXAMPLES
+mrcs_control_router -s -i4
 mrcs_control_router -t -r -v
 
 FILES
@@ -78,6 +79,10 @@ if __name__ == '__main__':
     try:
         router = ControlRouterNode(args.mode.value, conf, on_message=on_message)
         logger.info(f'router: {router}')
+
+        if args.state:
+            equipment = ControlRouterNode.state()
+            print(JSONify.dumps(equipment, indent=args.indent))
 
         if args.run:
             router.run()

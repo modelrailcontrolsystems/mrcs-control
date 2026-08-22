@@ -3,7 +3,7 @@ Created on 17 Aug 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-python -m unittest -v unit/sys/test_environment.py
+python -m unittest -v unit/system/test_environment.py
 
 https://realpython.com/python-testing/
 https://www.jetbrains.com/help/pycharm/creating-tests.html

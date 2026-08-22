@@ -11,10 +11,11 @@ from mrcs_control.db.db_client import DbClient, DbMode
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class Setup(object):
+class DBTestManager(object):
     """
     Set up tests to use the test DB
     """
+
 
     @classmethod
     def dbSetup(cls):
@@ -23,3 +24,8 @@ class Setup(object):
 
         DbClient.kill_all()
         DbClient.set_client_db_mode(DbMode.TEST)
+
+
+    @classmethod
+    def dbTeardown(cls):
+        DbClient.kill_all()

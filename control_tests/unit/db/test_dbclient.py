@@ -13,7 +13,7 @@ import unittest
 
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.db.db_name import DbName
-from setup import Setup
+from mrcs_control.test.db_test_manager import DBTestManager
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -24,7 +24,12 @@ class TestDB(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        Setup.dbSetup()
+        DBTestManager.dbSetup()
+
+
+    @classmethod
+    def tearDownClass(cls):
+        DBTestManager.dbTeardown()
 
 
     def test_instance(self):

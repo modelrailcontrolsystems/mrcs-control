@@ -15,9 +15,9 @@ from pathlib import Path
 
 from mrcs_control.db.db_client import DbClient, DbMode
 from mrcs_control.equipment.motive_power_unit.persistent_mpu_status import PersistentMPUStatus
+from mrcs_control.test.db_test_manager import DBTestManager
 from mrcs_core.equipment.motive_power_unit.mpu_configuration_report import MPUConfigurationReport
 from mrcs_core.equipment.motive_power_unit.mpu_decoder_report import MPUDecoderReport
-from setup import Setup
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -28,7 +28,12 @@ class TestMPUPersistence(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         DbClient.set_client_db_mode(DbMode.TEST)
-        Setup.dbSetup()
+        DBTestManager.dbSetup()
+
+
+    @classmethod
+    def tearDownClass(cls):
+        DBTestManager.dbTeardown()
 
 
     def test_setup(self):

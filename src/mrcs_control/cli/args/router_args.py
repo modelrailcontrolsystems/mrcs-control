@@ -19,8 +19,8 @@ class RouterArgs(MultimodeControlArgs):
         super().__init__(description)
 
         group = self._parser.add_mutually_exclusive_group(required=True)
+        group.add_argument('-s', '--state', action='store_true', help='report the control router state')
         group.add_argument('-r', '--run', action='store_true', help='run the cron')
-        group.add_argument('-s', '--run-save', action='store_true', help='run the cron with save on')
 
         self._args = self._parser.parse_args()
 
@@ -29,17 +29,17 @@ class RouterArgs(MultimodeControlArgs):
 
 
     @property
-    def run(self):
-        return self._args.run
+    def state(self):
+        return self._args.state
 
 
     @property
-    def run_save(self):
-        return self._args.run_save
+    def run(self):
+        return self._args.run
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'RouterArgs:{{test:{self.test}, run:{self.run}, run_save:{self.run_save}, '
+        return (f'RouterArgs:{{test:{self.test}, state:{self.state}, run:{self.run}, '
                 f'indent:{self.indent}, verbose:{self.verbose}}}')
