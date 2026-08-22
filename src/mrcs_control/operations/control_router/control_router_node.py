@@ -25,6 +25,7 @@ from mypy.nodes import Callable
 
 from mrcs_control.dcc.z21.command.command import Command
 from mrcs_control.dcc.z21.command.station import Station
+from mrcs_control.equipment.control_router.persistent_control_router import PersistentControlRouter
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
 from mrcs_control.operations.control_router.control_router_identity import ControlRouterIdentity, ControlRouterSerial
@@ -32,8 +33,10 @@ from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONable
 from mrcs_core.equipment.control_router.control_router_conf import ControlRouterConf
+from mrcs_core.equipment.control_router.control_router_report import ControlRouterReport
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
+from mrcs_core.sys.host import Host
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -57,6 +60,11 @@ class ControlRouterNode(AsyncSubscriberNode):
     @classmethod
     def subscription_routing_keys(cls):
         return (SubscriptionRoutingKey(EquipmentFilter.any(), cls.id()),)
+
+
+    @classmethod
+    def state(cls) -> ControlRouterReport:
+        return PersistentControlRouter.load(Host)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -101,7 +109,6 @@ class ControlRouterNode(AsyncSubscriberNode):
 
     def run(self, *args):
         self.logger.debug('run')
-        # TODO: db table management here
         super().run()
 
 
@@ -114,6 +121,9 @@ class ControlRouterNode(AsyncSubscriberNode):
 
     def on_dataset(self, report: JSONable):
         self.logger.info(f'on_dataset:{report}')
+
+        if isinstance(report, ControlRouterReport):
+            PersistentControlRouter.narrow(report).save(Host)
 
         source = ControlRouterIdentity.get(report)
         routing_key = PublicationRoutingKey(source, EquipmentFilter.any())
@@ -129,6 +139,7 @@ class ControlRouterNode(AsyncSubscriberNode):
 
     # ----------------------------------------------------------------------------------------------------------------
 
+    # TODO: check the error messaging when starting with the Z21 off
     async def monitor(self) -> None:
         self.logger.debug('monitor')
 
@@ -245,7 +256,7 @@ class ControlRouterNode(AsyncSubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        on_message = self.on_message.__name__
+        on_message = None if self.on_message.__name__ is not None else self.on_message.__name__
         routing_keys = '[' + ', '.join([str(key) for key in self.subscription_routing_keys()]) + ']'
 
         return (f'ControlRouterNode:{{conf:{self.conf}, routing_keys:{routing_keys}, on_message:{on_message}, '

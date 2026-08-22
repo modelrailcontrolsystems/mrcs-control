@@ -11,7 +11,7 @@ DESCRIPTION
 A service that manages track equipment.
 
 SYNOPSIS
-mrcs_control_track [-h] [-i INDENT] [-v] [--version] [-t] (-l {B,T} | -p | -r)
+mrcs_control_track [-h] [-i INDENT] [-v] [--version] [-t] (-l {B,T,S} | -p | -r)
 
 EXAMPLES
 mrcs_control_track -t -v -r
@@ -58,9 +58,14 @@ if __name__ == '__main__':
         logger.info(node)
 
         if args.list:
-            equipment = node.find_all_blocks() if args.list == 'B' else node.find_all_turnouts()
+            if args.list == 'B':
+                equipment = node.find_all_blocks()
+            elif args.list == 'T':
+                equipment = node.find_all_turnouts()
+            else:
+                equipment = node.track_state()
+
             print(JSONify.dumps(equipment, indent=args.indent))
-            logger.info(f'found {len(equipment)} items.')
 
         if args.populate:
             blocks = BlockInventory.load(Host)

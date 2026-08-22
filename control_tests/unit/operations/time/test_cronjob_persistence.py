@@ -13,9 +13,9 @@ import time
 import unittest
 
 from mrcs_control.operations.time.persistent_cronjob import PersistentCronjob
+from mrcs_control.test.db_test_manager import DBTestManager
 from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType
 from mrcs_core.data.iso_datetime import ISODatetime
-from setup import Setup
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -24,7 +24,12 @@ class TestCronjobPersistence(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        Setup.dbSetup()
+        DBTestManager.dbSetup()
+
+
+    @classmethod
+    def tearDownClass(cls):
+        DBTestManager.dbTeardown()
 
 
     def test_recreate_tables(self):

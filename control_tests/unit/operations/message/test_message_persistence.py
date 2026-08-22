@@ -14,7 +14,7 @@ import unittest
 
 from mrcs_control.operations.recorder.persistent_message import PersistentMessage
 from mrcs_control.operations.recorder.persistent_message_record import PersistentMessageRecord
-from setup import Setup
+from mrcs_control.test.db_test_manager import DBTestManager
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -23,7 +23,12 @@ class TestMessagePersistence(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        Setup.dbSetup()
+        DBTestManager.dbSetup()
+
+
+    @classmethod
+    def tearDownClass(cls):
+        DBTestManager.dbTeardown()
 
 
     def test_recreate(self):

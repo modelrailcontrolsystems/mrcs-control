@@ -3,7 +3,7 @@ Created on 29 Nov 2025
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-python -m unittest -v unit/admin/user/test_user_persistence.py
+python -m unittest -v unit/equipment/block/test_block_persistence.py
 
 https://realpython.com/python-testing/
 https://www.jetbrains.com/help/pycharm/creating-tests.html
@@ -13,11 +13,14 @@ import json
 import unittest
 from pathlib import Path
 
+from mrcs_control.cli.inventory.block_inventory import BlockInventory
+from mrcs_control.cli.inventory.turnout_inventory import TurnoutInventory
 from mrcs_control.db.db_client import DbClient, DbMode
 from mrcs_control.equipment.block.persistent_block_status import PersistentBlockStatus
 from mrcs_control.equipment.turnout.persistent_turnout_status import PersistentTurnoutStatus
+from mrcs_control.test.db_test_manager import DBTestManager
 from mrcs_core.equipment.block.block_report import BlockVoltageReport
-from setup import Setup
+from mrcs_core.sys.host import Host
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -27,7 +30,23 @@ class TestBlockPersistence(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         DbClient.set_client_db_mode(DbMode.TEST)
-        Setup.dbSetup()
+        DBTestManager.dbSetup()
+
+
+    @classmethod
+    def tearDownClass(cls):
+        PersistentBlockStatus.recreate_tables()
+        PersistentTurnoutStatus.recreate_tables()
+
+        blocks = BlockInventory.load(Host)
+        for block in blocks.items:
+            PersistentBlockStatus.narrow(block).save()
+
+        turnouts = TurnoutInventory.load(Host)
+        for turnout in turnouts.items:
+            PersistentTurnoutStatus.narrow(turnout).save()
+
+        DBTestManager.dbTeardown()
 
 
     def test_setup(self):
