@@ -31,6 +31,7 @@ from pika.exceptions import AMQPError
 
 from mrcs_control.cli.args.command_args import CommandArgs
 from mrcs_control.cli.internal.topic_subscriber_node import TopicSubscriberNode
+from mrcs_control.operations.control_router.control_router_node import ControlRouterNode
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONify
 from mrcs_core.equipment.equipment_report import EquipmentReport
@@ -79,8 +80,7 @@ if __name__ == '__main__':
     logger.info(f'mode: {args.mode.value}')
 
     this_id = EquipmentIdentifier(EquipmentType.TST, None, 1)
-    control_router_id = EquipmentFilter(EquipmentType.CRT, None, 1)
-    publication_routing_key = PublicationRoutingKey(this_id, control_router_id)
+    publication_routing_key = PublicationRoutingKey(this_id, ControlRouterNode.id())
 
     control_router_filter = EquipmentFilter(EquipmentType.CRT, None, None)
     subscription_routing_key = SubscriptionRoutingKey(control_router_filter, EquipmentFilter.any())
@@ -94,8 +94,8 @@ if __name__ == '__main__':
         node = TopicSubscriberNode.construct_node(args.mode.value, on_message)
         logger.info(node)
 
-        publish_message = Message(publication_routing_key, args.command) if args.has_command else None
-        node.run(publish_message)
+        command_message = Message(publication_routing_key, args.command) if args.has_command else None
+        node.run(initial_publication=command_message)
 
 
 

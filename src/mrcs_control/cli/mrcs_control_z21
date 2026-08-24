@@ -17,7 +17,7 @@ The mrcs_z21_conf utility should be used before the first use of this utility in
 configuration.
 
 SYNOPSIS
-mrcs_control_z21 [-h] [-i INDENT] [-v] [--version] [-t] [-m] [-r | -p {0,1} | -u ADDR POSITION |
+mrcs_control_z21 [-h] [-i INDENT] [-v] [--version] [-m] [-r | -p {0,1} | -u ADDR POSITION |
 -d ADDR | -g ADDR | -s ADDR DIRECTION SPEED]
 
 EXAMPLES
@@ -34,10 +34,9 @@ mrcs_control_subscriber
 """
 
 import asyncio
-import logging
 import sys
 
-from mrcs_control.cli.args.command_args import CommandArgs
+from mrcs_control.cli.args.z21_args import Z21Args
 from mrcs_control.dcc.z21.command.command import Command
 from mrcs_control.dcc.z21.command.station import Station
 from mrcs_core.data.json import JSONable, JSONify
@@ -92,9 +91,9 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    args = CommandArgs('a utility to excercise a Roco Z21 control router station')
+    args = Z21Args('a utility to excercise a Roco Z21 control router')
 
-    Logging.config('mrcs_control_z21', level=logging.DEBUG)  # level=logging.DEBUG / verbose=args.verbose
+    Logging.config('mrcs_control_z21', verbose=args.verbose)  # level=logging.DEBUG / verbose=args.verbose
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
 
