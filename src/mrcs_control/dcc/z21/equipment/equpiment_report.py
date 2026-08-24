@@ -36,8 +36,8 @@ class EquipmentReport(object):
 
     __HEADER_MAPPING = {
         Header.LAN_CAN_DETECTOR: BlockReportBuilder,
-        Header.LAN_SYSTEM_DATACHANGED: ControlRouterReportBuilder,
-        Header.LAN_RAILCOM_DATACHANGED: MPUDecoderReportBuilder,
+        Header.LAN_SYSTEM_DATA_CHANGED: ControlRouterReportBuilder,
+        Header.LAN_RAILCOM_DATA_CHANGED: MPUDecoderReportBuilder,
     }
 
     __X_HEADER_MAPPING = {

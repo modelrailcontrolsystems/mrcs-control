@@ -47,6 +47,11 @@ class AsyncMessagingNode(ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @abstractmethod
+    def run(self, *args, **kwargs) -> None:
+        pass
+
+
+    @abstractmethod
     async def halt(self) -> None:
         pass
 
@@ -146,7 +151,7 @@ class AsyncPublisherNode(AsyncMessagingNode, ABC):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def run(self):
+    def run(self, *args, **kwargs) -> None:
         self.logger.debug('AsyncPublisherNode - run')
 
         self.__async_loop = asyncio.new_event_loop()
@@ -208,7 +213,7 @@ class AsyncSubscriberNode(AsyncMessagingNode, ABC):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def run(self, *args):
+    def run(self, *args, **kwargs) -> None:
         self.logger.debug('AsyncSubscriberNode - run')
 
         self.__async_loop = asyncio.new_event_loop()

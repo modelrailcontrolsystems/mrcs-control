@@ -3,7 +3,7 @@ Created on 26 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-An abstraction over Rocco Z21 DCC command datasets
+An abstraction over Rocco Z21 DCC Command and XCommand datasets
 
 Classes in support of the Rocco Z21 DCC control router station:
 https://www.z21.eu/en/products/z21
@@ -11,26 +11,51 @@ https://www.z21.eu/en/products/z21
 
 import struct
 from collections import OrderedDict
-from typing import Any
+from enum import Enum
+from typing import Any, Self
 
 from mrcs_control.dcc.z21.command.command_metadata import CommandMetadata, XCommandMetadata
 from mrcs_control.dcc.z21.command.dataset import Dataset, XDataset
 from mrcs_control.dcc.z21.command.header import Header, XHeader
 from mrcs_core.data.json import JSONable
+from mrcs_core.equipment.control_router.control_router_subscription import ControlRouterSubscription
+from mrcs_core.equipment.motive_power_unit.mpu_enums import MPUDirection
+from mrcs_core.equipment.track.track_enums import TrackMode
+from mrcs_core.equipment.turnout.turnout_enums import TurnoutPosition
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
 class Command(JSONable):
     """
-    An abstraction over Rocco Z21 DCC command datasets
+    an abstraction over Rocco Z21 DCC Command datasets
     """
+
+
+    @classmethod
+    def lan_set_broadcast_flags(cls, subscription: ControlRouterSubscription) -> Self:
+        return cls.construct(Header.LAN_SET_BROADCAST_FLAGS, subscription.value)
+
+
+    @classmethod
+    def lan_system_get_data(cls) -> Self:
+        return cls.construct(Header.LAN_SYSTEM_GET_DATA)
+
+
+    @classmethod
+    def lan_railcom_get_data(cls, decoder_address: int) -> Self:
+        return cls.construct(Header.LAN_RAILCOM_GET_DATA, decoder_address)
+
+
+    @classmethod
+    def lan_log_off(cls) -> Self:
+        return cls.construct(Header.LAN_LOG_OFF)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def construct(cls, header: Header, *argv):
+    def construct(cls, header: Header, *argv) -> Self:
         try:
             meta = CommandMetadata.find(header)
         except TypeError:
@@ -129,19 +154,42 @@ class Command(JSONable):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *argv, **kwargv):
-        return f'Command:{{header:{self.header.name}, argv:{self.argv}}}'
+        argv = '[' + ', '.join([str(arg) if isinstance(arg, Enum) else hex(arg) for arg in self.argv]) + ']'
+        return f'Command:{{header:{self.header.name}, argv:{argv}}}'
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
 class XCommand(Command):
     """
-    An enumeration of all the supported commands
+    an abstraction over Rocco Z21 DCC XCommand datasets
     """
 
 
     @classmethod
-    def construct_x(cls, x_header: XHeader, *argv: int):
+    def lan_x_set_track_power(cls, mode: TrackMode) -> Self:
+        return cls.construct_x(XHeader.LAN_X_SET_TRACK_POWER, mode)
+
+
+    @classmethod
+    def lan_x_set_turnout(cls, address: int, position: TurnoutPosition) -> Self:
+        return cls.construct_x(XHeader.LAN_X_SET_TURNOUT, address - 1, position)  # use 1-based turnout addresses
+
+
+    @classmethod
+    def lan_x_get_mpu(cls, address: int) -> Self:
+        return cls.construct_x(XHeader.LAN_X_GET_LOCO, address)
+
+
+    @classmethod
+    def lan_x_set_mpu_func(cls, address: int, direction: MPUDirection, speed: int) -> Self:
+        return cls.construct_x(XHeader.LAN_X_SET_LOCO_FUNC, address, direction, speed)
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    @classmethod
+    def construct_x(cls, x_header: XHeader, *argv: int) -> Self:
         try:
             meta = XCommandMetadata.find_x(x_header)
         except TypeError:
@@ -233,4 +281,5 @@ class XCommand(Command):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *argv, **kwargv):
-        return f'XCommand:{{header:{self.header.name}, x_header:{self.x_header.name}, argv:{self.argv}}}'
+        argv = '[' + ', '.join([str(arg) if isinstance(arg, Enum) else hex(arg) for arg in self.argv]) + ']'
+        return f'XCommand:{{header:{self.header.name}, x_header:{self.x_header.name}, argv:{argv}}}'

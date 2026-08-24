@@ -16,7 +16,8 @@ https://gitlab.com/z21-fpm/z21_python
 import asyncio
 import errno
 from asyncio import DatagramTransport
-from typing import Any, Callable, Self
+from collections.abc import Callable
+from typing import Any, Self
 
 from mrcs_control.dcc.z21.command.broadcast import Broadcast
 from mrcs_control.dcc.z21.command.command import Command
@@ -112,7 +113,7 @@ class Station(object):
     def station_dataset_handler(self, dataset: Dataset) -> None:
         self.logger.debug(f'station_dataset_handler:{dataset}')
 
-        if dataset.header == Header.LAN_SYSTEM_DATACHANGED:
+        if dataset.header == Header.LAN_SYSTEM_DATA_CHANGED:
             self.__response_event.set()
 
         try:
@@ -132,22 +133,11 @@ class Station(object):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    async def set_broadcast_flags(self, subscription: ControlRouterSubscription | None = None) -> None:
-        self.logger.debug('set_broadcast_flags')
-
-        subscription = self.conf.subscription if subscription is None else subscription
-        command = Command.construct(Header.LAN_SET_BROADCAST_FLAGS, subscription.value)
-
-        await self.send_command(command)
-
-
     async def get_system_state(self) -> None:
-        self.logger.debug('set_broadcast_flags')
+        self.logger.debug('get_system_state')
 
         self.__response_event.clear()
-
-        command = Command.construct(Header.LAN_SYSTEM_GETDATA)
-        await self.send_command(command)
+        await self.send_command(Command.lan_system_get_data())
 
         try:
             await asyncio.wait_for(self.__response_event.wait(), self.conf.timeout)
@@ -156,11 +146,9 @@ class Station(object):
             raise ConnectionError('Z21 control router did not respond') from exc
 
 
-    async def logout(self) -> None:
-        self.logger.debug('logout')
-
-        command = Command.construct(Header.LAN_LOGOFF)
-        await self.send_command(command)
+    async def log_off(self) -> None:
+        self.logger.debug('log_off')
+        await self.send_command(Command.lan_log_off())
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -185,9 +173,9 @@ class Station(object):
         self.__has_connection = False
 
         try:
-            await self.logout()
+            await self.log_off()
         except (OSError, ConnectionError) as exc:
-            self.logger.warning(f'send_command:{exc}')
+            self.logger.warning(f'close:{exc}')
 
         if self.__transport is not None:
             self.__transport.close()

@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+
+"""
+Created on 22 Aug 2026
+
+@author: Bruno Beloff (bbeloff@me.com)
+
+source repo: mrcs_control
+
+DESCRIPTION
+A tool for publishing commands.
+
+SYNOPSIS
+mrcs_control_command.py [-h] [-i INDENT] [-v] [--version] [-t] [-m] [-r | -p {0,1} | -u ADDR POSITION |
+-d ADDR | -g ADDR | -s ADDR DIRECTION SPEED]
+
+EXAMPLES
+mrcs_control_command -t -u 4 1
+
+SEE ALSO
+mrcs_control_publisher
+mrcs_control_subscriber
+mrcs_control_z21
+"""
+
+import json
+import sys
+from json import JSONDecodeError
+
+from pika.exceptions import AMQPError
+
+from mrcs_control.cli.args.command_args import CommandArgs
+from mrcs_control.cli.internal.topic_subscriber_node import TopicSubscriberNode
+from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
+from mrcs_core.data.json import JSONify
+from mrcs_core.equipment.equipment_report import EquipmentReport
+from mrcs_core.messaging.message import Message
+from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
+from mrcs_core.sys.logging import Logging
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+def on_message(message):
+    print(JSONify.dumps(message.body, indent=args.indent))
+
+    report = EquipmentReport.construct_from_jdict(message.body)
+    if not args.monitor and (args.command.report_type is None or isinstance(report, args.command.report_type)):
+        exit(0)
+
+
+def publish_message(body):
+    try:
+        if not node:
+            raise RuntimeError('publisher not set')
+
+        message = Message(publication_routing_key, json.loads(body))
+        node.publish(message)
+
+        logger.info(JSONify.dumps(message, indent=args.indent))
+        return True
+
+    except JSONDecodeError as jde:
+        logger.error(f'{jde.__class__.__name__}: {body}')
+        return False
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    args = CommandArgs('a tool for publishing commands')
+
+    Logging.config('mrcs_control_command', verbose=args.verbose)  # verbose=args.verbose / level=logging.DEBUG
+    logger = Logging.getLogger()
+    logger.info(f'args: {args}')
+    logger.info(f'mode: {args.mode.value}')
+
+    this_id = EquipmentIdentifier(EquipmentType.TST, None, 1)
+    control_router_id = EquipmentFilter(EquipmentType.CRT, None, 1)
+    publication_routing_key = PublicationRoutingKey(this_id, control_router_id)
+
+    control_router_filter = EquipmentFilter(EquipmentType.CRT, None, None)
+    subscription_routing_key = SubscriptionRoutingKey(control_router_filter, EquipmentFilter.any())
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    try:
+        TopicSubscriberNode.set_id(this_id)
+        TopicSubscriberNode.set_subscription_routing_keys([subscription_routing_key])
+
+        node = TopicSubscriberNode.construct_node(args.mode.value, on_message)
+        logger.info(node)
+
+        publish_message = Message(publication_routing_key, args.command) if args.has_command else None
+        node.run(publish_message)
+
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    except AMQPError as exc:
+        logger.error(exc)
+        exit(1)
+
+    except KeyboardInterrupt:
+        print(file=sys.stderr)

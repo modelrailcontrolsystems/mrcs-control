@@ -9,6 +9,7 @@ Note that queues (and exchanges) should only be deleted using messaging clients.
 https://www.rabbitmq.com/docs/http-api-reference
 https://stackoverflow.com/questions/4287941/how-can-i-list-or-discover-queues-on-a-rabbitmq-exchange-using-python
 """
+from typing import Self
 
 import httpx
 
@@ -36,7 +37,7 @@ class Broker(object):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def construct(cls, port=None, username=None, password=None):
+    def construct(cls, port=None, username=None, password=None) -> Self:
         mgr_port = cls.__DEFAULT_PORT if port is None else port
 
         mgr_username = cls.__DEFAULT_USERNAME if username is None else username
@@ -77,7 +78,7 @@ class Broker(object):
 
 
     def __base_url(self):
-        return f'http://127.0.0.1:{self.port}'          # host literal to prevent security warning
+        return f'http://127.0.0.1:{self.port}'  # host literal to prevent security warning
 
 
     # ----------------------------------------------------------------------------------------------------------------

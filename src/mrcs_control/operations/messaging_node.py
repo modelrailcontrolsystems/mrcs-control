@@ -6,6 +6,7 @@ Created on 4 Jan 2026
 Abstract blocking messaging nodes
 """
 from abc import ABC, abstractmethod
+from typing import Self
 
 from mrcs_control.messaging.mq_client import MQClient, MQPublisher, MQSubscriber
 from mrcs_control.messaging.mq_topology import MQTopology
@@ -78,7 +79,7 @@ class PublisherNode(MessagingNode, ABC):
 
 
     @classmethod
-    def construct(cls, ops: NodeTopology.ServiceConfiguration):
+    def construct(cls, ops: NodeTopology.ServiceConfiguration) -> Self:
         return cls(ops)
 
 
@@ -106,7 +107,7 @@ class SubscriberNode(MessagingNode, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def construct(cls, ops: NodeTopology.ServiceConfiguration, queuing: MQTopology):
+    def construct(cls, ops: NodeTopology.ServiceConfiguration, queuing: MQTopology) -> Self:
         return cls(ops, queuing)
 
 

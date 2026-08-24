@@ -1,25 +1,29 @@
 """
-Created on 1 Aug 2026
+Created on 2 Jan 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
 A simple subscriber node
+
+Test with:
+mrcs_publisher -vti4 -t CRN -n 3 -m '{"event_id": "abc", "on": "1930-01-02T06:25:00.000+00:00"}'
 """
 
-from mypy.nodes import Callable
+from collections.abc import Callable
+from typing import Any, Self
 
 from mrcs_control.messaging.mq_topology import MQTopology
-from mrcs_control.operations.messaging_node import SubscriberNode
+from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
 from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType
-from mrcs_core.data.json import JSONable
+from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class TopicSubscriberNode(SubscriberNode):
+class TopicSubscriberNode(AsyncSubscriberNode):
     """
     a simple subscriber node
     """
@@ -53,36 +57,44 @@ class TopicSubscriberNode(SubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def construct_node(cls, ops: NodeTopology.ServiceConfiguration, on_message: Callable[JSONable]):
+    def construct_node(cls, ops: NodeTopology.ServiceConfiguration,
+                       on_message: Callable[[Message], Any]) -> Self:
         return cls(ops, MQTopology.MULTIPLE, on_message)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, ops: NodeTopology.ServiceConfiguration, queuing: MQTopology, on_message: Callable[JSONable]):
+    def __init__(self, ops: NodeTopology.ServiceConfiguration, queuing: MQTopology,
+                 on_message: Callable[[Message], Any]):
         super().__init__(ops, queuing)
         self.__on_message = on_message
+        self.__message_to_send: Message | None = None
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def handle_startup(self):
-        self.logger.info('TopicSubscriberNode - handle_startup')
+        self.logger.debug('handle_startup')
+        self.async_loop.create_task(self.publish_messages())
+
+
+    async def publish_messages(self):
+        self.logger.debug('publish_messages')
+        message = self.message_to_send
+        if message is not None:
+            self.async_loop.create_task(self.publish(message))
 
 
     def handle_message(self, message: Message):
+        self.logger.debug(f'handle_message: {JSONify.as_jdict(message)}')
         self.on_message(message)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def subscribe(self):
-        self.mq_client.connect()
-
-        try:
-            self.mq_client.subscribe(*self.subscription_routing_keys())
-        except KeyboardInterrupt:
-            return
+    def run(self, message_to_send=None, *args, **kwargs) -> None:
+        self.__message_to_send = message_to_send
+        super().run(*args, **kwargs)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -92,6 +104,11 @@ class TopicSubscriberNode(SubscriberNode):
         return self.__on_message
 
 
+    @property
+    def message_to_send(self):
+        return self.__message_to_send
+
+
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
@@ -99,4 +116,4 @@ class TopicSubscriberNode(SubscriberNode):
         routing_keys = '[' + ', '.join([str(key) for key in self.subscription_routing_keys()]) + ']'
 
         return (f'TopicSubscriberNode:{{routing_keys:{routing_keys}, on_message:{on_message}, '
-                f'ops:{self.ops}, mq_client:{self.mq_client}}}')
+                f'message_to_send:{self.message_to_send}, ops:{self.ops}, mq_client:{self.mq_client}}}')

@@ -7,8 +7,10 @@ The CommandMetadata and XCommandMetadata classes provide information that is com
 header, including how to build the command object, and what responses are expected from the Z21.
 The catalogues indicate which commands are supported.
 
-Note that the argc field indicates the number of arguments that the Command or XCommand factory method should require.
-Other arguments may be supplied by a custom argv builder method.
+Note:
+* The argc field indicates the number of arguments that the Command or XCommand factory method requies. Other
+arguments to the dataset may be supplied by a custom argv builder method.
+* The return type assumes that the appropriate broadcast subscription is enabled.
 
 https://docs.python.org/3/library/struct.html#format-characters
 
@@ -48,10 +50,10 @@ class CommandMetadata(object):
     @classmethod
     def init(cls):
         cls.__CATALOG = {
-            Header.LAN_LOGOFF: cls(Header.LAN_LOGOFF, 0, cls.argv_std, '', None),
+            Header.LAN_LOG_OFF: cls(Header.LAN_LOG_OFF, 0, cls.argv_std, '', None),
             Header.LAN_SET_BROADCAST_FLAGS: cls(Header.LAN_SET_BROADCAST_FLAGS, 1, cls.argv_std, '<I', None),
-            Header.LAN_SYSTEM_GETDATA: cls(Header.LAN_SYSTEM_GETDATA, 0, cls.argv_std, '', ControlRouterReport),
-            Header.LAN_RAILCOM_GETDATA: cls(Header.LAN_RAILCOM_GETDATA, 1, cls.argv_std, '>H', MPUDecoderReport),
+            Header.LAN_SYSTEM_GET_DATA: cls(Header.LAN_SYSTEM_GET_DATA, 0, cls.argv_std, '', ControlRouterReport),
+            Header.LAN_RAILCOM_GET_DATA: cls(Header.LAN_RAILCOM_GET_DATA, 1, cls.argv_std, '>H', MPUDecoderReport),
         }
 
 
@@ -133,8 +135,8 @@ class XCommandMetadata(CommandMetadata):
     @classmethod
     def init(cls):
         cls.__CATALOG = {
-            XHeader.LAN_X_GET_LOCO: cls(XHeader.LAN_X_GET_LOCO, 1, cls.argv_get_loco, '>BH', MPUConfigurationReport),
-            XHeader.LAN_X_SET_LOCO_FUNC: cls(XHeader.LAN_X_SET_LOCO_FUNC, 3, cls.argv_set_loco, '>BHB',
+            XHeader.LAN_X_GET_LOCO: cls(XHeader.LAN_X_GET_LOCO, 1, cls.argv_get_mpu, '>BH', MPUConfigurationReport),
+            XHeader.LAN_X_SET_LOCO_FUNC: cls(XHeader.LAN_X_SET_LOCO_FUNC, 3, cls.argv_set_mpu, '>BHB',
                                              MPUConfigurationReport),
             XHeader.LAN_X_SET_TRACK_POWER: cls(XHeader.LAN_X_SET_TRACK_POWER, 1, cls.argv_std, 'B', TrackReport),
             XHeader.LAN_X_SET_TURNOUT: cls(XHeader.LAN_X_SET_TURNOUT, 2, cls.argv_turnout, '>HB', TurnoutReport),
@@ -158,13 +160,13 @@ class XCommandMetadata(CommandMetadata):
 
 
     @classmethod
-    def argv_get_loco(cls, *args: int) -> tuple[int, ...]:
+    def argv_get_mpu(cls, *args: int) -> tuple[int, ...]:
         db0 = 0xf0
         return db0, args[0]
 
 
     @classmethod
-    def argv_set_loco(cls, *args: int) -> tuple[int, ...]:
+    def argv_set_mpu(cls, *args: int) -> tuple[int, ...]:
         db0 = ThrottleSteps.STEPS_128.to_speed_byte()
         direction = 0x80 if args[1] == 1 else 0x00
         db3 = direction | args[2]

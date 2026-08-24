@@ -15,7 +15,7 @@ https://gitlab.com/z21-fpm/z21_python
 
 import struct
 from asyncio import DatagramProtocol
-from typing import Callable
+from collections.abc import Callable
 
 from mrcs_control.dcc.z21.command.dataset import Dataset
 from mrcs_core.sys.logging import Logging

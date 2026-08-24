@@ -3,7 +3,7 @@ Created on 18 Jun 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-EquipmentReport: Header.LAN_RAILCOM_DATACHANGED
+EquipmentReport: Header.LAN_RAILCOM_DATA_CHANGED
 
 Reports a motive power unit (MPU) decoder state from a Z21 DCC control router station
 
