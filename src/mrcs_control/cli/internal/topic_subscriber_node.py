@@ -68,19 +68,19 @@ class TopicSubscriberNode(AsyncSubscriberNode):
                  on_message: Callable[[Message], Any]):
         super().__init__(ops, queuing)
         self.__on_message = on_message
-        self.__message_to_send: Message | None = None
+        self.__initial_publication: Message | None = None
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def handle_startup(self):
         self.logger.debug('handle_startup')
-        self.async_loop.create_task(self.publish_messages())
+        self.async_loop.create_task(self.publish_message())
 
 
-    async def publish_messages(self):
-        self.logger.debug('publish_messages')
-        message = self.message_to_send
+    async def publish_message(self):
+        self.logger.debug('publish_message')
+        message = self.initial_publication
         if message is not None:
             self.async_loop.create_task(self.publish(message))
 
@@ -92,8 +92,8 @@ class TopicSubscriberNode(AsyncSubscriberNode):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def run(self, message_to_send=None, *args, **kwargs) -> None:
-        self.__message_to_send = message_to_send
+    def run(self, initial_publication=None, *args, **kwargs) -> None:
+        self.__initial_publication = initial_publication
         super().run(*args, **kwargs)
 
 
@@ -105,8 +105,8 @@ class TopicSubscriberNode(AsyncSubscriberNode):
 
 
     @property
-    def message_to_send(self):
-        return self.__message_to_send
+    def initial_publication(self):
+        return self.__initial_publication
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -116,4 +116,4 @@ class TopicSubscriberNode(AsyncSubscriberNode):
         routing_keys = '[' + ', '.join([str(key) for key in self.subscription_routing_keys()]) + ']'
 
         return (f'TopicSubscriberNode:{{routing_keys:{routing_keys}, on_message:{on_message}, '
-                f'message_to_send:{self.message_to_send}, ops:{self.ops}, mq_client:{self.mq_client}}}')
+                f'initial_publication:{self.initial_publication}, ops:{self.ops}, mq_client:{self.mq_client}}}')
