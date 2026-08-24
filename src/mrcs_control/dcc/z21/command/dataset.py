@@ -110,13 +110,13 @@ class XDataset(Dataset):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def construct_from_command(cls, header: Header, x_header: XHeader, data: bytes):
+    def construct_from_command(cls, header: Header, x_header: XHeader, data: bytes) -> XDataset:
         xor = cls.calculated_xor(x_header, data)
         return XDataset(header, x_header, data, xor)
 
 
     @classmethod
-    def construct_from_response(cls, header: Header, data: bytes):
+    def construct_from_response(cls, header: Header, data: bytes) -> XDataset:
         if len(data) < 1:
             raise ValueError(f'XDataset data length must be at least 1 byte')
 

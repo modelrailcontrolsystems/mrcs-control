@@ -16,7 +16,8 @@ import asyncio
 import functools
 import inspect
 from abc import ABC, abstractmethod
-from typing import Callable
+from collections.abc import Callable
+from typing import Self
 
 import pika
 from pika.adapters.asyncio_connection import AsyncioConnection
@@ -164,7 +165,7 @@ class MQAsyncPublisher(MQAsyncClient):
 
 
     @classmethod
-    def construct_pub(cls, exchange_name: MQMode, on_startup_complete: Callable | None = None):
+    def construct_pub(cls, exchange_name: MQMode, on_startup_complete: Callable | None = None) -> Self:
         return cls(exchange_name, on_startup_complete=on_startup_complete)
 
 
@@ -275,7 +276,7 @@ class MQAsyncSubscriber(MQAsyncPublisher):
     @classmethod
     def construct_sub(cls, exchange_name: MQMode, queuing: MQTopology, id: EquipmentIdentifier, on_message: Callable,
                       *subscription_routing_keys: SubscriptionRoutingKey,
-                      on_startup_complete: Callable | None = None):
+                      on_startup_complete: Callable | None = None) -> Self:
 
         return cls(exchange_name, id, queuing.value, on_message,
                    *subscription_routing_keys, on_startup_complete=on_startup_complete)

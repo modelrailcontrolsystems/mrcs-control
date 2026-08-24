@@ -95,9 +95,9 @@ class CronNode(AsyncSubscriberNode):
         return PersistentCronjob.find_all()
 
 
-    def run(self, *args) -> None:
+    def run(self, *args, **kwargs) -> None:
         self.__setup()
-        super().run()
+        super().run(*args, **kwargs)
 
 
     def __setup(self):

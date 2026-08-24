@@ -8,8 +8,8 @@ Created on 6 Jun 2026
 source repo: mrcs_control
 
 DESCRIPTION
-A utility to excercise a Roco Z21 control router station. This utility is provided for test purposes - the interface
-to the Z21 is provided by the mrcs_control_router messaging interface in live environments.
+A utility to excercise a Roco Z21 control router station directly. This utility is provided for test purposes -
+the interface to the Z21 is provided by the mrcs_control_router messaging interface in live environments.
 
 Note that the turnout address is 1-based, not 0-based.
 
@@ -17,8 +17,8 @@ The mrcs_z21_conf utility should be used before the first use of this utility in
 configuration.
 
 SYNOPSIS
-usage: mrcs_control_z21 [-h] [-i INDENT] [-v] [--version] [-m] [-r | -p {0,1} | -t TURNOUT TURNOUT |
--d GET_DECODER | -g GET_LOCO | -s SET_LOCO SET_LOCO SET_LOCO]
+mrcs_control_z21 [-h] [-i INDENT] [-v] [--version] [-t] [-m] [-r | -p {0,1} | -u ADDR POSITION |
+-d ADDR | -g ADDR | -s ADDR DIRECTION SPEED]
 
 EXAMPLES
 mrcs_control_z21 -v -m
@@ -28,14 +28,17 @@ FILES
 ~/MRCS/conf/z21_conf.json
 
 SEE ALSO
-mrcs_control_router
-mrcs_control_z21_conf
+mrcs_control_command
+mrcs_control_publisher
+mrcs_control_subscriber
 """
 
 import asyncio
+import logging
 import sys
 
-from mrcs_control.cli.args.z21_control_args import Z21ControlArgs
+from mrcs_control.cli.args.command_args import CommandArgs
+from mrcs_control.dcc.z21.command.command import Command
 from mrcs_control.dcc.z21.command.station import Station
 from mrcs_core.data.json import JSONable, JSONify
 from mrcs_core.equipment.control_router.control_router_conf import ControlRouterConf
@@ -70,7 +73,7 @@ async def monitor():
     logger.info(f'station: {station}')
 
     async with station:
-        await station.set_broadcast_flags(conf.subscription)
+        await station.send_command(Command.lan_set_broadcast_flags(conf.subscription))
 
         if args.has_command:
             command = args.command
@@ -80,7 +83,7 @@ async def monitor():
 
         while True:
             await asyncio.sleep(2)
-            await station.set_broadcast_flags(conf.subscription)
+            await station.send_command(Command.lan_set_broadcast_flags(conf.subscription))
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -89,9 +92,9 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    args = Z21ControlArgs('a utility to excercise a Roco Z21 control router station')
+    args = CommandArgs('a utility to excercise a Roco Z21 control router station')
 
-    Logging.config('mrcs_control_z21', verbose=args.verbose)
+    Logging.config('mrcs_control_z21', level=logging.DEBUG)  # level=logging.DEBUG / verbose=args.verbose
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
 

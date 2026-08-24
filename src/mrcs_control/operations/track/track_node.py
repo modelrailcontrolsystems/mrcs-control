@@ -6,9 +6,8 @@ Created on 12 Aug 2026
 A service that manages track equipment
 """
 
+from collections.abc import Callable
 from typing import List
-
-from mypy.nodes import Callable
 
 from mrcs_control.cli.inventory.block_inventory import BlockInventory
 from mrcs_control.cli.inventory.turnout_inventory import TurnoutInventory

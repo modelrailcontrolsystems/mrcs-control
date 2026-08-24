@@ -6,7 +6,7 @@ Created on 14 Aug 2026
 a temporary inventory of turnouts
 """
 
-from typing import Any, List
+from typing import Any, List, Self
 
 from mrcs_core.data.json import PersistentJSONable
 from mrcs_core.equipment.block.block_status import BlockStatus
@@ -28,7 +28,7 @@ class BlockInventory(PersistentJSONable):
 
 
     @classmethod
-    def construct_from_jdict(cls, jdict: Any):
+    def construct_from_jdict(cls, jdict: Any) -> Self:
         items = [BlockStatus.construct_from_jdict(item) for item in jdict]
         return cls(items)
 

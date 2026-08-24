@@ -20,8 +20,7 @@ mrcs_control_publisher -t -v -r 'CRT.*.1' -m '{"type": "XCommand", "x_header": "
 """
 
 import asyncio
-
-from mypy.nodes import Callable
+from collections.abc import Callable
 
 from mrcs_control.dcc.z21.command.command import Command
 from mrcs_control.dcc.z21.command.station import Station
@@ -107,9 +106,9 @@ class ControlRouterNode(AsyncSubscriberNode):
             raise
 
 
-    def run(self, *args):
+    def run(self, *args, **kwargs) -> None:
         self.logger.debug('run')
-        super().run()
+        super().run(*args, **kwargs)
 
 
     async def __wait_until_station_ready(self):
@@ -148,7 +147,7 @@ class ControlRouterNode(AsyncSubscriberNode):
                 self.__station = Station(self.conf, self.on_dataset, self.on_connection_lost)
                 await self.station.connect()
 
-                await self.station.set_broadcast_flags(self.conf.subscription)
+                await self.station.send_command(Command.lan_set_broadcast_flags(self.conf.subscription))
                 await self.station.get_system_state()
                 self.station_ready = True
 

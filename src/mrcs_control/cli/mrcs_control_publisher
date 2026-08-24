@@ -8,7 +8,7 @@ Created on 22 Nov 2025
 source repo: mrcs_control
 
 DESCRIPTION
-A tool for publishing messages.
+A general-purpose tool for publishing messages.
 Message bodies are read from stdin or from the --message argument. Messages are published with source and target
 routing specified by command-line arguments.
 The source must be fully-specified. The default source is TST.*.001 The target may contain wildcards.
@@ -21,7 +21,11 @@ mrcs_control_publisher [-h] [-i INDENT] [-v] [--version] [-t] [-s SOURCE] [-r RE
 
 EXAMPLES
 mrcs_control_publisher -t -s 'TST.*.002' -r 'TST.*.*'  -m '"hello"'
-mrcs_control_publisher -t -v -r 'CRT.*.1' -m '{"type": "XCommand", "x_header": "LAN_X_SET_TRACK_POWER", "argv": [128]}'
+
+SEE ALSO
+mrcs_control_command
+mrcs_control_subscriber
+mrcs_control_z21
 """
 
 import json

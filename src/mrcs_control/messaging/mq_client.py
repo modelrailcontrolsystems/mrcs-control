@@ -14,8 +14,9 @@ https://stackoverflow.com/questions/15150207/connection-in-rabbitmq-server-auto-
 """
 
 from abc import ABC
+from collections.abc import Callable
 from enum import StrEnum, unique
-from typing import Callable
+from typing import Self
 
 import pika
 from pika.exceptions import AMQPError, ChannelWrongStateError
@@ -155,7 +156,7 @@ class MQPublisher(MQClient):
 
 
     @classmethod
-    def construct_pub(cls, exchange_name: MQMode):
+    def construct_pub(cls, exchange_name: MQMode) -> Self:
         return cls(exchange_name)
 
 
@@ -235,7 +236,7 @@ class MQSubscriber(MQPublisher):
 
     @classmethod
     def construct_sub(cls, exchange_name: MQMode, queuing: MQTopology, id: EquipmentIdentifier,
-                      on_message: Callable):
+                      on_message: Callable) -> Self:
         return cls(exchange_name, queuing.value, id, on_message)
 
 
