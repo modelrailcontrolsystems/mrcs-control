@@ -36,7 +36,6 @@ SEE ALSO
 mrcs_control_z21
 mrcs_control_z21_conf
 """
-
 import sys
 
 from mrcs_control.cli.args.router_args import RouterArgs

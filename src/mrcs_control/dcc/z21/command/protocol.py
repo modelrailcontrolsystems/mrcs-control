@@ -42,17 +42,17 @@ class Protocol(DatagramProtocol):
     # ----------------------------------------------------------------------------------------------------------------
 
     def connection_made(self, transport):
-        self.logger.debug('protocol - connection_made')
+        self.logger.debug('Protocol - connection_made')
         pass
 
 
     def connection_lost(self, exc):
-        self.logger.debug('connection_lost')
+        self.logger.debug('Protocol - connection_lost')
         self.__connection_lost_handler(exc)
 
 
     def datagram_received(self, data: bytes, addr: tuple[str, int]):
-        self.logger.debug('protocol - datagram_received')
+        self.logger.debug('Protocol - datagram_received')
 
         offset = 0
         while offset < len(data):
@@ -68,7 +68,7 @@ class Protocol(DatagramProtocol):
 
 
     def error_received(self, exc):
-        self.logger.warn(f'protocol - error_received:{exc}')
+        self.logger.warn(f'Protocol - error_received:{exc}')
 
 
     # ----------------------------------------------------------------------------------------------------------------

@@ -83,6 +83,8 @@ class Station(object):
     # ----------------------------------------------------------------------------------------------------------------
 
     async def connect(self) -> None:
+        self.logger.debug(f'Station - connect')
+
         loop = asyncio.get_running_loop()
 
         try:
@@ -94,24 +96,22 @@ class Station(object):
             )
 
         except OSError as exc:
+            print(f'exc:{exc}')
             if exc.errno == errno.EADDRINUSE:
                 raise RuntimeError(
                     f'Z21 client UDP port {self.conf.port} is already in use; '
                     'stop the other MRCS Z21 client before starting this utility.') from exc
             raise
 
-        # TODO: Do we need receive_packet() if broadcast is off?
-        # https://github.com/botmonster/z21aio/blob/a615edc27021955ed3bfebc79568c5fffc89c7ac/src/z21aio/station.py#L309
-
         self.__transport = transport
         self.__protocol = protocol
         self.__has_connection = True
 
-        self.logger.debug(f'connected:{transport.get_extra_info("sockname")}')
+        self.logger.debug(f'Station - connected:{transport.get_extra_info("sockname")}')
 
 
     def station_dataset_handler(self, dataset: Dataset) -> None:
-        self.logger.debug(f'station_dataset_handler:{dataset}')
+        self.logger.debug(f'Station - station_dataset_handler:{dataset}')
 
         if dataset.header == Header.LAN_SYSTEM_DATA_CHANGED:
             self.__response_event.set()
@@ -123,18 +123,19 @@ class Station(object):
 
 
     def station_connection_lost_handler(self) -> None:
+        self.logger.debug('Station - station_connection_lost_handler')
+
         if not self.__has_connection:
             return
 
         self.__has_connection = False
-        self.logger.warning('station_connection_lost_handler')
         self.on_connection_lost()
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     async def get_system_state(self) -> None:
-        self.logger.debug('get_system_state')
+        self.logger.debug('Station - get_system_state')
 
         self.__response_event.clear()
         await self.send_command(Command.lan_system_get_data())
@@ -158,7 +159,7 @@ class Station(object):
             raise ConnectionError('not connected to a Z21 station')
 
         chars = command.dataset.as_bytes()
-        self.logger.debug(f'send_command:{chars.hex(" ")}')
+        self.logger.debug(f'Station - send_command:{chars.hex(" ")}')
 
         self.__transport.sendto(command.dataset.as_bytes())
         await asyncio.sleep(self.__DEFAULT_TIME_BETWEEN_SENDS)
