@@ -38,13 +38,6 @@ from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionR
 from mrcs_core.sys.host import Host
 
 
-# TODO: fix the loop...
-# mrcs_control_router: station_connection_lost_handler
-# mrcs_control_router: on_connection_lost
-# mrcs_control_router: connection error:Z21 control router did not respond
-# mrcs_control_router: monitor exception: RuntimeError: Z21 client UDP port 21105 is already in use;
-# stop the other MRCS Z21 client before starting this utility.
-
 # --------------------------------------------------------------------------------------------------------------------
 
 class ControlRouterNode(AsyncSubscriberNode):
