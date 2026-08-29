@@ -9,6 +9,7 @@ Note that queues (and exchanges) should only be deleted using messaging clients.
 https://www.rabbitmq.com/docs/http-api-reference
 https://stackoverflow.com/questions/4287941/how-can-i-list-or-discover-queues-on-a-rabbitmq-exchange-using-python
 """
+
 from typing import Self
 
 import httpx

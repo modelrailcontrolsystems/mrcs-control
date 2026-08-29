@@ -38,6 +38,13 @@ from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionR
 from mrcs_core.sys.host import Host
 
 
+# TODO: fix the loop...
+# mrcs_control_router: station_connection_lost_handler
+# mrcs_control_router: on_connection_lost
+# mrcs_control_router: connection error:Z21 control router did not respond
+# mrcs_control_router: monitor exception: RuntimeError: Z21 client UDP port 21105 is already in use;
+# stop the other MRCS Z21 client before starting this utility.
+
 # --------------------------------------------------------------------------------------------------------------------
 
 class ControlRouterNode(AsyncSubscriberNode):
@@ -85,13 +92,14 @@ class ControlRouterNode(AsyncSubscriberNode):
     # messaging handlers...
 
     def handle_startup(self):
-        self.logger.debug('handle_startup')
+        self.logger.debug('ControlRouterNode - handle_startup')
+
         if self.__monitor_task is None:
             self.__monitor_task = self.async_loop.create_task(self.monitor())
 
 
     async def handle_message(self, message: Message):
-        self.logger.info('handle_message')
+        self.logger.info('ControlRouterNode - handle_message')
 
         if self.on_message:
             self.on_message(message)
@@ -107,7 +115,7 @@ class ControlRouterNode(AsyncSubscriberNode):
 
 
     def run(self, *args, **kwargs) -> None:
-        self.logger.debug('run')
+        self.logger.debug('ControlRouterNode - run')
         super().run(*args, **kwargs)
 
 
@@ -133,30 +141,29 @@ class ControlRouterNode(AsyncSubscriberNode):
 
     def on_connection_lost(self):
         self.station_ready = False
-        self.logger.warning('on_connection_lost')
+        self.logger.debug('ControlRouterNode - on_connection_lost')
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    # TODO: check the error messaging when starting with the Z21 off
     async def monitor(self) -> None:
-        self.logger.debug('monitor')
+        self.logger.debug('ControlRouterNode - monitor')
 
         while True:
             try:
-                self.__station = Station(self.conf, self.on_dataset, self.on_connection_lost)
-                await self.station.connect()
-
-                await self.station.send_command(Command.lan_set_broadcast_flags(self.conf.subscription))
-                await self.station.get_system_state()
-                self.station_ready = True
-
-                while True:
-                    await asyncio.sleep(self.__KEEP_ALIVE_INTERVAL)
+                async with Station(self.conf, self.on_dataset, self.on_connection_lost) as station:
+                    self.__station = station
+                    await self.station.connect()
+                    await self.station.send_command(Command.lan_set_broadcast_flags(self.conf.subscription))
                     await self.station.get_system_state()
+                    self.station_ready = True
+
+                    while True:
+                        await asyncio.sleep(self.__KEEP_ALIVE_INTERVAL)
+                        await self.station.get_system_state()
 
             except ConnectionError as exc:
-                self.logger.warning(f'connection error:{exc}')
+                self.logger.warning(f'connection error: {exc}')
                 self.station_ready = False
                 await asyncio.sleep(self.__RETRY_INTERVAL)
 
@@ -167,17 +174,15 @@ class ControlRouterNode(AsyncSubscriberNode):
             except Exception as exc:
                 self.station_ready = False
                 self.logger.warning(f'monitor exception: {type(exc).__name__}: {exc}')
-                await asyncio.sleep(5)
+                await asyncio.sleep(self.__RETRY_INTERVAL)
 
             finally:
                 self.station_ready = False
-                if self.station is not None:
-                    await self.station.close()
-                    self.__station = None
+                self.__station = None
 
 
     async def halt(self) -> None:
-        self.logger.debug('halt')
+        self.logger.debug('ControlRouterNode - halt')
 
         await self.shutdown()
         await super().halt()
@@ -201,7 +206,7 @@ class ControlRouterNode(AsyncSubscriberNode):
 
 
     def close(self) -> None:
-        self.logger.debug('close')
+        self.logger.debug('ControlRouterNode - close')
 
         if self.async_loop is not None and self.async_loop.is_closed():
             return

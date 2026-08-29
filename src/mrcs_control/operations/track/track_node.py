@@ -64,12 +64,13 @@ class TrackNode(SubscriberNode):
 
 
     # ----------------------------------------------------------------------------------------------------------------
-    # TODO: refactor exception handling
+
     def handle_message(self, message: Message):
         self.logger.debug(f'handle_message:{message}')
 
         if message.routing_key.target == self.id():
             self.logger.info(f'received command:{message.body}')
+            # TODO: act on commands
             return
 
         body_type = message.body.get('type')
