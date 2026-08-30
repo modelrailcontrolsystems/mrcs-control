@@ -10,11 +10,14 @@ source repo: mrcs_control
 DESCRIPTION
 A service that manages track equipment.
 
+A --drain function is available - this drains the queue used by mrcs_control_track before any other functions
+are invoked. The function is useful if problematic messages have been published to the queue.
+
 SYNOPSIS
-mrcs_control_track [-h] [-i INDENT] [-v] [--version] [-t] (-l {B,T,S} | -p | -r)
+mrcs_control_track [-h] [-i INDENT] [-v] [--version] [-t] [-d] (-l {B,T,S} | -p | -r)
 
 EXAMPLES
-mrcs_control_track -t -v -r
+mrcs_control_track -t -v -d -r
 """
 
 import sys
@@ -57,6 +60,9 @@ if __name__ == '__main__':
         node = TrackNode(args.mode.value, on_message=message_handler)
         logger.info(node)
 
+        if args.drain:
+            node.drain()
+
         if args.list:
             if args.list == 'B':
                 equipment = node.find_all_blocks()
@@ -83,6 +89,6 @@ if __name__ == '__main__':
         if args.run:
             print(file=sys.stderr)
 
-            if node is not None:
-                # noinspection unresolved-references
-                node.close()
+        if node is not None:
+            # noinspection unresolved-references
+            node.close()

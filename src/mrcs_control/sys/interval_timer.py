@@ -19,6 +19,7 @@ class IntervalTimer(ABC):
     generate yields at pre-set intervals
     """
 
+
     def __init__(self, interval: float):
         self.__interval = interval
         self._next_yield = time.time() + self.__interval
@@ -47,7 +48,7 @@ class IntervalTimer(ABC):
 
 
     @interval.setter
-    def interval(self, interval):
+    def interval(self, interval: float):
         self.__interval = interval
         self.reset()
 
@@ -59,7 +60,7 @@ class IntervalTimer(ABC):
 
     @property
     def time_to_next_yield(self):
-        return abs(self.next_yield - time.time())           # time to next must always be positive
+        return abs(self.next_yield - time.time())  # time to next must always be positive
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -75,6 +76,7 @@ class BlockingIntervalTimer(IntervalTimer):
     """
     generate yields at pre-set intervals (blocking)
     """
+
 
     def __init__(self, interval: float):
         super().__init__(interval)
@@ -108,6 +110,7 @@ class AsyncIntervalTimer(IntervalTimer):
     generate yields at pre-set intervals (async)
     """
 
+
     def __init__(self, interval: float):
         super().__init__(interval)
 
@@ -129,4 +132,3 @@ class AsyncIntervalTimer(IntervalTimer):
 
         await asyncio.sleep(self._sleep_time())
         self._next_yield += self.interval
-

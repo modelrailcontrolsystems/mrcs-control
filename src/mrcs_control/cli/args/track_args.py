@@ -6,12 +6,12 @@ Created on 12 Aug 2026
 https://realpython.com/command-line-interfaces-python-argparse/
 """
 
-from mrcs_control.cli.args.multimode_control_args import MultimodeControlArgs
+from mrcs_control.cli.args.subscriber_control_args import SubscriberControlArgs
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class TrackArgs(MultimodeControlArgs):
+class TrackArgs(SubscriberControlArgs):
     """unix command line handler"""
 
 
@@ -28,7 +28,6 @@ class TrackArgs(MultimodeControlArgs):
 
 
     # ----------------------------------------------------------------------------------------------------------------
-
 
     @property
     def list(self):
@@ -48,5 +47,5 @@ class TrackArgs(MultimodeControlArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'TrackArgs:{{test:{self.test}, populate:{self.populate}, list:{self.list}, run:{self.run}, '
-                f'indent:{self.indent}, verbose:{self.verbose}}}')
+        return (f'TrackArgs:{{test:{self.test}, drain:{self.drain}, populate:{self.populate}, list:{self.list}, '
+                f'run:{self.run}, indent:{self.indent}, verbose:{self.verbose}}}')

@@ -59,7 +59,7 @@ class TopicSubscriberNode(AsyncSubscriberNode):
     @classmethod
     def construct_node(cls, ops: NodeTopology.ServiceConfiguration,
                        on_message: Callable[[Message], Any]) -> Self:
-        return cls(ops, MQTopology.MULTIPLE, on_message)
+        return cls(ops, MQTopology.MULTI_PROCESS, on_message)
 
 
     # ----------------------------------------------------------------------------------------------------------------

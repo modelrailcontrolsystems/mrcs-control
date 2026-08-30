@@ -10,9 +10,12 @@ source repo: mrcs_control
 DESCRIPTION
 A tool for publishing commands.
 
+A --drain function is available - this drains the queue used by mrcs_control_command before any other functions
+are invoked. The function is useful if problematic messages have been published to the queue.
+
 SYNOPSIS
-mrcs_control_command.py [-h] [-i INDENT] [-v] [--version] [-t] [-m] [-r | -p {0,1} | -u ADDR POSITION |
--d ADDR | -g ADDR | -s ADDR DIRECTION SPEED]
+mrcs_control_command [-h] [-i INDENT] [-v] [--version] [-t] [-d] [-m] [-r | -p {0,1} | -u ADDR POSITION |
+-c ADDR | -g ADDR | -s ADDR DIRECTION SPEED]
 
 EXAMPLES
 mrcs_control_command -t -u 4 1
@@ -93,6 +96,9 @@ if __name__ == '__main__':
 
         node = TopicSubscriberNode.construct_node(args.mode.value, on_message)
         logger.info(node)
+
+        if args.drain:
+            node.drain()
 
         command_message = Message(publication_routing_key, args.command) if args.has_command else None
         node.run(initial_publication=command_message)

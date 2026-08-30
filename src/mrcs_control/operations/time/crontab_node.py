@@ -44,7 +44,7 @@ class CrontabNode(SubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, ops: NodeTopology.ServiceConfiguration):
-        super().__init__(ops, MQTopology.SINGLE)
+        super().__init__(ops, MQTopology.SINGLE_PROCESS)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -76,8 +76,9 @@ class CrontabNode(SubscriberNode):
     def subscribe(self) -> None:
         self.__setup()
 
-        self.mq_client.connect()
-        self.logger.info('subscribed')
+        if not self.mq_client.is_connected:
+            self.mq_client.connect()
+            self.logger.info('subscribed')
 
         try:
             self.mq_client.subscribe(*self.subscription_routing_keys())

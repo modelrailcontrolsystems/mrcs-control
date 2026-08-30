@@ -46,7 +46,7 @@ class ClockManagerNode(SubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, ops: NodeTopology.ServiceConfiguration):
-        super().__init__(ops, MQTopology.SINGLE)
+        super().__init__(ops, MQTopology.SINGLE_PROCESS)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -72,7 +72,8 @@ class ClockManagerNode(SubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def subscribe(self):
-        self.mq_client.connect()
+        if not self.mq_client.is_connected:
+            self.mq_client.connect()
 
         try:
             self.mq_client.subscribe(*self.subscription_routing_keys())

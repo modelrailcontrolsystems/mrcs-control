@@ -9,10 +9,14 @@ source repo: mrcs_control
 
 DESCRIPTION
 A service to manage the model time clock configuration
+
+A --drain function is available - this drains the queue used by mrcs_control_clock_manager before any other functions
+are invoked. The function is useful if problematic messages have been published to the queue.
+
 Note that in --run mode, the utility runs forever.
 
 SYNOPSIS
-mrcs_control_clock_manager [-h] [-i INDENT] [-v] [--version] [-t] (-c | -n | -s)
+mrcs_control_clock_manager [-h] [-i INDENT] [-v] [--version] [-t] [-d] (-c | -n | -s)
 
 EXAMPLES
 mrcs_control_clock_manager --verbose --subscribe --test
@@ -53,6 +57,9 @@ if __name__ == '__main__':
     try:
         manager = ClockManagerNode(args.mode.value)
         logger.info(f'manager: {manager}')
+
+        if args.drain:
+            manager.drain()
 
         if args.conf:
             conf = Clock.load(Host)

@@ -58,7 +58,7 @@ class TrackNode(SubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, ops: NodeTopology.ServiceConfiguration, on_message: Callable[JSONable] | None = None):
-        super().__init__(ops, MQTopology.SINGLE)
+        super().__init__(ops, MQTopology.SINGLE_PROCESS)
 
         self.__on_message = on_message
 
@@ -136,7 +136,8 @@ class TrackNode(SubscriberNode):
     def subscribe(self) -> None:
         self.__setup()
 
-        self.mq_client.connect()
+        if not self.mq_client.is_connected:
+            self.mq_client.connect()
         self.logger.info('subscribed')
 
         try:

@@ -20,7 +20,7 @@ from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType
 class TestMQTopology(unittest.TestCase):
 
     def test_queue_single(self):
-        obj1 = MQTopology.SINGLE
+        obj1 = MQTopology.SINGLE_PROCESS
         obj2 = EquipmentIdentifier(EquipmentType.CRT, 1, 2)
         obj3 = obj1.value.queue_name(MQMode.TEST, obj2)
         self.assertEqual('MQMode.QueueConfiguration:{unique_name:False, durable:True, exclusive:False, '
@@ -29,7 +29,7 @@ class TestMQTopology(unittest.TestCase):
 
 
     def test_queue_multiple(self):
-        obj1 = MQTopology.MULTIPLE
+        obj1 = MQTopology.MULTI_PROCESS
         obj2 = EquipmentIdentifier(EquipmentType.CRT, 1, 2)
         obj3 = obj1.value.queue_name(MQMode.TEST, obj2)
         self.assertStartsWith(str(obj3), 'mrcs.test.CRT.001.002')

@@ -9,7 +9,11 @@ source repo: mrcs_control
 
 DESCRIPTION
 A service providing an interface between a control router station and the messaging system. The control router process
-accepts command messages on CRT.*.1 and publishes report messages on CRT.*.1.
+accepts command messages on CRT.*.1 and publishes report messages on several CRT.*. topics.
+
+A --drain function is available - this drains the queue used by mrcs_control_router before any other functions
+are invoked. The function is useful if problematic messages have been published to the queue.
+
 In --verbose mode, the reports are written to the logger.
 
 The control router process runs a keep-alive, periodically interrogating the control router station.  If the station
@@ -17,13 +21,13 @@ is not available, incomming messages will remain on the queue until the station 
 in the current regime - command messages may be lost during the interval between the station being unavailable and its
 unavailability being established.
 
-The mrcs_z21_conf utility should be used before the first use of this utility in order to establish a control router
+The mrcs_z21_conf utility should be used before the first use of this utility, in order to establish a control router
 configuration.
 
 Note that the utility runs forever.
 
 SYNOPSIS
-mrcs_control_router [-h] [-i INDENT] [-v] [--version] [-t] (-s | -r)
+mrcs_control_router [-h] [-i INDENT] [-v] [--version] [-t] [-d] (-s | -r)
 
 EXAMPLES
 mrcs_control_router -s -i4
@@ -78,6 +82,9 @@ if __name__ == '__main__':
     try:
         router = ControlRouterNode(args.mode.value, conf, on_message=on_message)
         logger.info(f'router: {router}')
+
+        if args.drain:
+            router.drain()
 
         if args.state:
             equipment = ControlRouterNode.state()
