@@ -87,7 +87,7 @@ class CommandArgs(SubscriberControlArgs):
 
     @property
     def power(self):
-        return None if self._args.power is None else self._args.power[0] == 1
+        return None if self._args.power is None else self._args.power == 1
 
 
     @property
