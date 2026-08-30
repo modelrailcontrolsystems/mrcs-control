@@ -13,7 +13,7 @@ from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.db.db_name import DbName
 from mrcs_core.equipment.block.block_id import BlockID
-from mrcs_core.equipment.block.block_report import BlockVoltageReport
+from mrcs_core.equipment.block.block_report import BlockOccupancyReport, BlockVoltageReport
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -180,7 +180,6 @@ class BlockPersistence(PersistentObject, ABC):
 
     @classmethod
     def update_from_voltage(cls, report: BlockVoltageReport) -> Self:
-        # TODO: separate method for BlockOccupancyReport(s)
         client = DbClient.instance(cls.db_name())
 
         try:
@@ -205,6 +204,30 @@ class BlockPersistence(PersistentObject, ABC):
             client.txCOMMIT()
 
             return cls.construct_from_db(block_row, *occupant_rows)
+
+        except Exception as exc:
+            client.txROLLBACK(exc)
+            raise
+
+
+    @classmethod
+    def update_from_block_occupancy_report(cls, report: BlockOccupancyReport) -> None:
+        client = DbClient.instance(cls.db_name())
+
+        cls.delete_occupants(report.block_id)
+
+        try:
+            client.txIMMEDIATE()
+
+            occupant_table = cls.occupant_table()
+            block_table = cls.block_table()
+
+            for occupant in report.occupants:
+                sql = (f'INSERT INTO {occupant_table} (block_label, mpu_address, face) '
+                       f'VALUES ((SELECT label FROM {block_table} WHERE address = ?), ?, ?)')
+                client.execute(sql, data=(report.block_id.block_address, occupant.mpu_address, occupant.face.name))
+
+            client.txCOMMIT()
 
         except Exception as exc:
             client.txROLLBACK(exc)

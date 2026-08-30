@@ -96,6 +96,11 @@ class AsyncMessagingNode(Generic[AsyncClientT], ABC):
                 pass
 
 
+    def close(self) -> None:
+        if self.mq_client is not None:
+            self.mq_client.close()
+
+
     def request_shutdown(self):
         if self.async_loop.is_running():
             self.async_loop.create_task(self.halt())
@@ -181,7 +186,10 @@ class AsyncPublisherNode(AsyncMessagingNode[MQAsyncPublisher], ABC):
 
 
     async def halt(self):
+        self.logger.debug('AsyncPublisherNode - halt')
+
         await self.cancel_tasks()
+        self.mq_client.close()
         self.async_loop.stop()
 
 
@@ -266,6 +274,7 @@ class AsyncSubscriberNode(AsyncMessagingNode[MQAsyncSubscriber], ABC):
     async def halt(self):
         self.logger.debug('AsyncSubscriberNode - halt')
         await self.cancel_tasks()
+        self.mq_client.close()
         self.async_loop.stop()
 
 

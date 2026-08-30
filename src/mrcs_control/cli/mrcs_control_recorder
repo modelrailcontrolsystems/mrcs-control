@@ -35,6 +35,8 @@ from mrcs_core.sys.logging import Logging
 
 if __name__ == '__main__':
 
+    node = None
+
     # ----------------------------------------------------------------------------------------------------------------
 
     args = RecorderArgs('a service to record all inter-process messages')
@@ -47,26 +49,30 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
-        recorder_node = MessageRecorderNode(args.mode.value)
-        logger.info(f'recorder_node: {recorder_node}')
+        node = MessageRecorderNode(args.mode.value)
+        logger.info(f'node: {node}')
 
         if args.drain:
-            recorder_node.drain()
+            node.drain()
 
         if args.clean:
-            recorder_node.clean()
+            node.clean()
 
         if args.report is not None:
-            records = list(recorder_node.find_latest(args.report))
+            records = list(node.find_latest(args.report))
             print(JSONify.dumps(records, indent=args.indent))
 
             logger.info(f'found {len(records)} items.')
 
         if args.subscribe:
-            recorder_node.subscribe()
+            node.subscribe()
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     except KeyboardInterrupt:
         print(file=sys.stderr)
+
+    finally:
+        if node is not None:
+            node.close()

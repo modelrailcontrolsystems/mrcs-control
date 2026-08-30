@@ -41,6 +41,8 @@ from mrcs_core.sys.logging import Logging
 
 if __name__ == '__main__':
 
+    node = None
+
     # ----------------------------------------------------------------------------------------------------------------
 
     args = CrontabArgs('a service to record cron event schedules according to model time')
@@ -53,24 +55,24 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
-        crontab = CrontabNode(args.mode.value)
-        logger.info(f'crontab: {crontab}')
+        node = CrontabNode(args.mode.value)
+        logger.info(f'node: {node}')
 
         if args.drain:
-            crontab.drain()
+            node.drain()
 
         if args.clean:
-            crontab.clean()
+            node.clean()
             exit(0)
 
         if args.list:
-            jobs = list(crontab.find_all())
+            jobs = list(node.find_all())
             print(JSONify.dumps(jobs, indent=args.indent))
             logger.info(f'found {len(jobs)} items.')
             exit(0)
 
         if args.subscribe:
-            crontab.subscribe()
+            node.subscribe()
             exit(0)
 
 
@@ -78,3 +80,7 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt:
         print(file=sys.stderr)
+
+    finally:
+        if node is not None:
+            node.close()

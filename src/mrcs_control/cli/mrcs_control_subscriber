@@ -47,6 +47,8 @@ def on_message(message):
 
 if __name__ == '__main__':
 
+    node = None
+
     # ----------------------------------------------------------------------------------------------------------------
 
     args = SubscriberArgs('a tool for subscribing to topics')
@@ -86,14 +88,17 @@ if __name__ == '__main__':
         TopicSubscriberNode.set_id(target)
         TopicSubscriberNode.set_subscription_routing_keys(subscriptions)
 
-        subscriber = TopicSubscriberNode.construct_node(args.mode.value, on_message)
-        logger.info(subscriber)
+        node = TopicSubscriberNode.construct_node(args.mode.value, on_message)
+        logger.info(f'node: {node}')
 
-        subscriber.run()
+        node.run()
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     finally:
+        if node is not None:
+            node.close()
+
         if args.sources:
             print(file=sys.stderr)

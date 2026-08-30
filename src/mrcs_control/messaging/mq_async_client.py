@@ -78,7 +78,11 @@ class MQAsyncClient(ABC):
 
 
     def close(self):
+        if self.connection is None and self.channel is None:
+            return
+
         self.logger.debug(f'MQAsyncClient - close:{self.__URL}')
+
         try:
             self.channel.close()
         except (AttributeError, ChannelWrongStateError):

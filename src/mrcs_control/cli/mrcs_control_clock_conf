@@ -58,6 +58,8 @@ from mrcs_core.sys.logging import Logging
 
 if __name__ == '__main__':
 
+    node = None
+
     # ----------------------------------------------------------------------------------------------------------------
 
     args = ClockConfArgs('a tool for managing the model time clock')
@@ -68,14 +70,14 @@ if __name__ == '__main__':
 
     clock = Clock.load(Host)
 
-    clock_conf_node = ClockConfNode(args.mode.value, clock)
-    logger.info(f'clock_conf_node: {clock_conf_node}')
-
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
+        node = ClockConfNode(args.mode.value, clock)
+        logger.info(f'node: {node}')
+
         if args.drain:
-            clock_conf_node.drain()
+            node.drain()
 
         if args.now:
             print(JSONify.dumps(clock.now()))
@@ -88,7 +90,7 @@ if __name__ == '__main__':
         if args.set:
             clock = Clock.set(args.set_running, args.set_speed, args.set_year, args.set_month, args.set_day,
                               args.set_hour, minute=args.set_minute)
-            clock_conf_node.run(clock)
+            node.run(clock)
             print(JSONify.dumps(clock.now()))
             exit(0)
 
@@ -102,3 +104,7 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt:
         print(file=sys.stderr)
+
+    finally:
+        if node is not None:
+            node.close()

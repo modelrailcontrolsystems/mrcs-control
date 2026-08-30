@@ -19,7 +19,10 @@ from mrcs_control.db.db_client import DbClient, DbMode
 from mrcs_control.equipment.block.persistent_block_status import PersistentBlockStatus
 from mrcs_control.equipment.turnout.persistent_turnout_status import PersistentTurnoutStatus
 from mrcs_control.test.test_helper import TestHelper
-from mrcs_core.equipment.block.block_report import BlockVoltageReport
+from mrcs_core.equipment.block.block_enums import BlockOccupantFace
+from mrcs_core.equipment.block.block_id import BlockID
+from mrcs_core.equipment.block.block_occupant import BlockOccupant
+from mrcs_core.equipment.block.block_report import BlockVoltageReport, BlockOccupancyReport
 from mrcs_core.sys.host import Host
 
 
@@ -125,12 +128,41 @@ class TestBlockPersistence(unittest.TestCase):
                          str(obj3))
 
 
+    def test_update_from_block_occupancy_report(self):
+        obj1, _ = self.__setup_db()
+        report = BlockOccupancyReport(
+            block_id=BlockID(5, 6, 0x1234),
+            occupant_group=1,
+            occupants=[BlockOccupant(9999, BlockOccupantFace.FWD)],
+        )
+        PersistentBlockStatus.update_from_block_occupancy_report(report)
+
+        obj2 = PersistentBlockStatus.find(obj1.label)
+        assert obj2 is not None
+        self.assertEqual(1, len(obj2.occupants))
+        self.assertEqual(9999, obj2.occupants[0].mpu_address)
+        self.assertEqual(BlockOccupantFace.FWD, obj2.occupants[0].face)
+
+
     def test_delete(self):
-        _, obj2 = self.__setup_db()
+        obj1, obj2 = self.__setup_db()
+
+        client = DbClient.instance(PersistentBlockStatus.db_name())
+        table = PersistentBlockStatus.occupant_table()
+        sql = f'SELECT mpu_address, face FROM {table} WHERE block_label = ?'
+
+        client.execute(sql, data=(obj2.label,))
+        occupant_rows = client.fetchall()
+        self.assertEqual(2, len(occupant_rows))
+
         PersistentBlockStatus.delete_block(obj2.label)
         obj3 = PersistentBlockStatus.find(obj2.label)
 
         self.assertEqual(obj3, None)
+
+        client.execute(sql, data=(obj2.label,))
+        occupant_rows = client.fetchall()
+        self.assertEqual(0, len(occupant_rows))
 
 
     # ----------------------------------------------------------------------------------------------------------------

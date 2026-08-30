@@ -13,6 +13,9 @@ A tool for publishing commands.
 A --drain function is available - this drains the queue used by mrcs_control_command before any other functions
 are invoked. The function is useful if problematic messages have been published to the queue.
 
+Note that for the --can-detectors command, there are multiple reports, the number of which is unknown. If the
+reports should be displayed, then the --monitor option should be used.
+
 SYNOPSIS
 mrcs_control_command [-h] [-i INDENT] [-v] [--version] [-t] [-d] [-m] [-r | -p {0,1} | -u ADDR POSITION |
 -c ADDR | -g ADDR | -s ADDR DIRECTION SPEED]
@@ -46,10 +49,13 @@ from mrcs_core.sys.logging import Logging
 # --------------------------------------------------------------------------------------------------------------------
 
 def on_message(message):
+    if not args.monitor and args.command.report_type is None:
+        exit(0)
+
     print(JSONify.dumps(message.body, indent=args.indent))
 
     report = EquipmentReport.construct_from_jdict(message.body)
-    if not args.monitor and (args.command.report_type is None or isinstance(report, args.command.report_type)):
+    if not args.monitor and isinstance(report, args.command.report_type):
         exit(0)
 
 
@@ -73,6 +79,8 @@ def publish_message(body):
 
 if __name__ == '__main__':
 
+    node = None
+
     # ----------------------------------------------------------------------------------------------------------------
 
     args = CommandArgs('a tool for publishing commands')
@@ -95,7 +103,7 @@ if __name__ == '__main__':
         TopicSubscriberNode.set_subscription_routing_keys([subscription_routing_key])
 
         node = TopicSubscriberNode.construct_node(args.mode.value, on_message)
-        logger.info(node)
+        logger.info(f'node: {node}')
 
         if args.drain:
             node.drain()
@@ -113,3 +121,7 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt:
         print(file=sys.stderr)
+
+    finally:
+        if node is not None:
+            node.close()
