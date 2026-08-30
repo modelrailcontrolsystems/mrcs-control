@@ -26,11 +26,11 @@ class CommandArgs(SubscriberControlArgs):
 
         group = self._parser.add_mutually_exclusive_group(required=False)
         group.add_argument('-r', '--router', action='store_true', help='get control router state')
-        group.add_argument('-p', '--power', action='store', type=int, nargs=1, choices=[0, 1], help='set track power')
+        group.add_argument('-p', '--power', action='store', type=int, choices=[0, 1], help='set track power')
         group.add_argument('-c', '--can-detectors', action='store_true', help='get detector reports')
         group.add_argument('-u', '--turnout', action='store', type=int, nargs=2, help='set turnout ADDR DIR')
-        group.add_argument('-e', '--get-decoder', action='store', type=int, nargs=1, help='get mpu decoder at ADDR')
-        group.add_argument('-g', '--get-mpu', action='store', type=int, nargs=1, help='get mpu at ADDR')
+        group.add_argument('-e', '--get-decoder', action='store', type=int, help='get mpu decoder at ADDR')
+        group.add_argument('-g', '--get-mpu', action='store', type=int, help='get mpu at ADDR')
         group.add_argument('-s', '--set-mpu', action='store', type=int, nargs=3, help='set mpu ADDR DIR SPEED')
 
         self._args = self._parser.parse_args()
