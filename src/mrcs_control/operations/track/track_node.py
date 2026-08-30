@@ -12,26 +12,28 @@ from typing import List
 from mrcs_control.cli.inventory.block_inventory import BlockInventory
 from mrcs_control.cli.inventory.turnout_inventory import TurnoutInventory
 from mrcs_control.db.db_client import DbClient
+from mrcs_control.dcc.z21.command.command import Command
 from mrcs_control.equipment.block.persistent_block_status import PersistentBlockStatus
 from mrcs_control.equipment.track.persistent_track import PersistentTrack
 from mrcs_control.equipment.turnout.persistent_turnout_status import PersistentTurnoutStatus
 from mrcs_control.messaging.mq_topology import MQTopology
+from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
 from mrcs_control.operations.control_router.control_router_identity import ControlRouterSerial
-from mrcs_control.operations.messaging_node import SubscriberNode
+from mrcs_control.operations.control_router.control_router_node import ControlRouterNode
 from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONable
-from mrcs_core.equipment.block.block_report import BlockVoltageReport
+from mrcs_core.equipment.block.block_report import BlockOccupancyReport, BlockVoltageReport
 from mrcs_core.equipment.track.track_report import TrackReport
 from mrcs_core.equipment.turnout.turnout_report import TurnoutReport
 from mrcs_core.messaging.message import Message
-from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
+from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
 from mrcs_core.sys.host import Host
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class TrackNode(SubscriberNode):
+class TrackNode(AsyncSubscriberNode):
     """
     a service that manages track equipment
     """
@@ -65,6 +67,19 @@ class TrackNode(SubscriberNode):
 
     # ----------------------------------------------------------------------------------------------------------------
 
+    def handle_startup(self):
+        self.logger.debug('handle_startup')
+        self.async_loop.create_task(self.publish_message())
+
+
+    async def publish_message(self):
+        self.logger.debug('publish_message')
+
+        routing_key = PublicationRoutingKey(self.id(), ControlRouterNode.id())
+        message = Message(routing_key, Command.lan_can_detector())
+        self.async_loop.create_task(self.publish(message))
+
+
     def handle_message(self, message: Message):
         self.logger.debug(f'handle_message:{message}')
 
@@ -75,8 +90,12 @@ class TrackNode(SubscriberNode):
 
         body_type = message.body.get('type')
 
-        # if body_type == BlockOccupancyReport.__name__:
-        #     self.__handle_block_occupancy(message)
+        # TODO: keep a count / timing of occupancy reports for each block -
+        # TODO: subsequent reports within a time period are handled differently
+
+        if body_type == BlockOccupancyReport.__name__:
+            report = BlockOccupancyReport.construct_from_jdict(message.body)
+            PersistentBlockStatus.update_from_block_occupancy_report(report)
 
         if body_type == TrackReport.__name__:
             report = PersistentTrack.construct_from_jdict(message.body)
@@ -92,21 +111,6 @@ class TrackNode(SubscriberNode):
 
         if self.on_message:
             self.on_message(message)
-
-
-    # def __handle_block_occupancy(self, message: Message) -> None:
-    #     try:
-    #         report = BlockOccupancyReport.construct_from_jdict(message.body)
-    #     except TypeError:
-    #         self.logger.error(f'failed to construct BlockOccupancyReport from message body:{message.body}')
-    #         return
-    #
-    #     # TODO: keep a count / timing of occupancy reports for each block -
-    #     # TODO: subsequent reports within a time period are handled differently
-    #     try:
-    #         PersistentBlockStatus.update_from_block_occupancy_report(report)
-    #     except Exception as exc:
-    #         self.logger.error(f'failed to update PersistentBlockStatus from TurnoutReport:{exc}')
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -131,19 +135,6 @@ class TrackNode(SubscriberNode):
     def find_all_turnouts(self) -> List[PersistentTurnoutStatus]:
         self.__setup()
         return PersistentTurnoutStatus.find_all()
-
-
-    def subscribe(self) -> None:
-        self.__setup()
-
-        if not self.mq_client.is_connected:
-            self.mq_client.connect()
-        self.logger.info('subscribed')
-
-        try:
-            self.mq_client.subscribe(*self.subscription_routing_keys())
-        except KeyboardInterrupt:
-            return
 
 
     def __setup(self):

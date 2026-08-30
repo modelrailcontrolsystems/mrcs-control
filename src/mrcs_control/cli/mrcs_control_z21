@@ -81,7 +81,7 @@ async def monitor():
                 return
 
         while True:
-            await asyncio.sleep(2)
+            await asyncio.sleep(20)
             await station.send_command(Command.lan_set_broadcast_flags(conf.subscription))
 
 

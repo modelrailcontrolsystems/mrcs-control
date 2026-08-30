@@ -26,22 +26,28 @@ from mrcs_control.operations.track.track_node import TrackNode
 
 class TestSubscriberNodeDrain(unittest.TestCase):
 
-    def test_track_node_drain(self):
-        mock_mq_client = MagicMock()
-        mock_mq_client.is_connected = False
-        mock_mq_client.queue_config.exclusive = False
-        mock_mq_client.queue_purge.return_value = 7
+    @patch('mrcs_control.operations.async_messaging_node.MQManager')
+    def test_track_node_drain(self, mock_mq_manager_class):
+        mock_manager = MagicMock()
+        mock_manager.queue_purge.return_value = 7
+        mock_mq_manager_class.return_value = mock_manager
 
         node = TrackNode(NodeTopology.TEST.value)
-        node.mq_client = mock_mq_client
-
         purged = node.drain()
+
         self.assertEqual(7, purged)
-        mock_mq_client.connect.assert_called_once()
-        mock_mq_client.queue_purge.assert_called_once()
+        mock_manager.connect.assert_called_once()
+        mock_manager.queue_declare.assert_called_once_with(
+            node.mq_client.queue_name,
+            durable=node.mq_client.queue_config.durable,
+            exclusive=node.mq_client.queue_config.exclusive,
+        )
+        mock_manager.queue_purge.assert_called_once_with(node.mq_client.queue_name)
+        mock_manager.close.assert_called_once()
 
 
-    def test_subscriber_node_drain_exclusive(self):
+    @patch('mrcs_control.operations.async_messaging_node.MQManager')
+    def test_subscriber_node_drain_exclusive(self, mock_mq_manager_class):
         mock_mq_client = MagicMock()
         mock_mq_client.queue_config.exclusive = True
 
@@ -50,8 +56,7 @@ class TestSubscriberNodeDrain(unittest.TestCase):
 
         purged = node.drain()
         self.assertIsNone(purged)
-        mock_mq_client.connect.assert_not_called()
-        mock_mq_client.queue_purge.assert_not_called()
+        mock_mq_manager_class.assert_not_called()
 
 
     @patch('mrcs_control.operations.async_messaging_node.MQManager')

@@ -10,6 +10,8 @@ source repo: mrcs_control
 DESCRIPTION
 A service that manages track equipment.
 
+The service begins by requesting track voltage and track occupancy reports from all of the available detectors.
+
 A --drain function is available - this drains the queue used by mrcs_control_track before any other functions
 are invoked. The function is useful if problematic messages have been published to the queue.
 
@@ -19,7 +21,6 @@ mrcs_control_track [-h] [-i INDENT] [-v] [--version] [-t] [-d] (-l {B,T,S} | -p 
 EXAMPLES
 mrcs_control_track -t -v -d -r
 """
-
 import sys
 
 from mrcs_control.cli.args.track_args import TrackArgs
@@ -80,7 +81,7 @@ if __name__ == '__main__':
             print(JSONify.dumps([blocks, turnouts], indent=args.indent))
 
         if args.run:
-            node.subscribe()
+            node.run()
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -90,5 +91,4 @@ if __name__ == '__main__':
             print(file=sys.stderr)
 
         if node is not None:
-            # noinspection unresolved-references
             node.close()

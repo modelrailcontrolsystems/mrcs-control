@@ -43,6 +43,8 @@ from mrcs_core.sys.logging import Logging
 
 if __name__ == '__main__':
 
+    node = None
+
     # ----------------------------------------------------------------------------------------------------------------
 
     args = ClockManagerArgs('a service to manage the model time clock configuration')
@@ -55,11 +57,11 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
-        manager = ClockManagerNode(args.mode.value)
-        logger.info(f'manager: {manager}')
+        node = ClockManagerNode(args.mode.value)
+        logger.info(f'node: {node}')
 
         if args.drain:
-            manager.drain()
+            node.drain()
 
         if args.conf:
             conf = Clock.load(Host)
@@ -72,10 +74,14 @@ if __name__ == '__main__':
             exit(0)
 
         if args.subscribe:
-            manager.subscribe()
+            node.subscribe()
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     except KeyboardInterrupt:
         print(file=sys.stderr)
+
+    finally:
+        if node is not None:
+            node.close()

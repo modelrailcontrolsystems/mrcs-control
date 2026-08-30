@@ -27,8 +27,9 @@ class CommandArgs(SubscriberControlArgs):
         group = self._parser.add_mutually_exclusive_group(required=False)
         group.add_argument('-r', '--router', action='store_true', help='get control router state')
         group.add_argument('-p', '--power', action='store', type=int, nargs=1, choices=[0, 1], help='set track power')
+        group.add_argument('-c', '--can-detectors', action='store_true', help='get detector reports')
         group.add_argument('-u', '--turnout', action='store', type=int, nargs=2, help='set turnout ADDR DIR')
-        group.add_argument('-c', '--get-decoder', action='store', type=int, nargs=1, help='get mpu decoder at ADDR')
+        group.add_argument('-e', '--get-decoder', action='store', type=int, nargs=1, help='get mpu decoder at ADDR')
         group.add_argument('-g', '--get-mpu', action='store', type=int, nargs=1, help='get mpu at ADDR')
         group.add_argument('-s', '--set-mpu', action='store', type=int, nargs=3, help='set mpu ADDR DIR SPEED')
 
@@ -39,7 +40,7 @@ class CommandArgs(SubscriberControlArgs):
 
     @property
     def has_command(self):
-        return (self.router or self.power is not None or self.turnout is not None or
+        return (self.router or self.power is not None or self.turnout is not None or self.can_detectors or
                 self.get_decoder is not None or self.get_mpu is not None or self.set_mpu is not None)
 
 
@@ -51,6 +52,9 @@ class CommandArgs(SubscriberControlArgs):
         if self.power is not None:
             mode = TrackMode.COMMAND_POWER_ON if self.power else TrackMode.COMMAND_POWER_OFF
             return XCommand.lan_x_set_track_power(mode)
+
+        if self.can_detectors:
+            return Command.lan_can_detector()
 
         if self.turnout is not None:
             positon = TurnoutPosition.P0 if self.turnout[1] == 0 else TurnoutPosition.P1
@@ -87,6 +91,11 @@ class CommandArgs(SubscriberControlArgs):
 
 
     @property
+    def can_detectors(self):
+        return self._args.can_detectors
+
+
+    @property
     def turnout(self):
         return self._args.turnout
 
@@ -110,5 +119,6 @@ class CommandArgs(SubscriberControlArgs):
 
     def __str__(self, *args, **kwargs):
         return (f'CommandArgs:{{test:{self.test}, drain:{self.drain}, monitor:{self.monitor}, router:{self.router}, '
-                f'power:{self.power}, turnout:{self.turnout}, get_decoder:{self.get_decoder}, get_mpu:{self.get_mpu}, '
-                f'set_mpu:{self.set_mpu}, indent:{self.indent}, verbose:{self.verbose}}}')
+                f'power:{self.power}, can_detectors:{self.can_detectors}, turnout:{self.turnout}, '
+                f'get_decoder:{self.get_decoder}, get_mpu:{self.get_mpu}, set_mpu:{self.set_mpu}, '
+                f'indent:{self.indent}, verbose:{self.verbose}}}')
