@@ -26,7 +26,6 @@ from mrcs_control.dcc.z21.equipment.turnout.turnout_report import TurnoutReportB
 from mrcs_core.data.json import JSONable
 
 
-# TODO: needs test coverage
 # --------------------------------------------------------------------------------------------------------------------
 
 class EquipmentReport(object):

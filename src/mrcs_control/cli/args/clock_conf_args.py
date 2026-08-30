@@ -8,7 +8,7 @@ https://realpython.com/command-line-interfaces-python-argparse/
 
 from collections import OrderedDict
 
-from mrcs_control.cli.args.multimode_control_args import MultimodeControlArgs
+from mrcs_control.cli.args.subscriber_control_args import SubscriberControlArgs
 
 from mrcs_core.data.iso_datetime import ISODatetime
 from mrcs_core.operations.time.clock import Clock
@@ -16,7 +16,7 @@ from mrcs_core.operations.time.clock import Clock
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class ClockConfArgs(MultimodeControlArgs):
+class ClockConfArgs(SubscriberControlArgs):
     """unix command line handler"""
 
     def __init__(self, description):
@@ -37,7 +37,7 @@ class ClockConfArgs(MultimodeControlArgs):
         group.add_argument('-r', '--reload', action='store_true',
                            help='load the clock from saved model time')
 
-        group.add_argument('-d', '--delete', action='store_true',
+        group.add_argument('-e', '--delete', action='store_true',
                            help='erase the clock configuration')
 
 
@@ -151,7 +151,7 @@ class ClockConfArgs(MultimodeControlArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'ClockConfArgs:{{now:{self.now}, conf:{self.conf}, set:{self.set}, reload:{self.reload}, '
-                f'delete:{self.delete}, running:{self.set_running},speed:{self.set_speed}, year:{self.set_year}, '
-                f'month:{self.set_month}, day:{self.set_day}, hour:{self.set_hour}, minute:{self.set_minute}, '
-                f'indent:{self.indent}, verbose:{self.verbose}}}')
+        return (f'ClockConfArgs:{{test:{self.test}, drain:{self.drain}, now:{self.now}, conf:{self.conf}, '
+                f'set:{self.set}, reload:{self.reload}, delete:{self.delete}, running:{self.set_running}, '
+                f'speed:{self.set_speed}, year:{self.set_year}, month:{self.set_month}, day:{self.set_day}, '
+                f'hour:{self.set_hour}, minute:{self.set_minute}, indent:{self.indent}, verbose:{self.verbose}}}')

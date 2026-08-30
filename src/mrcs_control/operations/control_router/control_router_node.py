@@ -70,7 +70,7 @@ class ControlRouterNode(AsyncSubscriberNode):
 
     def __init__(self, ops: NodeTopology.ServiceConfiguration,
                  conf: ControlRouterConf, on_message: Callable[JSONable] | None = None):
-        super().__init__(ops, MQTopology.SINGLE)
+        super().__init__(ops, MQTopology.SINGLE_PROCESS)
 
         self.__conf = conf
         self.__on_message = on_message

@@ -9,13 +9,17 @@ source repo: mrcs_control
 
 DESCRIPTION
 A service to record cron event schedules according to model time
+
+A --drain function is available - this drains the queue used by mrcs_control_crontab before any other functions
+are invoked. The function is useful if problematic messages have been published to the queue.
+
 Note that in --subscribe mode, the utility runs forever.
 
 Test with:
 cli/mrcs_publisher -vti4 -t CRN -n 3 -m '{"event_id": "abc", "on": "2026-01-03T06:00:00.000"}'
 
 SYNOPSIS
-mrcs_control_crontab [-h] [-i INDENT] [-v] [--version] [-t] (-c | -l | -s)
+mrcs_control_crontab [-h] [-i INDENT] [-v] [--version] [-t] [-d] (-c | -l | -s)
 
 EXAMPLES
 mrcs_control_crontab --verbose --subscribe --test
@@ -51,6 +55,9 @@ if __name__ == '__main__':
     try:
         crontab = CrontabNode(args.mode.value)
         logger.info(f'crontab: {crontab}')
+
+        if args.drain:
+            crontab.drain()
 
         if args.clean:
             crontab.clean()

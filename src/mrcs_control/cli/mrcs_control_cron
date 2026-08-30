@@ -9,13 +9,17 @@ source repo: mrcs_control
 
 DESCRIPTION
 A service to raise cron events according to model time
+
+A --drain function is available - this drains the queue used by mrcs_control_cron before any other functions
+are invoked. The function is useful if problematic messages have been published to the queue.
+
 Note that in --run mode, the utility runs forever.
 
 SYNOPSIS
-mrcs_control_cron [-h] [-i INDENT] [-v] [--version] [-t] [-c] [-l | -r | -s]
+mrcs_control_cron [-h] [-i INDENT] [-v] [--version] [-t] [-d] [-c] [-l | -r | -s]
 
 EXAMPLES
-mrcs_control_cron --verbose --run-save --test
+mrcs_control_cron --verbose --test --run-save
 
 FILES
 ~/MRCS/conf/model_time.json
@@ -51,6 +55,9 @@ if __name__ == '__main__':
     try:
         cron = CronNode(args.mode.value, args.save_model_time)
         logger.info(f'cron: {cron}')
+
+        if args.drain:
+            cron.drain()
 
         if args.clean:
             cron.clean()

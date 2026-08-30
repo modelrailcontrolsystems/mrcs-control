@@ -55,7 +55,7 @@ class CronNode(AsyncSubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, ops: NodeTopology.ServiceConfiguration, save_model_time: bool):
-        super().__init__(ops, MQTopology.SINGLE)
+        super().__init__(ops, MQTopology.SINGLE_PROCESS)
 
         self.__save_model_time = save_model_time
 

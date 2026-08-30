@@ -6,7 +6,7 @@ Created on 4 Jan 2026
 Abstract blocking messaging nodes
 """
 from abc import ABC, abstractmethod
-from typing import Self
+from typing import Generic, Self, TypeVar
 
 from mrcs_control.messaging.mq_client import MQClient, MQPublisher, MQSubscriber
 from mrcs_control.messaging.mq_topology import MQTopology
@@ -20,7 +20,12 @@ from mrcs_core.sys.logging import Logging
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class MessagingNode(ABC):
+ClientT = TypeVar('ClientT', bound=MQClient)
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+class MessagingNode(Generic[ClientT], ABC):
     """
     An abstract blocking messaging node
     """
@@ -34,7 +39,7 @@ class MessagingNode(ABC):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, ops: NodeTopology.ServiceConfiguration, mq_client: MQClient):
+    def __init__(self, ops: NodeTopology.ServiceConfiguration, mq_client: ClientT):
         if not isinstance(ops, NodeTopology.ServiceConfiguration):
             raise TypeError(
                 'ops must be a NodeTopology.ServiceConfiguration instance; '
@@ -55,8 +60,13 @@ class MessagingNode(ABC):
 
 
     @property
-    def mq_client(self):
+    def mq_client(self) -> ClientT:
         return self.__mq_client
+
+
+    @mq_client.setter
+    def mq_client(self, mq_client: ClientT):
+        self.__mq_client = mq_client
 
 
     @property
@@ -72,7 +82,7 @@ class MessagingNode(ABC):
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class PublisherNode(MessagingNode, ABC):
+class PublisherNode(MessagingNode[MQPublisher], ABC):
     """
     a messaging node that can publish
     """
@@ -92,7 +102,7 @@ class PublisherNode(MessagingNode, ABC):
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class SubscriberNode(MessagingNode, ABC):
+class SubscriberNode(MessagingNode[MQSubscriber], ABC):
     """
     a blocking messaging node that can publish and subscribe
     """
@@ -131,6 +141,18 @@ class SubscriberNode(MessagingNode, ABC):
 
 
     # ----------------------------------------------------------------------------------------------------------------
+
+    def drain(self) -> int | None:
+        self.logger.debug('SubscriberNode - drain')
+
+        if self.mq_client.queue_config.exclusive:
+            return None
+
+        if not self.mq_client.is_connected:
+            self.mq_client.connect()
+
+        return self.mq_client.queue_purge()
+
 
     def close(self) -> None:
         self.mq_client.close()

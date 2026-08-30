@@ -19,6 +19,7 @@ from enum import StrEnum, unique
 from typing import Self
 
 import pika
+from pika.adapters.blocking_connection import BlockingChannel, BlockingConnection
 from pika.exceptions import AMQPError, ChannelWrongStateError
 from pika.exchange_type import ExchangeType
 
@@ -56,6 +57,7 @@ class MQClient(ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self):
+        self.__connection = None
         self.__channel = None
         self.__logger = Logging.getLogger()
 
@@ -63,20 +65,23 @@ class MQClient(ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     def connect(self) -> None:
-        self.logger.debug('connect')
+        self.logger.debug('MQClient - connect')
 
-        connection = pika.BlockingConnection(
+        self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(host=self.__DEFAULT_HOST),
         )
 
-        self.__channel = connection.channel()
+        self.channel = self.connection.channel()
 
 
     def close(self) -> bool:
         self.logger.debug('close')
 
         try:
-            self.channel.close()
+            if self.channel is not None and self.channel.is_open:
+                self.channel.close()
+            if self.connection is not None and self.connection.is_open:
+                self.connection.close()
             return True
         except (AttributeError, ChannelWrongStateError):
             return False
@@ -86,14 +91,35 @@ class MQClient(ABC):
             return False
 
         finally:
-            self.__channel = None
+            self.channel = None
+            self.connection = None
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     @property
-    def channel(self):
+    def is_connected(self) -> bool:
+        return self.channel is not None
+
+
+    @property
+    def connection(self) -> BlockingConnection:
+        return self.__connection
+
+
+    @connection.setter
+    def connection(self, connection: BlockingConnection | None) -> None:
+        self.__connection = connection
+
+
+    @property
+    def channel(self) -> BlockingChannel:
         return self.__channel
+
+
+    @channel.setter
+    def channel(self, channel: BlockingChannel | None) -> None:
+        self.__channel = channel
 
 
     @property
@@ -124,21 +150,48 @@ class MQManager(MQClient):
     # ----------------------------------------------------------------------------------------------------------------
 
     def exchange_delete(self, exchange_name: str):
-        self.logger.debug(f'exchange_delete:{exchange_name}')
+        self.logger.debug(f'MQManager - exchange_delete:{exchange_name}')
 
         if self.channel is None:
-            raise RuntimeError('MQManager - exchange_delete: no channel')
+            raise RuntimeError('exchange_delete: no channel')
 
         self.channel.exchange_delete(exchange=exchange_name, if_unused=True)
 
 
+    def queue_declare(self, queue_name: str, durable: bool = False, exclusive: bool = False,
+                      auto_delete: bool = False) -> None:
+        self.logger.debug(f'MQManager - queue_declare:{queue_name}')
+
+        if self.channel is None:
+            raise RuntimeError('queue_declare: no channel')
+
+        self.channel.queue_declare(
+            queue=queue_name,
+            durable=durable,
+            exclusive=exclusive,
+            auto_delete=auto_delete,
+        )
+
+
     def queue_delete(self, queue_name: str):
-        self.logger.debug(f'queue_delete:{queue_name}')
+        self.logger.debug(f'MQManager - queue_delete:{queue_name}')
 
         if self.channel is None:
             raise RuntimeError('queue_delete: no channel')
 
-        self.channel.queue_delete(queue_name, if_unused=True, if_empty=False)
+        self.channel.queue_delete(queue_name, if_unused=True)
+
+
+    def queue_purge(self, queue_name: str) -> int:
+        self.logger.debug(f'MQManager - queue_purge:{queue_name}')
+
+        if self.channel is None:
+            raise RuntimeError('queue_purge: no channel')
+
+        response = self.channel.queue_purge(queue_name)
+        purged_count = response.method.message_count
+        self.logger.info(f'queue_purge:{queue_name} - purged {purged_count} messages')
+        return purged_count
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -171,7 +224,7 @@ class MQPublisher(MQClient):
     # ----------------------------------------------------------------------------------------------------------------
 
     def connect(self):
-        self.logger.debug(f'connect')
+        self.logger.debug(f'MQPublisher - connect')
 
         super().connect()
         self.channel.exchange_declare(exchange=self.exchange_name, exchange_type=ExchangeType.topic, durable=True)
@@ -179,7 +232,7 @@ class MQPublisher(MQClient):
 
 
     def publish(self, message: Message):
-        self.logger.debug(f'publish:{message}')
+        self.logger.debug(f'MQPublisher - publish:{message}')
 
         try:
             routing_key = JSONify.as_jdict(message.routing_key)
@@ -253,6 +306,24 @@ class MQSubscriber(MQPublisher):
 
     # ----------------------------------------------------------------------------------------------------------------
 
+    def queue_purge(self) -> int:
+        self.logger.debug(f'MQSubscriber - queue_purge:{self.queue_name}')
+
+        if self.channel is None:
+            raise RuntimeError('queue_purge: no channel')
+
+        self.channel.queue_declare(
+            self.queue_name,
+            durable=self.queue_config.durable,
+            exclusive=self.queue_config.exclusive,
+        )
+
+        response = self.channel.queue_purge(self.queue_name)
+        purged_count = response.method.message_count
+        self.logger.info(f'queue_purge:{self.queue_name} - purged {purged_count} messages')
+        return purged_count
+
+
     def subscribe(self, *routing_keys: RoutingKey):
         self.logger.debug('subscribe')
 
@@ -267,7 +338,7 @@ class MQSubscriber(MQPublisher):
 
         while True:
             try:
-                self.channel.queue_declare(self.queue_name, durable=durable, exclusive=exclusive, auto_delete=False)
+                self.channel.queue_declare(self.queue_name, durable=durable, exclusive=exclusive)
 
                 for routing_key in routing_keys:
                     self.channel.queue_bind(
@@ -290,7 +361,7 @@ class MQSubscriber(MQPublisher):
 
 
     def on_consume(self, ch, method, _properties, payload):
-        self.logger.debug(f'on_consume:{method.delivery_tag}')
+        self.logger.debug(f'MQSubscriber - on_consume:{method.delivery_tag}')
 
         try:
             routing_key = PublicationRoutingKey.construct_from_jdict(method.routing_key)

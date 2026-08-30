@@ -6,12 +6,12 @@ Created on 1 Jan 2026
 https://realpython.com/command-line-interfaces-python-argparse/
 """
 
-from mrcs_control.cli.args.multimode_control_args import MultimodeControlArgs
+from mrcs_control.cli.args.subscriber_control_args import SubscriberControlArgs
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class CrontabArgs(MultimodeControlArgs):
+class CrontabArgs(SubscriberControlArgs):
     """unix command line handler"""
 
 
@@ -46,5 +46,5 @@ class CrontabArgs(MultimodeControlArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'CrontabArgs:{{test:{self.test}, clean:{self.clean}, list:{self.list}, '
+        return (f'CrontabArgs:{{test:{self.test}, drain:{self.drain}, clean:{self.clean}, list:{self.list}, '
                 f'subscribe:{self.subscribe}, indent:{self.indent}, verbose:{self.verbose}}}')

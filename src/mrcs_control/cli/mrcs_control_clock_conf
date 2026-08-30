@@ -25,8 +25,11 @@ mrcs_control/mrcs_clock
 * Intended for use during system startup, under systemd control
 * Requires the mrcs_control/mrcs_clock_manager to be running in order to operate correctly
 
+A --drain function is available - this drains the queue used by mrcs_control_clock_conf before any other functions
+are invoked. The function is useful if problematic messages have been published to the queue.
+
 SYNOPSIS
-mrcs_control_clock_conf [-h] [-i INDENT] [-v] [--version] (-n | -c | -s | -r | -d)
+mrcs_control_clock_conf [-h] [-i INDENT] [-v] [--version] [-t] [-d] (-n | -c | -s | -r | -e)
 [-sr] [-ss SPEED] [-sy YEAR] [-sm MONTH] [-sd DAY] [-sh HOUR] [-si MINUTE]
 
 EXAMPLES
@@ -71,6 +74,9 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
+        if args.drain:
+            clock_conf_node.drain()
+
         if args.now:
             print(JSONify.dumps(clock.now()))
             exit(0)

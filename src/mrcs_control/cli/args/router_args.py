@@ -6,12 +6,12 @@ Created on 31 Jul 2026
 https://realpython.com/command-line-interfaces-python-argparse/
 """
 
-from mrcs_control.cli.args.multimode_control_args import MultimodeControlArgs
+from mrcs_control.cli.args.subscriber_control_args import SubscriberControlArgs
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class RouterArgs(MultimodeControlArgs):
+class RouterArgs(SubscriberControlArgs):
     """unix command line handler"""
 
 
@@ -41,5 +41,5 @@ class RouterArgs(MultimodeControlArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'RouterArgs:{{test:{self.test}, state:{self.state}, run:{self.run}, '
+        return (f'RouterArgs:{{test:{self.test}, drain:{self.drain}, state:{self.state}, run:{self.run}, '
                 f'indent:{self.indent}, verbose:{self.verbose}}}')

@@ -10,11 +10,11 @@ Created on 3 Aug 2026
 * MQTopology - anticipates the way in which an MQ subscriber client will be used. Two QueueConfiguration
 options are supported:
 
-    * SINGLE - used where there should only be one queue for a subscriber type. The queue should be durable,
+    * SINGLE_PROCESS - used where there should only be one queue for a subscriber type. The queue should be durable,
     so that when the single subscriber is restarted, no messages will be lost. To support durability, the name of the
     queue should never change. Logically, the queue should be exclusive, but RabbitMQ does not support this arrangement.
 
-    * MULTIPLE - used where multiple instances of a subscriber type are possible, an example is the
+    * MULTI_PROCESS - used where multiple instances of a subscriber type are possible, an example is the
     mrcs_control_subscriber CLU. In that case, we can deliver to multiple mrcs_control_subscribers, each sharing a
     topic, but each client with its own queue. The subscriber's queue has a unique name, and is exclusive.
     The queue is discarded when the process terminates.
@@ -70,7 +70,7 @@ class MQTopology(Enum, metaclass=MetaEnum):
         # ------------------------------------------------------------------------------------------------------------
 
         def queue_name(self, exchange_name: MQMode, id: EquipmentIdentifier) -> str:
-            if self.__queue_name is not None:
+            if self.unique_name and self.__queue_name is not None:
                 return self.__queue_name  # generate the name only once
 
             parts = [exchange_name, id.as_json()]
@@ -108,5 +108,5 @@ class MQTopology(Enum, metaclass=MetaEnum):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    SINGLE = QueueConfiguration(False, True, False)
-    MULTIPLE = QueueConfiguration(True, False, True)
+    SINGLE_PROCESS = QueueConfiguration(False, True, False)
+    MULTI_PROCESS = QueueConfiguration(True, False, True)

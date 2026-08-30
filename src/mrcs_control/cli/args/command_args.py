@@ -6,7 +6,7 @@ Created on 6 Jun 2026
 https://realpython.com/command-line-interfaces-python-argparse/
 """
 
-from mrcs_control.cli.args.multimode_control_args import MultimodeControlArgs
+from mrcs_control.cli.args.subscriber_control_args import SubscriberControlArgs
 from mrcs_control.dcc.z21.command.command import Command, XCommand
 from mrcs_core.equipment.motive_power_unit.mpu_enums import MPUDirection
 from mrcs_core.equipment.track.track_enums import TrackMode
@@ -15,7 +15,7 @@ from mrcs_core.equipment.turnout.turnout_enums import TurnoutPosition
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class CommandArgs(MultimodeControlArgs):
+class CommandArgs(SubscriberControlArgs):
     """unix command line handler"""
 
 
@@ -28,7 +28,7 @@ class CommandArgs(MultimodeControlArgs):
         group.add_argument('-r', '--router', action='store_true', help='get control router state')
         group.add_argument('-p', '--power', action='store', type=int, nargs=1, choices=[0, 1], help='set track power')
         group.add_argument('-u', '--turnout', action='store', type=int, nargs=2, help='set turnout ADDR DIR')
-        group.add_argument('-d', '--get-decoder', action='store', type=int, nargs=1, help='get mpu decoder at ADDR')
+        group.add_argument('-c', '--get-decoder', action='store', type=int, nargs=1, help='get mpu decoder at ADDR')
         group.add_argument('-g', '--get-mpu', action='store', type=int, nargs=1, help='get mpu at ADDR')
         group.add_argument('-s', '--set-mpu', action='store', type=int, nargs=3, help='set mpu ADDR DIR SPEED')
 
@@ -109,6 +109,6 @@ class CommandArgs(MultimodeControlArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'CommandArgs:{{test:{self.test}, monitor:{self.monitor}, router:{self.router}, power:{self.power}, '
-                f'turnout:{self.turnout}, get_decoder:{self.get_decoder}, get_mpu:{self.get_mpu}, '
+        return (f'CommandArgs:{{test:{self.test}, drain:{self.drain}, monitor:{self.monitor}, router:{self.router}, '
+                f'power:{self.power}, turnout:{self.turnout}, get_decoder:{self.get_decoder}, get_mpu:{self.get_mpu}, '
                 f'set_mpu:{self.set_mpu}, indent:{self.indent}, verbose:{self.verbose}}}')

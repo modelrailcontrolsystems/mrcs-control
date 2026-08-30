@@ -11,8 +11,10 @@ The AsyncMessagingNode class provides asyncio loop utilities to support concrete
 import asyncio
 import signal
 from abc import ABC, abstractmethod
+from typing import Generic, TypeVar
 
-from mrcs_control.messaging.mq_async_client import MQAsyncPublisher, MQAsyncSubscriber
+from mrcs_control.messaging.mq_async_client import MQAsyncClient, MQAsyncPublisher, MQAsyncSubscriber
+from mrcs_control.messaging.mq_client import MQManager
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
@@ -23,7 +25,13 @@ from mrcs_core.sys.logging import Logging
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class AsyncMessagingNode(ABC):
+AsyncClientT = TypeVar('AsyncClientT', bound=MQAsyncClient)
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+
+class AsyncMessagingNode(Generic[AsyncClientT], ABC):
     """
     An abstract async messaging node
     """
@@ -37,7 +45,13 @@ class AsyncMessagingNode(ABC):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, ops: NodeTopology.ServiceConfiguration, mq_client):
+    def __init__(self, ops: NodeTopology.ServiceConfiguration, mq_client: AsyncClientT):
+        if not isinstance(ops, NodeTopology.ServiceConfiguration):
+            raise TypeError(
+                'ops must be a NodeTopology.ServiceConfiguration instance; '
+                f'got {type(ops).__name__}. Use NodeTopology.<MODE>.value.'
+            )
+
         self.__ops = ops
         self.__mq_client = mq_client
 
@@ -113,8 +127,13 @@ class AsyncMessagingNode(ABC):
 
 
     @property
-    def mq_client(self):
+    def mq_client(self) -> AsyncClientT:
         return self.__mq_client
+
+
+    @mq_client.setter
+    def mq_client(self, mq_client: AsyncClientT):
+        self.__mq_client = mq_client
 
 
     @property
@@ -130,7 +149,7 @@ class AsyncMessagingNode(ABC):
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class AsyncPublisherNode(AsyncMessagingNode, ABC):
+class AsyncPublisherNode(AsyncMessagingNode[MQAsyncPublisher], ABC):
     """
     an async messaging node that can publish
     """
@@ -175,7 +194,7 @@ class AsyncPublisherNode(AsyncMessagingNode, ABC):
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class AsyncSubscriberNode(AsyncMessagingNode, ABC):
+class AsyncSubscriberNode(AsyncMessagingNode[MQAsyncSubscriber], ABC):
     """
     an async messaging node that can publish and subscribe
     """
@@ -212,6 +231,27 @@ class AsyncSubscriberNode(AsyncMessagingNode, ABC):
 
 
     # ----------------------------------------------------------------------------------------------------------------
+
+    def drain(self) -> int | None:
+        self.logger.debug('AsyncSubscriberNode - drain')
+
+        if self.mq_client.queue_config.exclusive:
+            return None
+
+        manager = MQManager()
+        manager.connect()
+
+        try:
+            manager.queue_declare(
+                self.mq_client.queue_name,
+                durable=self.mq_client.queue_config.durable,
+                exclusive=self.mq_client.queue_config.exclusive,
+            )
+
+            return manager.queue_purge(self.mq_client.queue_name)
+        finally:
+            manager.close()
+
 
     def run(self, *args, **kwargs) -> None:
         self.logger.debug('AsyncSubscriberNode - run')

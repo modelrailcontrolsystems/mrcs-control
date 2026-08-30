@@ -44,7 +44,7 @@ class ClockConfNode(AsyncSubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, ops: NodeTopology.ServiceConfiguration, clock: Clock):
-        super().__init__(ops, MQTopology.SINGLE)
+        super().__init__(ops, MQTopology.SINGLE_PROCESS)
 
         self.__clock = clock
         self.__origin = None
