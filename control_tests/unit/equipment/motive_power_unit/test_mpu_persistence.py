@@ -39,9 +39,9 @@ class TestMPUPersistence(unittest.TestCase):
     def test_setup(self):
         obj1, obj2 = self.__setup_db()
         self.assertEqual('PersistentMPUStatus:{label:EMR Class 08, mpu_address:3, functions:+-+, '
-                         'speed_setting:12, speed:7, reverse:True}', str(obj1))
+                         'speed_setting:12, speed:7, direction:FORWARD{0}}', str(obj1))
         self.assertEqual('PersistentMPUStatus:{label:DB Class 60, mpu_address:4, functions:+-+, '
-                         'speed_setting:15, speed:8, reverse:False}', str(obj2))
+                         'speed_setting:15, speed:8, direction:FORWARD{0}}', str(obj2))
 
 
     def test_find(self):
@@ -84,7 +84,7 @@ class TestMPUPersistence(unittest.TestCase):
 
         obj3 = PersistentMPUStatus.update_from_configuration_report(obj2)
         self.assertEqual('PersistentMPUStatus:{label:EMR Class 08, mpu_address:3, functions:-+-, '
-                         'speed_setting:99, speed:7, reverse:False}', str(obj3))
+                         'speed_setting:99, speed:7, direction:FORWARD{0}}', str(obj3))
 
 
     def test_update_from_decoder(self):
@@ -97,7 +97,7 @@ class TestMPUPersistence(unittest.TestCase):
 
         obj3 = PersistentMPUStatus.update_from_decoder_report(obj2)
         self.assertEqual('PersistentMPUStatus:{label:EMR Class 08, mpu_address:3, functions:+-+, '
-                         'speed_setting:12, speed:90, reverse:True}', str(obj3))
+                         'speed_setting:12, speed:90, direction:FORWARD{0}}', str(obj3))
 
 
     def test_delete(self):

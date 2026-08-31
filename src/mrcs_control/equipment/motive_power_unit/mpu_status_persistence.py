@@ -14,6 +14,7 @@ from mrcs_control.db.db_client import DbClient
 from mrcs_control.db.db_name import DbName
 from mrcs_core.equipment.motive_power_unit.mpu_configuration_report import MPUConfigurationReport
 from mrcs_core.equipment.motive_power_unit.mpu_decoder_report import MPUDecoderReport
+from mrcs_core.equipment.motive_power_unit.mpu_enums import MPUDirection
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -51,7 +52,7 @@ class MPUStatusPersistence(PersistentObject, ABC):
             functions TEXT,
             speed_setting INTEGER,
             speed INTEGER,
-            reverse BOOLEAN)
+            direction TEXT)
             '''
         client.execute(sql)
 
@@ -82,7 +83,7 @@ class MPUStatusPersistence(PersistentObject, ABC):
         client = DbClient.instance(cls.db_name())
 
         table = cls.table()
-        sql = f'SELECT label, address, functions, speed_setting, speed, reverse FROM {table} ORDER BY label'
+        sql = f'SELECT label, address, functions, speed_setting, speed, direction FROM {table} ORDER BY label'
         client.execute(sql)
         rows = client.fetchall()
 
@@ -94,7 +95,7 @@ class MPUStatusPersistence(PersistentObject, ABC):
         client = DbClient.instance(cls.db_name())
 
         table = cls.table()
-        sql = f'SELECT label, address, functions, speed_setting, speed, reverse FROM {table} WHERE address = ?'
+        sql = f'SELECT label, address, functions, speed_setting, speed, direction FROM {table} WHERE address = ?'
         client.execute(sql, data=(address,))
         row = client.fetchone()
 
@@ -109,7 +110,7 @@ class MPUStatusPersistence(PersistentObject, ABC):
         client = DbClient.instance(cls.db_name())
 
         table = cls.table()
-        sql = f'SELECT label, address, functions, speed_setting, speed, reverse FROM {table} WHERE label = ?'
+        sql = f'SELECT label, address, functions, speed_setting, speed, direction FROM {table} WHERE label = ?'
         client.execute(sql, data=(label,))
         row = client.fetchone()
 
@@ -141,7 +142,7 @@ class MPUStatusPersistence(PersistentObject, ABC):
             client.txIMMEDIATE()
 
             table = cls.table()
-            sql = (f'REPLACE INTO {table} (label, address, functions, speed_setting, speed, reverse) '
+            sql = (f'REPLACE INTO {table} (label, address, functions, speed_setting, speed, direction) '
                    f'VALUES (?, ?, ?, ?, ?, ?)')
             client.execute(sql, data=item.as_db_insert())
 
@@ -160,11 +161,12 @@ class MPUStatusPersistence(PersistentObject, ABC):
             client.txIMMEDIATE()
 
             table = cls.table()
-            sql = f'UPDATE {table} SET functions = ? , speed_setting = ?, reverse = ? WHERE address = ?'
+            sql = f'UPDATE {table} SET functions = ? , speed_setting = ?, direction = ? WHERE address = ?'
             client.execute(sql,
-                           data=(config.functions.as_json(), config.speed_setting, config.reverse, config.mpu_address))
+                           data=(config.functions.as_json(), config.speed_setting,
+                                 MPUDirection.from_reverse(config.reverse).name, config.mpu_address))
 
-            sql = f'SELECT label, address, functions, speed_setting, speed, reverse FROM {table} WHERE address = ?'
+            sql = f'SELECT label, address, functions, speed_setting, speed, direction FROM {table} WHERE address = ?'
             client.execute(sql, data=(config.mpu_address,))
             row = client.fetchone()
 
@@ -191,7 +193,7 @@ class MPUStatusPersistence(PersistentObject, ABC):
             sql = f'UPDATE {table} SET speed = ? WHERE address = ?'
             client.execute(sql, data=(decoder.speed, decoder.mpu_address))
 
-            sql = f'SELECT label, address, functions, speed_setting, speed, reverse FROM {table} WHERE address = ?'
+            sql = f'SELECT label, address, functions, speed_setting, speed, direction FROM {table} WHERE address = ?'
             client.execute(sql, data=(decoder.mpu_address,))
             row = client.fetchone()
 

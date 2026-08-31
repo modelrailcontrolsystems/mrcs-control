@@ -5,5 +5,5 @@
   "functions": "+-+",
   "speed_setting": 15,
   "speed": 8,
-  "reverse": false
+  "direction": "FORWARD"
 }

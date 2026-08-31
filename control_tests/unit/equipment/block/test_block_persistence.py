@@ -22,7 +22,7 @@ from mrcs_control.test.test_helper import TestHelper
 from mrcs_core.equipment.block.block_enums import BlockOccupantFace
 from mrcs_core.equipment.block.block_id import BlockID
 from mrcs_core.equipment.block.block_occupant import BlockOccupant
-from mrcs_core.equipment.block.block_report import BlockVoltageReport, BlockOccupancyReport
+from mrcs_core.equipment.block.block_report import BlockOccupancyReport, BlockVoltageReport
 from mrcs_core.sys.host import Host
 
 
@@ -56,12 +56,12 @@ class TestBlockPersistence(unittest.TestCase):
         obj1, obj2 = self.__setup_db()
         self.assertEqual('BlockStatus:{label:BN01, block_address:5/6, direction:UP, '
                          'voltage:OCCUPIED_WITH_VOLTAGE, '
-                         'occupants:[BlockOccupant:{mpu_address:4660, face:FWD}, '
-                         'BlockOccupant:{mpu_address:17767, face:REV}]}', str(obj1))
+                         'occupants:[BlockOccupant:{mpu_address:4660, face:FACE_FORWARD}, '
+                         'BlockOccupant:{mpu_address:17767, face:FACE_BACKWARD}]}', str(obj1))
         self.assertEqual('BlockStatus:{label:BN02, block_address:5/7, direction:UP, '
                          'voltage:OCCUPIED_NO_VOLTAGE, '
-                         'occupants:[BlockOccupant:{mpu_address:1767, face:REV}, '
-                         'BlockOccupant:{mpu_address:4660, face:FWD}]}', str(obj2))
+                         'occupants:[BlockOccupant:{mpu_address:1767, face:FACE_BACKWARD}, '
+                         'BlockOccupant:{mpu_address:4660, face:FACE_FORWARD}]}', str(obj2))
 
 
     def test_find(self):
@@ -123,8 +123,8 @@ class TestBlockPersistence(unittest.TestCase):
         obj3 = obj1.update_from_voltage(obj2)
         self.assertEqual('BlockStatus:{label:BN01, block_address:5/6, direction:UP, '
                          'voltage:FREE_NO_VOLTAGE, '
-                         'occupants:[BlockOccupant:{mpu_address:4660, face:FWD}, '
-                         'BlockOccupant:{mpu_address:17767, face:REV}]}',
+                         'occupants:[BlockOccupant:{mpu_address:4660, face:FACE_FORWARD}, '
+                         'BlockOccupant:{mpu_address:17767, face:FACE_BACKWARD}]}',
                          str(obj3))
 
 
@@ -133,7 +133,7 @@ class TestBlockPersistence(unittest.TestCase):
         report = BlockOccupancyReport(
             block_id=BlockID(5, 6, 0x1234),
             occupant_group=1,
-            occupants=[BlockOccupant(9999, BlockOccupantFace.FWD)],
+            occupants=[BlockOccupant(9999, BlockOccupantFace.FACE_FORWARD)],
         )
         PersistentBlockStatus.update_from_block_occupancy_report(report)
 
@@ -141,7 +141,7 @@ class TestBlockPersistence(unittest.TestCase):
         assert obj2 is not None
         self.assertEqual(1, len(obj2.occupants))
         self.assertEqual(9999, obj2.occupants[0].mpu_address)
-        self.assertEqual(BlockOccupantFace.FWD, obj2.occupants[0].face)
+        self.assertEqual(BlockOccupantFace.FACE_FORWARD, obj2.occupants[0].face)
 
 
     def test_delete(self):
