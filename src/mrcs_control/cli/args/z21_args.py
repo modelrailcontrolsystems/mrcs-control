@@ -28,12 +28,25 @@ class Z21Args(ControlArgs):
         group.add_argument('-r', '--router', action='store_true', help='get control router state')
         group.add_argument('-p', '--power', action='store', type=int, choices=[0, 1], help='set track power')
         group.add_argument('-c', '--can-detectors', action='store_true', help='get detector reports')
-        group.add_argument('-u', '--turnout', action='store', type=int, nargs=2, help='set turnout ADDR DIR')
-        group.add_argument('-d', '--get-decoder', action='store', type=int, help='get mpu decoder at ADDR')
-        group.add_argument('-g', '--get-mpu', action='store', type=int, help='get mpu at ADDR')
-        group.add_argument('-s', '--set-mpu', action='store', type=int, nargs=3, help='set mpu ADDR DIR SPEED')
+        group.add_argument('-u', '--turnout', action='store', type=int, nargs=2, metavar=('ADDR', 'POS'),
+                           help='set turnout ADDR POS')
+        group.add_argument('-e', '--get-decoder', action='store', type=int, metavar=('ADDR',),
+                           help='get mpu decoder at ADDR')
+        group.add_argument('-g', '--get-mpu', action='store', type=int, metavar=('ADDR',),
+                           help='get mpu at ADDR')
+        group.add_argument('-s', '--set-mpu', action='store', type=int, nargs=3, metavar=('ADDR', 'DIR', 'SPEED'),
+                           help='set mpu ADDR DIR SPEED')
 
         self._args = self._parser.parse_args()
+
+        if self._args.set_mpu is not None:
+            direction = self._args.set_mpu[1]
+            if not (0 <= direction <= 1):
+                self._parser.error(f"argument -s/--set-mpu: DIR must be in range 0-1 (got {direction})")
+
+            speed = self._args.set_mpu[2]
+            if not (0 <= speed <= 255):
+                self._parser.error(f"argument -s/--set-mpu: SPEED must be in range 0-255 (got {speed})")
 
 
     # ----------------------------------------------------------------------------------------------------------------

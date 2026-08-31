@@ -93,6 +93,8 @@ class TrackNode(AsyncSubscriberNode):
         # TODO: keep a count / timing of occupancy reports for each block -
         # TODO: subsequent reports within a time period are handled differently
 
+        # TODO: replace the construct_from_jdicts below with a unified construct_from_jdict for EquipmentReport
+
         if body_type == BlockOccupancyReport.__name__:
             report = BlockOccupancyReport.construct_from_jdict(message.body)
             PersistentBlockStatus.update_from_block_occupancy_report(report)
