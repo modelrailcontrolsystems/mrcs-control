@@ -189,10 +189,7 @@ class MQManager(MQClient):
             raise RuntimeError('queue_purge: no channel')
 
         response = self.channel.queue_purge(queue_name)
-        purged_count = response.method.message_count
-        self.logger.debug(f'queue_purge:{queue_name} - purged {purged_count} messages')
-
-        return purged_count
+        return response.method.message_count
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -320,10 +317,7 @@ class MQSubscriber(MQPublisher):
         )
 
         response = self.channel.queue_purge(self.queue_name)
-        purged_count = response.method.message_count
-        self.logger.debug(f'queue_purge:{self.queue_name} - purged {purged_count} messages')
-
-        return purged_count
+        return response.method.message_count
 
 
     def subscribe(self, *routing_keys: RoutingKey):
