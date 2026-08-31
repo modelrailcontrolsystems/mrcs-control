@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
 """
-Created on 12 Aug 2026
+Created on 31 Aug 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
 source repo: mrcs_control
 
 DESCRIPTION
-A service that manages track equipment.
+A service that manages motive power units.
 
 The service begins by requesting track voltage and track occupancy reports from all of the available detectors.
 
@@ -16,18 +16,17 @@ A --drain function is available - this drains the queue used by mrcs_control_tra
 are invoked. The function is useful if problematic messages have been published to the queue.
 
 SYNOPSIS
-mrcs_control_track [-h] [-i INDENT] [-v] [--version] [-t] [-d] (-l {B,T,S} | -p | -r)
+mrcs_control_mpu [-h] [-i INDENT] [-v] [--version] [-t] [-d] (-l {B,T,S} | -p | -r)
 
 EXAMPLES
-mrcs_control_track -t -v -d -r
+mrcs_control_mpu -t -v -d -r
 """
 
 import sys
 
-from mrcs_control.cli.args.track_args import TrackArgs
-from mrcs_control.cli.inventory.block_inventory import BlockInventory
-from mrcs_control.cli.inventory.turnout_inventory import TurnoutInventory
-from mrcs_control.operations.track.track_node import TrackNode
+from mrcs_control.cli.args.mpu_args import MPUArgs
+from mrcs_control.cli.inventory.mpu_inventory import MPUInventory
+from mrcs_control.operations.mpu.mpu_node import MPUNode
 from mrcs_core.data.json import JSONify
 from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging
@@ -47,9 +46,9 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    args = TrackArgs('a service that manages track equipment')
+    args = MPUArgs('a service that manages motive power units')
 
-    Logging.config('mrcs_control_track', verbose=args.verbose)  # verbose=args.verbose / level=logging.DEBUG
+    Logging.config('mrcs_control_mpu', verbose=args.verbose)  # verbose=args.verbose / level=logging.DEBUG
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')
@@ -59,26 +58,19 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
-        node = TrackNode(args.mode.value, on_message=message_handler)
+        node = MPUNode(args.mode.value, on_message=message_handler)
         logger.info(node)
 
         if args.drain:
             node.drain()
 
         if args.populate:
-            blocks = BlockInventory.load(Host)
-            turnouts = TurnoutInventory.load(Host)
-            node.populate(blocks, turnouts)
-            print(JSONify.dumps([blocks, turnouts], indent=args.indent))
+            mpus = MPUInventory.load(Host)
+            node.populate(mpus)
+            print(JSONify.dumps(mpus, indent=args.indent))
 
         if args.list:
-            if args.list == 'B':
-                equipment = node.find_all_blocks()
-            elif args.list == 'T':
-                equipment = node.find_all_turnouts()
-            else:
-                equipment = node.track_state()
-
+            equipment = node.find_all_mpus()
             print(JSONify.dumps(equipment, indent=args.indent))
 
         if args.run:

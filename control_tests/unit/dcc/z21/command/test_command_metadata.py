@@ -24,6 +24,10 @@ class TestCommandMetadata(unittest.TestCase):
         self.assertEqual('CommandMetadata:{header:LAN_SET_BROADCAST_FLAGS, argc:1, argv_builder:argv_std, '
                          'data_format:<I, report_type:None}', str(obj1))
 
+        obj2 = CommandMetadata.find(Header.LAN_RAILCOM_GET_DATA)
+        self.assertEqual('CommandMetadata:{header:LAN_RAILCOM_GET_DATA, argc:2, argv_builder:argv_std, '
+                         'data_format:<BH, report_type:MPUDecoderReport}', str(obj2))
+
 
     def test_argv_std(self):
         obj1 = CommandMetadata.find(Header.LAN_SET_BROADCAST_FLAGS)

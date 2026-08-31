@@ -44,12 +44,12 @@ class Command(JSONable):
 
     @classmethod
     def lan_can_detector(cls, can_network_id=0xd000) -> Self:  # default is 'all CAN detectors'
-        return cls.construct(Header.LAN_CAN_DETECTOR, 0, can_network_id)
+        return cls.construct(Header.LAN_CAN_DETECTOR, 0x00, can_network_id)
 
 
     @classmethod
     def lan_railcom_get_data(cls, decoder_address: int) -> Self:
-        return cls.construct(Header.LAN_RAILCOM_GET_DATA, decoder_address)
+        return cls.construct(Header.LAN_RAILCOM_GET_DATA, 0x01, decoder_address)
 
 
     @classmethod

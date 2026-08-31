@@ -92,7 +92,7 @@ class ControlRouterNode(AsyncSubscriberNode):
 
 
     async def handle_message(self, message: Message):
-        self.logger.info('ControlRouterNode - handle_message')
+        self.logger.debug('ControlRouterNode - handle_message')
 
         if self.on_message:
             self.on_message(message)
@@ -119,7 +119,7 @@ class ControlRouterNode(AsyncSubscriberNode):
     # control router handlers...
 
     def on_dataset(self, report: JSONable):
-        self.logger.info(f'on_dataset:{report}')
+        self.logger.debug(f'ControlRouterNode - on_dataset:{report}')
 
         if isinstance(report, ControlRouterReport):
             PersistentControlRouter.narrow(report).save(Host)

@@ -32,6 +32,10 @@ class TestCommand(unittest.TestCase):
         obj2 = obj1.dataset
         self.assertEqual('Dataset:{header:0x0085 [LAN_SYSTEM_GET_DATA], total_len:4, data:}', str(obj2))
 
+        obj3 = Command.lan_railcom_get_data(5)
+        obj4 = obj3.dataset
+        self.assertEqual('Dataset:{header:0x0089 [LAN_RAILCOM_GET_DATA], total_len:7, data:01 05 00}', str(obj4))
+
 
     def test_x_construct(self):
         obj1 = XCommand.construct_x(XHeader.LAN_X_SET_TRACK_POWER, TrackMode.COMMAND_POWER_ON)
