@@ -104,7 +104,6 @@ class ControlRouterNode(AsyncSubscriberNode):
             await self.station.send_command(command)
         except Exception as exc:
             self.logger.warning(f'handle_message:{type(exc).__name__}:{exc} on:{message}')
-            raise
 
 
     def run(self, *args, **kwargs) -> None:
