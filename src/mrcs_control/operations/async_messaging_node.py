@@ -257,6 +257,7 @@ class AsyncSubscriberNode(AsyncMessagingNode[MQAsyncSubscriber], ABC):
             )
 
             return manager.queue_purge(self.mq_client.queue_name)
+
         finally:
             manager.close()
 

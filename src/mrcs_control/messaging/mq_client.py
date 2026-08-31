@@ -190,7 +190,8 @@ class MQManager(MQClient):
 
         response = self.channel.queue_purge(queue_name)
         purged_count = response.method.message_count
-        self.logger.info(f'queue_purge:{queue_name} - purged {purged_count} messages')
+        self.logger.debug(f'queue_purge:{queue_name} - purged {purged_count} messages')
+
         return purged_count
 
 
@@ -320,7 +321,8 @@ class MQSubscriber(MQPublisher):
 
         response = self.channel.queue_purge(self.queue_name)
         purged_count = response.method.message_count
-        self.logger.info(f'queue_purge:{self.queue_name} - purged {purged_count} messages')
+        self.logger.debug(f'queue_purge:{self.queue_name} - purged {purged_count} messages')
+
         return purged_count
 
 

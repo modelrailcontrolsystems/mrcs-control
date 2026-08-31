@@ -10,7 +10,7 @@ source repo: mrcs_control
 DESCRIPTION
 A service that manages motive power units.
 
-The service begins by requesting track voltage and track occupancy reports from all of the available detectors.
+The service begins by requesting MPU configuration and decoder reports from the MPUs in its data table.
 
 A --drain function is available - this drains the queue used by mrcs_control_track before any other functions
 are invoked. The function is useful if problematic messages have been published to the queue.
@@ -62,7 +62,9 @@ if __name__ == '__main__':
         logger.info(node)
 
         if args.drain:
-            node.drain()
+            purged_count = node.drain()
+            if purged_count is not None:
+                logger.info(f'Drained {purged_count} message(s).')
 
         if args.populate:
             mpus = MPUInventory.load(Host)

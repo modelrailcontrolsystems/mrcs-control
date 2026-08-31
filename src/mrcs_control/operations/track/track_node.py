@@ -13,9 +13,11 @@ from mrcs_control.cli.inventory.block_inventory import BlockInventory
 from mrcs_control.cli.inventory.turnout_inventory import TurnoutInventory
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.dcc.z21.command.command import Command
+from mrcs_control.equipment.block.block_persistence import BlockPersistence
 from mrcs_control.equipment.block.persistent_block_status import PersistentBlockStatus
 from mrcs_control.equipment.track.persistent_track import PersistentTrack
 from mrcs_control.equipment.turnout.persistent_turnout_status import PersistentTurnoutStatus
+from mrcs_control.equipment.turnout.turnout_status_persistence import TurnoutStatusPersistence
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
 from mrcs_control.operations.control_router.control_router_identity import ControlRouterSerial
@@ -98,7 +100,7 @@ class TrackNode(AsyncSubscriberNode):
 
             if body_type == BlockOccupancyReport.__name__:
                 report = BlockOccupancyReport.construct_from_jdict(message.body)
-                PersistentBlockStatus.update_from_block_occupancy_report(report)
+                BlockPersistence.update_from_block_occupancy_report(report)
 
             if body_type == TrackReport.__name__:
                 report = PersistentTrack.construct_from_jdict(message.body)
@@ -106,11 +108,11 @@ class TrackNode(AsyncSubscriberNode):
 
             if body_type == BlockVoltageReport.__name__:
                 report = BlockVoltageReport.construct_from_jdict(message.body)
-                PersistentBlockStatus.update_from_voltage(report)
+                BlockPersistence.update_from_voltage(report)
 
             if body_type == TurnoutReport.__name__:
                 report = TurnoutReport.construct_from_jdict(message.body)
-                PersistentTurnoutStatus.update_from_turnout_report(report)
+                TurnoutStatusPersistence.update_from_turnout_report(report)
 
             if self.on_message:
                 self.on_message(message)
@@ -123,8 +125,8 @@ class TrackNode(AsyncSubscriberNode):
 
     def populate(self, blocks: BlockInventory, turnouts: TurnoutInventory) -> None:
         DbClient.set_client_db_mode(self.ops.db_mode)
-        PersistentBlockStatus.recreate_tables()
-        PersistentTurnoutStatus.recreate_tables()
+        BlockPersistence.recreate_tables()
+        TurnoutStatusPersistence.recreate_tables()
 
         for block in blocks.items:
             PersistentBlockStatus.narrow(block).save()
@@ -151,8 +153,8 @@ class TrackNode(AsyncSubscriberNode):
 
     def __setup(self):
         DbClient.set_client_db_mode(self.ops.db_mode)
-        PersistentBlockStatus.create_tables()
-        PersistentTurnoutStatus.create_tables()
+        BlockPersistence.create_tables()
+        TurnoutStatusPersistence.create_tables()
 
 
     # ----------------------------------------------------------------------------------------------------------------

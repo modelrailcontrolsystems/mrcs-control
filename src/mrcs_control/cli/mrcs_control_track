@@ -63,7 +63,9 @@ if __name__ == '__main__':
         logger.info(node)
 
         if args.drain:
-            node.drain()
+            purged_count = node.drain()
+            if purged_count is not None:
+                logger.info(f'Drained {purged_count} message(s).')
 
         if args.populate:
             blocks = BlockInventory.load(Host)
