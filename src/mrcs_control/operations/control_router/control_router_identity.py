@@ -34,7 +34,7 @@ class ControlRouterSerial(IntEnum, metaclass=MetaEnum):
     Common = 3
 
     System = 4
-    Track = 5
+    Track = 5  # TODO: separate into Block and Turnout
     Signal = 6
     MPU = 7
 

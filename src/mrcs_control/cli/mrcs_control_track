@@ -16,10 +16,10 @@ A --drain function is available - this drains the queue used by mrcs_control_tra
 are invoked. The function is useful if problematic messages have been published to the queue.
 
 SYNOPSIS
-mrcs_control_track [-h] [-i INDENT] [-v] [--version] [-t] [-d] (-l {B,T,S} | -p | -r)
+mrcs_control_track [-h] [-i INDENT] [-v] [--version] [-t] [-d] [-p] (-l {B,T,S} | -r)
 
 EXAMPLES
-mrcs_control_track -t -v -d -r
+mrcs_control_track -v -d -p -r
 """
 
 import sys
@@ -63,13 +63,14 @@ if __name__ == '__main__':
         logger.info(node)
 
         if args.drain:
-            node.drain()
+            purged_count = node.drain()
+            if purged_count is not None:
+                logger.info(f'Drained {purged_count} message(s).')
 
         if args.populate:
             blocks = BlockInventory.load(Host)
             turnouts = TurnoutInventory.load(Host)
             node.populate(blocks, turnouts)
-            print(JSONify.dumps([blocks, turnouts], indent=args.indent))
 
         if args.list:
             if args.list == 'B':

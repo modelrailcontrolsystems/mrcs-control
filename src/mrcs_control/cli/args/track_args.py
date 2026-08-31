@@ -18,10 +18,11 @@ class TrackArgs(SubscriberControlArgs):
     def __init__(self, description):
         super().__init__(description)
 
+        self._parser.add_argument('-p', '--populate', action='store_true', help='populate database')
+
         group = self._parser.add_mutually_exclusive_group(required=True)
         group.add_argument('-l', '--list', action='store', type=str, choices=['B', 'T', 'S'],
                            help='list blocks, turnouts or track state')
-        group.add_argument('-p', '--populate', action='store_true', help='populate database')
         group.add_argument('-r', '--run', action='store_true', help='run the monitor')
 
         self._args = self._parser.parse_args()
@@ -30,13 +31,13 @@ class TrackArgs(SubscriberControlArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     @property
-    def list(self):
-        return self._args.list
+    def populate(self):
+        return self._args.populate
 
 
     @property
-    def populate(self):
-        return self._args.populate
+    def list(self):
+        return self._args.list
 
 
     @property
