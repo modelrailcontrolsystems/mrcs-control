@@ -48,8 +48,8 @@ class CronNode(AsyncSubscriberNode):
 
 
     @classmethod
-    def subscription_routing_keys(cls):
-        return (SubscriptionRoutingKey(ClockManagerNode.id(), EquipmentFilter.any()),)
+    def subscription_routing_keys(cls) -> list[SubscriptionRoutingKey]:
+        return [SubscriptionRoutingKey(ClockManagerNode.id(), EquipmentFilter.any())]
 
 
     # ----------------------------------------------------------------------------------------------------------------

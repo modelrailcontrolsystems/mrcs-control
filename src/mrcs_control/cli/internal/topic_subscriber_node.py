@@ -45,7 +45,7 @@ class TopicSubscriberNode(AsyncSubscriberNode):
 
 
     @classmethod
-    def subscription_routing_keys(cls):
+    def subscription_routing_keys(cls) -> list[SubscriptionRoutingKey]:
         return cls.__routing_keys
 
 

@@ -44,11 +44,15 @@ class MPUNode(AsyncSubscriberNode):
 
 
     @classmethod
-    def subscription_routing_keys(cls):
-        router_mpu_source = EquipmentFilter.construct(EquipmentType.CRT, None, ControlRouterSerial.MPU)
+    def subscription_routing_keys(cls) -> list[SubscriptionRoutingKey]:
+        subscriptions = [SubscriptionRoutingKey(EquipmentFilter.any(), cls.id())]
 
-        return (SubscriptionRoutingKey(EquipmentFilter.any(), cls.id()),
-                SubscriptionRoutingKey(router_mpu_source, EquipmentFilter.any()))
+        for serial in [ControlRouterSerial.MPU]:
+            subscriptions.append(
+                SubscriptionRoutingKey(EquipmentFilter.construct(EquipmentType.CRT, None, serial),
+                                       EquipmentFilter.any()))
+
+        return subscriptions
 
 
     @classmethod
@@ -86,7 +90,7 @@ class MPUNode(AsyncSubscriberNode):
 
 
     def handle_message(self, message: Message):
-        self.logger.debug(f'handle_message:{message}')
+        self.logger.debug(f'handle_message:{message.routing_key}')
 
         try:
             if message.routing_key.target == self.id():

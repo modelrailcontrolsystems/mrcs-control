@@ -37,8 +37,8 @@ class CrontabNode(SubscriberNode):
 
 
     @classmethod
-    def subscription_routing_keys(cls):
-        return (SubscriptionRoutingKey(EquipmentFilter.any(), cls.id()),)
+    def subscription_routing_keys(cls) -> list[SubscriptionRoutingKey]:
+        return [SubscriptionRoutingKey(EquipmentFilter.any(), cls.id())]
 
 
     # ----------------------------------------------------------------------------------------------------------------
