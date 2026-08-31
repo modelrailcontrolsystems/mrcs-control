@@ -7,11 +7,11 @@
   "occupants": [
     {
       "addr": 4660,
-      "face": "FWD"
+      "face": "FACE_FORWARD"
     },
     {
       "addr": 1767,
-      "face": "REV"
+      "face": "FACE_BACKWARD"
     }
   ]
 }

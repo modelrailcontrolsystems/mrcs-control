@@ -40,8 +40,8 @@ class TestZ21BlockReport(unittest.TestCase):
         obj1 = Dataset.construct_from_bytes(chars)
         obj2 = BlockReportBuilder.construct_from_dataset(obj1)
         self.assertEqual('BlockOccupancyReport:{block_id:BlockID:{detector_address:6, channel:7, '
-                         'reporter_id:0xd489}, occupant_group:1, occupants:[BlockOccupant:{mpu_address:3, face:FWD}, '
-                         'BlockOccupant:{mpu_address:4, face:FWD}]}', str(obj2))
+                         'reporter_id:0xd489}, occupant_group:1, occupants:[BlockOccupant:{mpu_address:3, '
+                         'face:FACE_FORWARD}, BlockOccupant:{mpu_address:4, face:FACE_FORWARD}]}', str(obj2))
 
 
 # --------------------------------------------------------------------------------------------------------------------
