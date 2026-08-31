@@ -48,21 +48,21 @@ class TestControlRouterIdentity(unittest.TestCase):
     def test_identity_block_cccupancy(self):
         obj1 = BlockOccupancyReport(BlockID(1, 2, 3), 1, [])
         obj2 = ControlRouterIdentity.get(obj1)
-        self.assertEqual('EquipmentIdentifier:{equipment_type:CRT, sector_number:None, serial_number:Track{5}}',
+        self.assertEqual('EquipmentIdentifier:{equipment_type:CRT, sector_number:None, serial_number:Block{7}}',
                          str(obj2))
 
 
     def test_identity_block_voltage(self):
         obj1 = BlockVoltageReport(BlockID(1, 2, 3), BlockVoltage.FREE_NO_VOLTAGE)
         obj2 = ControlRouterIdentity.get(obj1)
-        self.assertEqual('EquipmentIdentifier:{equipment_type:CRT, sector_number:None, serial_number:Track{5}}',
+        self.assertEqual('EquipmentIdentifier:{equipment_type:CRT, sector_number:None, serial_number:Block{7}}',
                          str(obj2))
 
 
     def test_identity_mpu_decoder(self):
         obj1 = MPUDecoderReport(1, 2, 3, 4, 5, 6)
         obj2 = ControlRouterIdentity.get(obj1)
-        self.assertEqual('EquipmentIdentifier:{equipment_type:CRT, sector_number:None, serial_number:MPU{7}}',
+        self.assertEqual('EquipmentIdentifier:{equipment_type:CRT, sector_number:None, serial_number:MPU{9}}',
                          str(obj2))
 
 
@@ -70,7 +70,7 @@ class TestControlRouterIdentity(unittest.TestCase):
         obj1 = MPUConfigurationReport(1, MPUFunctions([]), False, ThrottleSteps.STEPS_128,
                                       1, False, False, False)
         obj2 = ControlRouterIdentity.get(obj1)
-        self.assertEqual('EquipmentIdentifier:{equipment_type:CRT, sector_number:None, serial_number:MPU{7}}',
+        self.assertEqual('EquipmentIdentifier:{equipment_type:CRT, sector_number:None, serial_number:MPU{9}}',
                          str(obj2))
 
 
@@ -84,5 +84,5 @@ class TestControlRouterIdentity(unittest.TestCase):
     def test_identity_turnout(self):
         obj1 = TurnoutReport(1, TurnoutPosition.P1)
         obj2 = ControlRouterIdentity.get(obj1)
-        self.assertEqual('EquipmentIdentifier:{equipment_type:CRT, sector_number:None, serial_number:Track{5}}',
+        self.assertEqual('EquipmentIdentifier:{equipment_type:CRT, sector_number:None, serial_number:Turnout{6}}',
                          str(obj2))

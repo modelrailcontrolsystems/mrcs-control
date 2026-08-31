@@ -64,7 +64,7 @@ if __name__ == '__main__':
         if args.drain:
             purged_count = node.drain()
             if purged_count is not None:
-                logger.info(f'Drained {purged_count} message(s).')
+                logger.info(f'drained messages: {purged_count}')
 
         if args.populate:
             mpus = MPUInventory.load(Host)

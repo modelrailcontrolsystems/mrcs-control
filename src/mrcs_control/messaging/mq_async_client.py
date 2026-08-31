@@ -421,8 +421,8 @@ class MQAsyncSubscriber(MQAsyncPublisher):
 
 
     @property
-    def subscription_routing_keys(self):
-        return self.__subscription_routing_keys
+    def subscription_routing_keys(self) -> list[SubscriptionRoutingKey]:
+        return list(self.__subscription_routing_keys)
 
 
     # ----------------------------------------------------------------------------------------------------------------

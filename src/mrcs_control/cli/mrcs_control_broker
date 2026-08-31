@@ -31,6 +31,7 @@ from mrcs_core.data.json import JSONify
 from mrcs_core.sys.logging import Logging
 
 
+# TODO: if exchange is selected for delete, then delete its queues first
 # --------------------------------------------------------------------------------------------------------------------
 
 def find_filtered():

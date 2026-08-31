@@ -47,11 +47,15 @@ class TrackNode(AsyncSubscriberNode):
 
 
     @classmethod
-    def subscription_routing_keys(cls):
-        router_source = EquipmentFilter.construct(EquipmentType.CRT, None, ControlRouterSerial.Track)
+    def subscription_routing_keys(cls) -> list[SubscriptionRoutingKey]:
+        subscriptions = [SubscriptionRoutingKey(EquipmentFilter.any(), cls.id())]
 
-        return (SubscriptionRoutingKey(EquipmentFilter.any(), cls.id()),
-                SubscriptionRoutingKey(router_source, EquipmentFilter.any()))
+        for serial in [ControlRouterSerial.Track, ControlRouterSerial.Turnout, ControlRouterSerial.Block]:
+            subscriptions.append(
+                SubscriptionRoutingKey(EquipmentFilter.construct(EquipmentType.CRT, None, serial),
+                                       EquipmentFilter.any()))
+
+        return subscriptions
 
 
     @classmethod

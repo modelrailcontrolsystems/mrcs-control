@@ -34,9 +34,11 @@ class ControlRouterSerial(IntEnum, metaclass=MetaEnum):
     Common = 3
 
     System = 4
-    Track = 5  # TODO: separate into Block and Turnout
-    Signal = 6
-    MPU = 7
+    Track = 5
+    Turnout = 6
+    Block = 7
+    Signal = 8
+    MPU = 9
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -55,12 +57,12 @@ class ControlRouterIdentity(IntEnum, metaclass=MetaEnum):
 
     __MAPPING: dict[type[JSONable], EquipmentIdentifier] = {
         ControlRouterReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.System),
-        BlockOccupancyReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Track),
-        BlockVoltageReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Track),
+        BlockOccupancyReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Block),
+        BlockVoltageReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Block),
         MPUDecoderReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.MPU),
         MPUConfigurationReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.MPU),
         TrackReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Track),
-        TurnoutReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Track)
+        TurnoutReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Turnout)
     }
 
 
