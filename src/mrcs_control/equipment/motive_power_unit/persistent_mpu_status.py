@@ -15,6 +15,7 @@ A structured representation of an MPUStatus
     "reverse": true
 }
 """
+
 from typing import Self
 
 from mrcs_control.data.persistence import PersistentObject
@@ -32,6 +33,11 @@ class PersistentMPUStatus(MPUStatus, MPUStatusPersistence, PersistentObject):
 
 
     @classmethod
+    def narrow(cls, mpu: MPUStatus) -> Self:
+        return cls(mpu.label, mpu.mpu_address, mpu.functions, mpu.speed_setting, mpu.speed, mpu.reverse)
+
+
+    @classmethod
     def construct_from_db(cls, row, *child_rows) -> Self:
         label, mpu_address, functions, speed_setting, speed, reverse = row
 
@@ -41,8 +47,8 @@ class PersistentMPUStatus(MPUStatus, MPUStatusPersistence, PersistentObject):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, label: str, mpu_address: int, functions: MPUFunctions, speed_setting: int, speed: int,
-                 reverse: bool):
+    def __init__(self, label: str, mpu_address: int, functions: MPUFunctions, speed_setting: int | None,
+                 speed: int | None, reverse: bool | None):
         super().__init__(label, mpu_address, functions, speed_setting, speed, reverse)
 
 

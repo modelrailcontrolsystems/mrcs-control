@@ -54,7 +54,7 @@ class CommandMetadata(object):
             Header.LAN_SET_BROADCAST_FLAGS: cls(Header.LAN_SET_BROADCAST_FLAGS, 1, cls.argv_std, '<I', None),
             Header.LAN_SYSTEM_GET_DATA: cls(Header.LAN_SYSTEM_GET_DATA, 0, cls.argv_std, '', ControlRouterReport),
             Header.LAN_CAN_DETECTOR: cls(Header.LAN_CAN_DETECTOR, 2, cls.argv_std, '<BH', None),  # multiple
-            Header.LAN_RAILCOM_GET_DATA: cls(Header.LAN_RAILCOM_GET_DATA, 1, cls.argv_std, '>H', MPUDecoderReport),
+            Header.LAN_RAILCOM_GET_DATA: cls(Header.LAN_RAILCOM_GET_DATA, 2, cls.argv_std, '<BH', MPUDecoderReport),
         }
 
 

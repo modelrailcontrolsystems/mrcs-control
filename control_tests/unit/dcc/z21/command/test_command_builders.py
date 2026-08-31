@@ -34,7 +34,7 @@ class TestCommandBuilders(unittest.TestCase):
 
     def test_lan_railcom_get_data(self):
         obj1 = Command.lan_railcom_get_data(1)
-        self.assertEqual('Command:{header:LAN_RAILCOM_GET_DATA, argv:[0x1]}', str(obj1))
+        self.assertEqual('Command:{header:LAN_RAILCOM_GET_DATA, argv:[0x1, 0x1]}', str(obj1))
 
 
     def test_lan_log_off(self):

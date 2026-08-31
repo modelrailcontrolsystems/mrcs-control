@@ -1,5 +1,5 @@
 """
-Created on 12 Aug 2026
+Created on 31 Aug 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
@@ -9,13 +9,12 @@ A service that manages track equipment
 from collections.abc import Callable
 from typing import List
 
-from mrcs_control.cli.inventory.block_inventory import BlockInventory
-from mrcs_control.cli.inventory.turnout_inventory import TurnoutInventory
+from mrcs_control.cli.inventory.mpu_inventory import MPUInventory
 from mrcs_control.db.db_client import DbClient
-from mrcs_control.dcc.z21.command.command import Command
-from mrcs_control.equipment.block.persistent_block_status import PersistentBlockStatus
+from mrcs_control.dcc.z21.command.command import Command, XCommand
+from mrcs_control.equipment.motive_power_unit.mpu_status_persistence import MPUStatusPersistence
+from mrcs_control.equipment.motive_power_unit.persistent_mpu_status import PersistentMPUStatus
 from mrcs_control.equipment.track.persistent_track import PersistentTrack
-from mrcs_control.equipment.turnout.persistent_turnout_status import PersistentTurnoutStatus
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
 from mrcs_control.operations.control_router.control_router_identity import ControlRouterSerial
@@ -23,9 +22,9 @@ from mrcs_control.operations.control_router.control_router_node import ControlRo
 from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONable
-from mrcs_core.equipment.block.block_report import BlockOccupancyReport, BlockVoltageReport
+from mrcs_core.equipment.motive_power_unit.mpu_configuration_report import MPUConfigurationReport
+from mrcs_core.equipment.motive_power_unit.mpu_decoder_report import MPUDecoderReport
 from mrcs_core.equipment.track.track_report import TrackReport
-from mrcs_core.equipment.turnout.turnout_report import TurnoutReport
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
 from mrcs_core.sys.host import Host
@@ -33,7 +32,7 @@ from mrcs_core.sys.host import Host
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class TrackNode(AsyncSubscriberNode):
+class MPUNode(AsyncSubscriberNode):
     """
     a service that manages track equipment
     """
@@ -41,15 +40,15 @@ class TrackNode(AsyncSubscriberNode):
 
     @classmethod
     def id(cls):
-        return EquipmentIdentifier(EquipmentType.TRN, None, 1)
+        return EquipmentIdentifier(EquipmentType.MPU, None, 1)
 
 
     @classmethod
     def subscription_routing_keys(cls):
-        router_source = EquipmentFilter.construct(EquipmentType.CRT, None, ControlRouterSerial.Track)
+        router_mpu_source = EquipmentFilter.construct(EquipmentType.CRT, None, ControlRouterSerial.MPU)
 
         return (SubscriptionRoutingKey(EquipmentFilter.any(), cls.id()),
-                SubscriptionRoutingKey(router_source, EquipmentFilter.any()))
+                SubscriptionRoutingKey(router_mpu_source, EquipmentFilter.any()))
 
 
     @classmethod
@@ -75,9 +74,15 @@ class TrackNode(AsyncSubscriberNode):
     async def publish_message(self):
         self.logger.debug('publish_message')
 
+        addresses = MPUStatusPersistence.find_addresses()
         routing_key = PublicationRoutingKey(self.id(), ControlRouterNode.id())
-        message = Message(routing_key, Command.lan_can_detector())
-        self.async_loop.create_task(self.publish(message))
+
+        for address in addresses:
+            message = Message(routing_key, Command.lan_railcom_get_data(address))
+            self.async_loop.create_task(self.publish(message))
+
+            message = Message(routing_key, XCommand.lan_x_get_mpu(address))
+            self.async_loop.create_task(self.publish(message))
 
 
     def handle_message(self, message: Message):
@@ -91,26 +96,13 @@ class TrackNode(AsyncSubscriberNode):
 
             body_type = message.body.get('type')
 
-            # TODO: keep a count / timing of occupancy reports for each block -
-            # TODO: subsequent reports within a time period are handled differently
+            if body_type == MPUConfigurationReport.__name__:
+                report = MPUConfigurationReport.construct_from_jdict(message.body)
+                MPUStatusPersistence.update_from_configuration_report(report)
 
-            # TODO: replace the construct_from_jdicts below with a unified construct_from_jdict for EquipmentReport
-
-            if body_type == BlockOccupancyReport.__name__:
-                report = BlockOccupancyReport.construct_from_jdict(message.body)
-                PersistentBlockStatus.update_from_block_occupancy_report(report)
-
-            if body_type == TrackReport.__name__:
-                report = PersistentTrack.construct_from_jdict(message.body)
-                report.save(Host)
-
-            if body_type == BlockVoltageReport.__name__:
-                report = BlockVoltageReport.construct_from_jdict(message.body)
-                PersistentBlockStatus.update_from_voltage(report)
-
-            if body_type == TurnoutReport.__name__:
-                report = TurnoutReport.construct_from_jdict(message.body)
-                PersistentTurnoutStatus.update_from_turnout_report(report)
+            if body_type == MPUDecoderReport.__name__:
+                report = MPUDecoderReport.construct_from_jdict(message.body)
+                MPUStatusPersistence.update_from_decoder_report(report)
 
             if self.on_message:
                 self.on_message(message)
@@ -121,26 +113,17 @@ class TrackNode(AsyncSubscriberNode):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def populate(self, blocks: BlockInventory, turnouts: TurnoutInventory) -> None:
+    def populate(self, mpus: MPUInventory) -> None:
         DbClient.set_client_db_mode(self.ops.db_mode)
-        PersistentBlockStatus.recreate_tables()
-        PersistentTurnoutStatus.recreate_tables()
+        MPUStatusPersistence.recreate_tables()
 
-        for block in blocks.items:
-            PersistentBlockStatus.narrow(block).save()
-
-        for turnout in turnouts.items:
-            PersistentTurnoutStatus.narrow(turnout).save()
+        for mpu in mpus.items:
+            PersistentMPUStatus.narrow(mpu).save()
 
 
-    def find_all_blocks(self) -> List[PersistentBlockStatus]:
+    def find_all_mpus(self) -> List[PersistentMPUStatus]:
         self.__setup()
-        return PersistentBlockStatus.find_all()
-
-
-    def find_all_turnouts(self) -> List[PersistentTurnoutStatus]:
-        self.__setup()
-        return PersistentTurnoutStatus.find_all()
+        return PersistentMPUStatus.find_all()
 
 
     def run(self, *args, **kwargs) -> None:
@@ -151,8 +134,7 @@ class TrackNode(AsyncSubscriberNode):
 
     def __setup(self):
         DbClient.set_client_db_mode(self.ops.db_mode)
-        PersistentBlockStatus.create_tables()
-        PersistentTurnoutStatus.create_tables()
+        MPUStatusPersistence.create_tables()
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -168,5 +150,5 @@ class TrackNode(AsyncSubscriberNode):
         on_message = self.on_message.__name__
         routing_keys = '[' + ', '.join([str(key) for key in self.subscription_routing_keys()]) + ']'
 
-        return (f'TrackNode:{{routing_keys:{routing_keys}, on_message:{on_message}, '
+        return (f'MPUNode:{{routing_keys:{routing_keys}, on_message:{on_message}, '
                 f'ops:{self.ops}, mq_client:{self.mq_client}}}')

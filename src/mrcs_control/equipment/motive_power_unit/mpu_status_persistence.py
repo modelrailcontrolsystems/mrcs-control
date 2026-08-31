@@ -66,6 +66,18 @@ class MPUStatusPersistence(PersistentObject, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
+    def find_addresses(cls) -> List[int]:
+        client = DbClient.instance(cls.db_name())
+
+        table = cls.table()
+        sql = f'SELECT address FROM {table} ORDER BY address'
+        client.execute(sql)
+        rows = client.fetchall()
+
+        return [row[0] for row in rows]
+
+
+    @classmethod
     def find_all(cls) -> List[Self]:
         client = DbClient.instance(cls.db_name())
 
