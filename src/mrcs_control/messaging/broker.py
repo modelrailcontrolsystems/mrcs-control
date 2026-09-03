@@ -19,7 +19,6 @@ from mrcs_core.messaging.queue import Queue
 from mrcs_core.sys.logging import Logging
 
 
-# TODO: add functionality to drain (individual) queues without needing to stop all clients
 # --------------------------------------------------------------------------------------------------------------------
 
 class Broker(object):

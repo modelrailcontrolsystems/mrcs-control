@@ -50,7 +50,7 @@ class TrackNode(AsyncSubscriberNode):
     def subscription_routing_keys(cls) -> list[SubscriptionRoutingKey]:
         subscriptions = [SubscriptionRoutingKey(EquipmentFilter.any(), cls.id())]
 
-        for serial in [ControlRouterSerial.Track, ControlRouterSerial.Turnout, ControlRouterSerial.Block]:
+        for serial in [ControlRouterSerial.TRACK, ControlRouterSerial.TURNOUT, ControlRouterSerial.BLOCK]:
             subscriptions.append(
                 SubscriptionRoutingKey(EquipmentFilter.construct(EquipmentType.CRT, None, serial),
                                        EquipmentFilter.any()))
@@ -75,15 +75,7 @@ class TrackNode(AsyncSubscriberNode):
 
     def handle_startup(self):
         self.logger.debug('handle_startup')
-        self.async_loop.create_task(self.publish_message())
-
-
-    async def publish_message(self):
-        self.logger.debug('publish_message')
-
-        routing_key = PublicationRoutingKey(self.id(), ControlRouterNode.id())
-        message = Message(routing_key, Command.lan_can_detector())
-        self.async_loop.create_task(self.publish(message))
+        self.publish_startup_message()
 
 
     def handle_message(self, message: Message):
@@ -99,8 +91,6 @@ class TrackNode(AsyncSubscriberNode):
 
             # TODO: keep a count / timing of occupancy reports for each block -
             # TODO: subsequent reports within a time period are handled differently
-
-            # TODO: replace the construct_from_jdicts below with a unified construct_from_jdict for EquipmentReport
 
             if body_type == BlockOccupancyReport.__name__:
                 report = BlockOccupancyReport.construct_from_jdict(message.body)
@@ -118,11 +108,23 @@ class TrackNode(AsyncSubscriberNode):
                 report = TurnoutReport.construct_from_jdict(message.body)
                 TurnoutStatusPersistence.update_from_turnout_report(report)
 
+            # TODO: if BlockOccupancyReport is updated, publish the new BlockStatus
+
             if self.on_message:
                 self.on_message(message)
 
         except Exception as exc:
             self.logger.warning(f'handle_message:{type(exc).__name__}:{exc} on:{message}')
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def publish_startup_message(self):
+        self.logger.debug('publish_message')
+
+        routing_key = PublicationRoutingKey(self.id(), ControlRouterNode.id())
+        message = Message(routing_key, Command.lan_can_detector())
+        self.async_loop.create_task(self.publish(message))
 
 
     # ----------------------------------------------------------------------------------------------------------------
