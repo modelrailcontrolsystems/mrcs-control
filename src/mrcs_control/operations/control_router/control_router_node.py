@@ -53,7 +53,7 @@ class ControlRouterNode(AsyncSubscriberNode):
 
     @classmethod
     def id(cls):
-        return EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Router)
+        return EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.ROUTER)
 
 
     @classmethod
@@ -94,9 +94,6 @@ class ControlRouterNode(AsyncSubscriberNode):
     async def handle_message(self, message: Message):
         self.logger.debug('ControlRouterNode - handle_message')
 
-        if self.on_message:
-            self.on_message(message)
-
         await self.__wait_until_station_ready()
 
         try:
@@ -104,6 +101,9 @@ class ControlRouterNode(AsyncSubscriberNode):
             await self.station.send_command(command)
         except Exception as exc:
             self.logger.warning(f'handle_message:{type(exc).__name__}:{exc} on:{message}')
+
+        if self.on_message:
+            self.on_message(message)
 
 
     def run(self, *args, **kwargs) -> None:

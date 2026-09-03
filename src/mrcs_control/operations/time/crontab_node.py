@@ -33,7 +33,7 @@ class CrontabNode(SubscriberNode):
 
     @classmethod
     def id(cls):
-        return EquipmentIdentifier(EquipmentType.CRN, None, CronSerial.Crontab)
+        return EquipmentIdentifier(EquipmentType.CLK, None, CronSerial.CRONTAB)
 
 
     @classmethod

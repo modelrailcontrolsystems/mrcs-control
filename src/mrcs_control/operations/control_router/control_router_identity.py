@@ -28,16 +28,16 @@ class ControlRouterSerial(IntEnum, metaclass=MetaEnum):
     An enumeration of all the control router serial numbers
     """
 
-    Router = 1
+    ROUTER = 1
 
-    Unclassified = 2
-    Common = 3
+    UNCLASSIFIED = 2
+    COMMON = 3
 
-    System = 4
-    Track = 5
-    Turnout = 6
-    Block = 7
-    Signal = 8
+    SYSTEM = 4
+    TRACK = 5
+    TURNOUT = 6
+    BLOCK = 7
+    SIGNAL = 8
     MPU = 9
 
 
@@ -56,13 +56,13 @@ class ControlRouterIdentity(IntEnum, metaclass=MetaEnum):
     """
 
     __MAPPING: dict[type[JSONable], EquipmentIdentifier] = {
-        ControlRouterReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.System),
-        BlockOccupancyReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Block),
-        BlockVoltageReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Block),
+        ControlRouterReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.SYSTEM),
+        BlockOccupancyReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.BLOCK),
+        BlockVoltageReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.BLOCK),
         MPUDecoderReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.MPU),
         MPUConfigurationReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.MPU),
-        TrackReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Track),
-        TurnoutReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Turnout)
+        TrackReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.TRACK),
+        TurnoutReport: EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.TURNOUT)
     }
 
 
@@ -71,4 +71,4 @@ class ControlRouterIdentity(IntEnum, metaclass=MetaEnum):
         try:
             return cls.__MAPPING[type(report)]
         except KeyError:
-            return EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.Unclassified)
+            return EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.UNCLASSIFIED)

@@ -72,21 +72,7 @@ class MPUNode(AsyncSubscriberNode):
 
     def handle_startup(self):
         self.logger.debug('handle_startup')
-        self.async_loop.create_task(self.publish_message())
-
-
-    async def publish_message(self):
-        self.logger.debug('publish_message')
-
-        addresses = MPUStatusPersistence.find_addresses()
-        routing_key = PublicationRoutingKey(self.id(), ControlRouterNode.id())
-
-        for address in addresses:
-            message = Message(routing_key, Command.lan_railcom_get_data(address))
-            self.async_loop.create_task(self.publish(message))
-
-            message = Message(routing_key, XCommand.lan_x_get_mpu(address))
-            self.async_loop.create_task(self.publish(message))
+        self.publish_startup_messages()
 
 
     def handle_message(self, message: Message):
@@ -108,11 +94,29 @@ class MPUNode(AsyncSubscriberNode):
                 report = MPUDecoderReport.construct_from_jdict(message.body)
                 MPUStatusPersistence.update_from_decoder_report(report)
 
+            # TODO: if MPUStatus is updated, publish the new version
+
             if self.on_message:
                 self.on_message(message)
 
         except Exception as exc:
             self.logger.warning(f'handle_message:{type(exc).__name__}:{exc} on:{message}')
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def publish_startup_messages(self):
+        self.logger.debug('publish_startup_messages')
+
+        addresses = MPUStatusPersistence.find_addresses()
+        routing_key = PublicationRoutingKey(self.id(), ControlRouterNode.id())
+
+        for address in addresses:
+            message = Message(routing_key, Command.lan_railcom_get_data(address))
+            self.async_loop.create_task(self.publish(message))
+
+            message = Message(routing_key, XCommand.lan_x_get_mpu(address))
+            self.async_loop.create_task(self.publish(message))
 
 
     # ----------------------------------------------------------------------------------------------------------------

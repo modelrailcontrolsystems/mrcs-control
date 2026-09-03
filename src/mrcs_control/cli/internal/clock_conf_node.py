@@ -28,7 +28,7 @@ class ClockConfNode(AsyncSubscriberNode):
 
     @classmethod
     def id(cls):
-        return EquipmentIdentifier(EquipmentType.CRN, None, CronSerial.ClockConf)
+        return EquipmentIdentifier(EquipmentType.CLK, None, CronSerial.CLOCK_CONF)
 
 
     @classmethod

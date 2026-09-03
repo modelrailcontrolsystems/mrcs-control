@@ -19,10 +19,10 @@ class CronSerial(IntEnum, metaclass=MetaEnum):
     An enumeration of all the cron nodes
     """
 
-    ClockManager = 1
-    Cron = 2
-    Crontab = 3
-    ClockConf = 4
+    CLOCK_MANAGER = 1
+    CRON = 2
+    CRONTAB = 3
+    CLOCK_CONF = 4
 
 
     # ----------------------------------------------------------------------------------------------------------------

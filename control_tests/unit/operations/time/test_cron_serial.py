@@ -19,20 +19,20 @@ from mrcs_control.operations.time.cron_serial import CronSerial
 class TestCronSerial(unittest.TestCase):
 
     def test_cron_clock_manager(self):
-        obj1 = CronSerial.ClockManager
-        self.assertEqual('ClockManager{1}', str(obj1))
+        obj1 = CronSerial.CLOCK_MANAGER
+        self.assertEqual('CLOCK_MANAGER{1}', str(obj1))
 
 
     def test_cron_cron(self):
-        obj1 = CronSerial.Cron
-        self.assertEqual('Cron{2}', str(obj1))
+        obj1 = CronSerial.CRON
+        self.assertEqual('CRON{2}', str(obj1))
 
 
     def test_cron_crontab(self):
-        obj1 = CronSerial.Crontab
-        self.assertEqual('Crontab{3}', str(obj1))
+        obj1 = CronSerial.CRONTAB
+        self.assertEqual('CRONTAB{3}', str(obj1))
 
 
     def test_cron_clock_conf(self):
-        obj1 = CronSerial.ClockConf
-        self.assertEqual('ClockConf{4}', str(obj1))
+        obj1 = CronSerial.CLOCK_CONF
+        self.assertEqual('CLOCK_CONF{4}', str(obj1))

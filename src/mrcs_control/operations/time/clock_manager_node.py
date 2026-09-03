@@ -30,7 +30,7 @@ class ClockManagerNode(SubscriberNode):
 
     @classmethod
     def id(cls):
-        return EquipmentIdentifier(EquipmentType.CRN, None, CronSerial.ClockManager)
+        return EquipmentIdentifier(EquipmentType.CLK, None, CronSerial.CLOCK_MANAGER)
 
 
     @classmethod

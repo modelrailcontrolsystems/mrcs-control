@@ -29,7 +29,7 @@ class MessageRecorderNode(SubscriberNode):
 
     @classmethod
     def id(cls):
-        return EquipmentIdentifier(EquipmentType.MLG, None, 1)
+        return EquipmentIdentifier(EquipmentType.REC, None, 1)
 
 
     @classmethod
