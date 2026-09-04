@@ -11,7 +11,7 @@ https://stackoverflow.com/questions/37678418/python-enums-with-complex-types
 from enum import Enum, unique
 
 from mrcs_control.db.db_client import DbMode
-from mrcs_control.messaging.mq_client import MQMode
+from mrcs_control.messaging.mq_topology import MQMode
 from mrcs_core.data.meta_enum import MetaEnum
 
 
