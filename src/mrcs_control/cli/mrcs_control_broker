@@ -8,16 +8,20 @@ Created on 17 Nov 2025
 source repo: mrcs_control
 
 DESCRIPTION
-A tool to manage message broker exchanges and queues.
-It is essential to delete a queue if the routing key has changed - the queue is normally durable, and so are its
+A tool to manage message broker exchanges and queues. The --test argument specifies which exchanges and queues are
+being managed.
+
+Note that, if an exchange is selected for deletion, all queues bound to it are deleted.
+
+It is essential to delete a queue if a routing key has changed - the queue is normally durable, and so are its
 routing keys! No process may be attached to the broker when deleting takes place.
-Note that exchanges cannot be deleted if any queues exist for that exchange - delete the queues first.
 
 SYNOPSIS
 mrcs_control_broker [-h] [-i INDENT] [-v] [--version] [-t] (-e | -q) [-d DELETE | -z]
 
 EXAMPLES
 mrcs_control_broker -t -v -i4 -e -d mrcs.test.CRN.*.002
+mrcs_control_broker -v -i4 -e -z
 """
 
 import sys
@@ -31,7 +35,6 @@ from mrcs_core.data.json import JSONify
 from mrcs_core.sys.logging import Logging
 
 
-# TODO: if exchange is selected for delete, then delete its queues first
 # --------------------------------------------------------------------------------------------------------------------
 
 def find_filtered():
@@ -43,7 +46,15 @@ def delete(item_name: str):
     if manager is None:
         return
 
-    manager.exchange_delete(item_name) if args.exchange else manager.queue_delete(item_name)
+    if args.queue:
+        manager.queue_delete(item_name)
+        return
+
+    if args.exchange:
+        for queue in broker.list_queues():
+            manager.queue_delete(queue.name)
+
+        manager.exchange_delete(item_name)
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -56,7 +67,7 @@ if __name__ == '__main__':
 
     args = BrokerArgs('a tool for managing message broker exchanges and queues')
 
-    Logging.config('mrcs_control_broker', verbose=args.verbose)
+    Logging.config('mrcs_control_broker', verbose=args.verbose)  # verbose=args.verbose / level=logging.DEBUG
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')
@@ -84,9 +95,12 @@ if __name__ == '__main__':
             for item in find_filtered():
                 delete(item.name)
 
-        filtered_items = find_filtered()
-        print(JSONify.dumps(filtered_items, indent=args.indent))
-        logger.info(f'found {len(filtered_items)} items.')
+        if not args.delete and not args.erase:
+            filtered_items = find_filtered()
+            print(JSONify.dumps(filtered_items, indent=args.indent))
+
+            if args.queue:
+                logger.info(f'found {len(filtered_items)} items.')
 
 
     # ----------------------------------------------------------------------------------------------------------------

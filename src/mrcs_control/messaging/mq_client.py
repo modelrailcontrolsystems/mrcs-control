@@ -15,7 +15,6 @@ https://stackoverflow.com/questions/15150207/connection-in-rabbitmq-server-auto-
 
 from abc import ABC
 from collections.abc import Callable
-from enum import StrEnum, unique
 from typing import Self
 
 import pika
@@ -23,25 +22,12 @@ from pika.adapters.blocking_connection import BlockingChannel, BlockingConnectio
 from pika.exceptions import AMQPError, ChannelWrongStateError
 from pika.exchange_type import ExchangeType
 
-from mrcs_control.messaging.mq_topology import MQTopology
+from mrcs_control.messaging.mq_topology import MQMode, MQTopology
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.data.json import JSONify
-from mrcs_core.data.meta_enum import MetaEnum
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, RoutingKey
 from mrcs_core.sys.logging import Logging
-
-
-# --------------------------------------------------------------------------------------------------------------------
-
-@unique
-class MQMode(StrEnum, metaclass=MetaEnum):
-    """
-    An enumeration of all the possible broker exchanges
-    """
-
-    TEST = 'mrcs.test'  # test mode
-    LIVE = 'mrcs.live'  # production mode
 
 
 # --------------------------------------------------------------------------------------------------------------------
