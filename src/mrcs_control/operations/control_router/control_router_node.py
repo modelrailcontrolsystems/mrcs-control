@@ -85,10 +85,10 @@ class ControlRouterNode(AsyncSubscriberNode):
     # messaging handlers...
 
     def handle_startup(self):
-        self.logger.debug('ControlRouterNode - handle_startup')
-
         if self.__monitor_task is None:
             self.__monitor_task = self.async_loop.create_task(self.monitor())
+
+        self.logger.info('ready')
 
 
     async def handle_message(self, message: Message):
@@ -241,7 +241,7 @@ class ControlRouterNode(AsyncSubscriberNode):
             return
 
         self.__station_ready = ready
-        self.logger.info(f'station_ready:{self.station_ready}')
+        self.logger.debug(f'station_ready:{self.station_ready}')
 
         if ready:
             self.__station_ready_event.set()

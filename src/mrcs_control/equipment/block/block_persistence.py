@@ -211,7 +211,7 @@ class BlockPersistence(PersistentObject, ABC):
 
 
     @classmethod
-    def update_from_block_occupancy_report(cls, report: BlockOccupancyReport) -> None:
+    def update_from_block_occupancy_report(cls, report: BlockOccupancyReport) -> Self:
         client = DbClient.instance(cls.db_name())
 
         cls.delete_occupants(report.block_id)
@@ -222,12 +222,22 @@ class BlockPersistence(PersistentObject, ABC):
             occupant_table = cls.occupant_table()
             block_table = cls.block_table()
 
+            sql = f'SELECT label FROM {block_table} WHERE address = ?'
+            client.execute(sql, data=(report.block_address,))
+            row = client.fetchone()
+            label = row[0]
+
             for occupant in report.occupants:
-                sql = (f'INSERT INTO {occupant_table} (block_label, mpu_address, face) '
-                       f'VALUES ((SELECT label FROM {block_table} WHERE address = ?), ?, ?)')
-                client.execute(sql, data=(report.block_id.block_address, occupant.mpu_address, occupant.face.name))
+                sql = f'INSERT INTO {occupant_table} (block_label, mpu_address, face) VALUES (?, ?, ?)'
+                client.execute(sql, data=(label, occupant.mpu_address, occupant.face.name))
+
+            status = cls.find(label)
+            if status is None:
+                raise RuntimeError('status not found')
 
             client.txCOMMIT()
+
+            return status
 
         except Exception as exc:
             client.txROLLBACK(exc)
