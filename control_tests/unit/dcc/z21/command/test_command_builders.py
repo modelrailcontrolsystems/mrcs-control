@@ -60,9 +60,18 @@ class TestCommandBuilders(unittest.TestCase):
         self.assertEqual('XCommand:{header:LAN_X, x_header:LAN_X_GET_LOCO, argv:[0xf0, 0x1]}', str(obj1))
 
 
-    def test_lan_x_set_mpu_func(self):
-        obj1 = XCommand.lan_x_set_mpu_func(1, MPUDirection.FORWARD, 34)
-        self.assertEqual('XCommand:{header:LAN_X, x_header:LAN_X_SET_LOCO_FUNC, argv:[0x13, 0x1, 0x22]}', str(obj1))
+    def test_lan_x_set_mpu_drive(self):
+        # this is an example of a command returning a "false" header
+        obj1 = XCommand.lan_x_set_mpu_drive(1, MPUDirection.FORWARD, 34)
+        self.assertEqual('XCommand:{header:LAN_X, x_header:LAN_X_SET_LOCO_FUNC, argv:[0x13, 0x1, 0xa2]}', str(obj1))
+
+
+    def test_lan_x_set_mpu_drive_meta(self):
+        obj1 = XCommand.lan_x_set_mpu_drive(1, MPUDirection.FORWARD, 34)
+        meta = obj1.meta
+        self.assertEqual('XCommandMetadata:{header:LAN_X, x_header:LAN_X_SET_LOCO_FUNC, argc:3, '
+                         'argv_builder:argv_set_mpu_drive, data_format:>BHB, report_type:MPUConfigurationReport}',
+                         str(meta))
 
 
 # --------------------------------------------------------------------------------------------------------------------

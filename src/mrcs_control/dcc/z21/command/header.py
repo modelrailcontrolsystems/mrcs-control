@@ -5,6 +5,12 @@ Created on 5 Jun 2026
 
 An enumeration of all the LAN and XLAN header values
 
+Note that Header and XHeader members cannot be unique (have unique values). This is because of headers such as
+LAN_X_SET_LOCO_FUNC and LAN_X_SET_LOCO_DRIVE, which have the same value, but different command builders.
+
+Watch out! If you ask a command what its header is, it will return the first header in the enumeration with the same
+value. This may not be the header it was instantiated with.
+
 Classes in support of the Rocco Z21 DCC control router station:
 https://www.z21.eu/en/products/z21
 
@@ -13,14 +19,13 @@ https://github.com/botmonster/z21aio/tree/main
 https://gitlab.com/z21-fpm/z21_python
 """
 
-from enum import IntEnum, unique
+from enum import IntEnum
 
 from mrcs_core.data.meta_enum import MetaEnum
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-@unique
 class Header(IntEnum, metaclass=MetaEnum):
     """
     An enumeration of all the LAN header values
@@ -84,12 +89,11 @@ class Header(IntEnum, metaclass=MetaEnum):
 
 
     def __str__(self, *args, **kwargs):
-        return f'{self.name}:{{0x{self.value:02x}}}'
+        return f'{self.name}{{0x{self.value:02x}}}'
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-@unique
 class XHeader(IntEnum, metaclass=MetaEnum):
     """
     An enumeration of all the XLAN header values
@@ -114,6 +118,7 @@ class XHeader(IntEnum, metaclass=MetaEnum):
     LAN_X_SET_LOCO_E_STOP = 0x92
     LAN_X_GET_LOCO = 0xE3
     LAN_X_SET_LOCO_FUNC = 0xE4
+    LAN_X_SET_LOCO_DRIVE = 0xE4
     LAN_X_SET_LOCO_BINARY_STATE = 0xE5
     LAN_X_CV_POM = 0xE6
     LAN_X_LOCO_INFO = 0xEF
