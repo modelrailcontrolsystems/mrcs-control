@@ -129,6 +129,8 @@ class TrackNode(AsyncSubscriberNode):
                 report = TurnoutReport.construct_from_jdict(message.body)
                 PersistentTurnoutStatus.update_from_turnout_report(report)
 
+            # TODO: log unhandled report types
+
             if self.on_message:
                 self.on_message(message)
 

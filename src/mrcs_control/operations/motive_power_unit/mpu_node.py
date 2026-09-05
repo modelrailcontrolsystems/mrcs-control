@@ -103,6 +103,8 @@ class MPUNode(AsyncSubscriberNode):
                 report = MPUDecoderReport.construct_from_jdict(message.body)
                 PersistentMPUStatus.update_from_decoder_report(report)
 
+            # TODO: log unhandled report types
+
             if self.on_message:
                 self.on_message(message)
 
