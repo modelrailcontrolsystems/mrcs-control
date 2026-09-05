@@ -21,11 +21,12 @@ Before running services, optionally clear the messaging queues (in case of incor
 The following services should be running continuously:
 
 * `mrcs_control_clock_manager --verbose --subscribe &`
-* `mrcs_control_cron --verbose --run-save &`
+* `mrcs_control_cron --verbose --clean --run-save &`
 * `mrcs_control_crontab --verbose --subscribe &`
-* `mrcs_control_recorder --verbose --subscribe &`
-* `mrcs_control_track --verbose --drain --run &`
+* `mrcs_control_mpu --verbose --drain --run &`
+* `mrcs_control_recorder --verbose --drain --clean --subscribe &`
 * `mrcs_control_router --verbose --run &`
+* `mrcs_control_track --verbose --drain --run &`
 
 * `mrcs_api_uvicorn --verbose --reload &`
 
