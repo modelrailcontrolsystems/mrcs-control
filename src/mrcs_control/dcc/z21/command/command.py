@@ -187,8 +187,8 @@ class XCommand(Command):
 
 
     @classmethod
-    def lan_x_set_mpu_func(cls, address: int, direction: MPUDirection, speed: int) -> Self:
-        return cls.construct_x(XHeader.LAN_X_SET_LOCO_FUNC, address, direction, speed)
+    def lan_x_set_mpu_drive(cls, address: int, direction: MPUDirection, speed: int) -> Self:
+        return cls.construct_x(XHeader.LAN_X_SET_LOCO_DRIVE, address, direction, speed)
 
 
     # ----------------------------------------------------------------------------------------------------------------

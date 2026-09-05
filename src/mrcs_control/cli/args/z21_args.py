@@ -34,19 +34,19 @@ class Z21Args(ControlArgs):
                            help='get mpu decoder at ADDR')
         group.add_argument('-g', '--get-mpu', action='store', type=int, metavar=('ADDR',),
                            help='get mpu at ADDR')
-        group.add_argument('-s', '--set-mpu', action='store', type=int, nargs=3, metavar=('ADDR', 'DIR', 'SPEED'),
+        group.add_argument('-s', '--set-mpu-drive', action='store', type=int, nargs=3, metavar=('ADDR', 'DIR', 'SPEED'),
                            help='set mpu ADDR DIR SPEED')
 
         self._args = self._parser.parse_args()
 
-        if self._args.set_mpu is not None:
-            direction = self._args.set_mpu[1]
+        if self._args.set_mpu_drive is not None:
+            direction = self._args.set_mpu_drive[1]
             if not (0 <= direction <= 1):
-                self._parser.error(f"argument -s/--set-mpu: DIR must be in range 0-1 (got {direction})")
+                self._parser.error(f"argument -s/--set-mpu-drive: DIR must be in range 0-1 (got {direction})")
 
-            speed = self._args.set_mpu[2]
+            speed = self._args.set_mpu_drive[2]
             if not (0 <= speed <= 255):
-                self._parser.error(f"argument -s/--set-mpu: SPEED must be in range 0-255 (got {speed})")
+                self._parser.error(f"argument -s/--set-mpu-drive: SPEED must be in range 0-255 (got {speed})")
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -54,7 +54,7 @@ class Z21Args(ControlArgs):
     @property
     def has_command(self):
         return (self.router or self.power is not None or self.turnout is not None or self.can_detectors or
-                self.get_decoder is not None or self.get_mpu is not None or self.set_mpu is not None)
+                self.get_decoder is not None or self.get_mpu is not None or self.set_mpu_drive is not None)
 
 
     @property
@@ -79,9 +79,9 @@ class Z21Args(ControlArgs):
         if self.get_mpu is not None:
             return XCommand.lan_x_get_mpu(self.get_mpu)
 
-        if self.set_mpu is not None:
-            direction = MPUDirection.REVERSE if self.set_mpu[1] else MPUDirection.FORWARD
-            return XCommand.lan_x_set_mpu_func(self.set_mpu[0], direction, self.set_mpu[2])
+        if self.set_mpu_drive is not None:
+            direction = MPUDirection.REVERSE if self.set_mpu_drive[1] else MPUDirection.FORWARD
+            return XCommand.lan_x_set_mpu_drive(self.set_mpu_drive[0], direction, self.set_mpu_drive[2])
 
         return None
 
@@ -124,7 +124,7 @@ class Z21Args(ControlArgs):
 
 
     @property
-    def set_mpu(self):
+    def set_mpu_drive(self):
         return self._args.set_mpu
 
 
@@ -133,4 +133,5 @@ class Z21Args(ControlArgs):
     def __str__(self, *args, **kwargs):
         return (f'Z21Args:{{monitor:{self.monitor}, router:{self.router}, power:{self.power}, '
                 f'can_detectors:{self.can_detectors}, turnout:{self.turnout}, get_decoder:{self.get_decoder}, '
-                f'get_mpu:{self.get_mpu}, set_mpu:{self.set_mpu}, indent:{self.indent}, verbose:{self.verbose}}}')
+                f'get_mpu:{self.get_mpu}, set_mpu_drive:{self.set_mpu_drive}, '
+                f'indent:{self.indent}, verbose:{self.verbose}}}')

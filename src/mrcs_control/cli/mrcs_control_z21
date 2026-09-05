@@ -11,7 +11,10 @@ DESCRIPTION
 A utility to excercise a Roco Z21 control router station directly. This utility is provided for test purposes -
 the interface to the Z21 is provided by the mrcs_control_router messaging interface in live environments.
 
-Note that the turnout address is 1-based, not 0-based.
+Command notes:
+* --set-mpu - DIR of 0 = FORWARD, 1 = REVERSE
+* --turnout - turnout address is 1-based, not 0-based
+*--can-detectors - if the reports should be displayed, then the --monitor option must be used
 
 The mrcs_z21_conf utility should be used before the first use of this utility in order to establish a control router
 configuration.
