@@ -3,7 +3,10 @@ Created on 31 Aug 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-A service that manages track equipment
+A service that manages motive power units
+
+Test with:
+mrcs_control_subscriber -v -s MPU.*.002
 """
 
 from collections.abc import Callable
@@ -12,35 +15,33 @@ from typing import List
 from mrcs_control.cli.inventory.mpu_inventory import MPUInventory
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.dcc.z21.command.command import Command, XCommand
-from mrcs_control.equipment.motive_power_unit.mpu_status_persistence import MPUStatusPersistence
 from mrcs_control.equipment.motive_power_unit.persistent_mpu_status import PersistentMPUStatus
-from mrcs_control.equipment.track.persistent_track import PersistentTrack
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
 from mrcs_control.operations.control_router.control_router_identity import ControlRouterSerial
 from mrcs_control.operations.control_router.control_router_node import ControlRouterNode
+from mrcs_control.operations.motive_power_unit.mpu_node_identity import MPUNodeSerial
 from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONable
 from mrcs_core.equipment.motive_power_unit.mpu_configuration_report import MPUConfigurationReport
 from mrcs_core.equipment.motive_power_unit.mpu_decoder_report import MPUDecoderReport
-from mrcs_core.equipment.track.track_report import TrackReport
+from mrcs_core.equipment.motive_power_unit.mpu_status import MPUStatus
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
-from mrcs_core.sys.host import Host
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
 class MPUNode(AsyncSubscriberNode):
     """
-    a service that manages track equipment
+    a service that manages motive power units
     """
 
 
     @classmethod
     def id(cls):
-        return EquipmentIdentifier(EquipmentType.MPU, None, 1)
+        return EquipmentIdentifier(EquipmentType.MPU, None, MPUNodeSerial.NODE)
 
 
     @classmethod
@@ -56,8 +57,14 @@ class MPUNode(AsyncSubscriberNode):
 
 
     @classmethod
-    def track_state(cls) -> TrackReport:
-        return PersistentTrack.load(Host)
+    def control_routing_key(cls):
+        return PublicationRoutingKey(cls.id(), ControlRouterNode.id())
+
+
+    @classmethod
+    def status_routing_key(cls):
+        source = EquipmentIdentifier(EquipmentType.MPU, None, MPUNodeSerial.MPU_STATUS)
+        return PublicationRoutingKey(source, EquipmentFilter.any())
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -71,8 +78,8 @@ class MPUNode(AsyncSubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def handle_startup(self):
-        self.logger.debug('handle_startup')
-        self.publish_startup_messages()
+        self.__publish_startup_messages()
+        self.logger.info('ready')
 
 
     def handle_message(self, message: Message):
@@ -88,13 +95,13 @@ class MPUNode(AsyncSubscriberNode):
 
             if body_type == MPUConfigurationReport.__name__:
                 report = MPUConfigurationReport.construct_from_jdict(message.body)
-                MPUStatusPersistence.update_from_configuration_report(report)
+                status = PersistentMPUStatus.update_from_configuration_report(report)
+
+                self.__publish_update_message(status)
 
             if body_type == MPUDecoderReport.__name__:
                 report = MPUDecoderReport.construct_from_jdict(message.body)
-                MPUStatusPersistence.update_from_decoder_report(report)
-
-            # TODO: if MPUStatus is updated, publish the new version
+                PersistentMPUStatus.update_from_decoder_report(report)
 
             if self.on_message:
                 self.on_message(message)
@@ -105,25 +112,29 @@ class MPUNode(AsyncSubscriberNode):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def publish_startup_messages(self):
+    def __publish_startup_messages(self):
         self.logger.debug('publish_startup_messages')
 
-        addresses = MPUStatusPersistence.find_addresses()
-        routing_key = PublicationRoutingKey(self.id(), ControlRouterNode.id())
-
-        for address in addresses:
-            message = Message(routing_key, Command.lan_railcom_get_data(address))
+        for address in PersistentMPUStatus.find_addresses():
+            message = Message(self.control_routing_key(), Command.lan_railcom_get_data(address))
             self.async_loop.create_task(self.publish(message))
 
-            message = Message(routing_key, XCommand.lan_x_get_mpu(address))
+            message = Message(self.control_routing_key(), XCommand.lan_x_get_mpu(address))
             self.async_loop.create_task(self.publish(message))
+
+
+    def __publish_update_message(self, status: MPUStatus):
+        self.logger.debug('publish_update_message')
+
+        message = Message(self.status_routing_key(), status)
+        self.async_loop.create_task(self.publish(message))
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def populate(self, mpus: MPUInventory) -> None:
         DbClient.set_client_db_mode(self.ops.db_mode)
-        MPUStatusPersistence.recreate_tables()
+        PersistentMPUStatus.recreate_tables()
 
         for mpu in mpus.items:
             PersistentMPUStatus.narrow(mpu).save()
@@ -135,14 +146,13 @@ class MPUNode(AsyncSubscriberNode):
 
 
     def run(self, *args, **kwargs) -> None:
-        self.logger.info('run')
         self.__setup()
         super().run()
 
 
     def __setup(self):
         DbClient.set_client_db_mode(self.ops.db_mode)
-        MPUStatusPersistence.create_tables()
+        PersistentMPUStatus.create_tables()
 
 
     # ----------------------------------------------------------------------------------------------------------------

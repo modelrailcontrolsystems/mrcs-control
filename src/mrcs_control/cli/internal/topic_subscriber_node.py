@@ -74,8 +74,8 @@ class TopicSubscriberNode(AsyncSubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def handle_startup(self):
-        self.logger.debug('handle_startup')
         self.async_loop.create_task(self.publish_message())
+        self.logger.info('ready')
 
 
     async def publish_message(self):

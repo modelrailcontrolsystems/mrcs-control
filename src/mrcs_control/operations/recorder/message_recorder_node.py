@@ -5,6 +5,7 @@ Created on 16 Nov 2025
 
 A universal message logger
 """
+
 from typing import List
 
 from mrcs_control.db.db_client import DbClient

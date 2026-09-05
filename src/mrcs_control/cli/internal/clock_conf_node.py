@@ -53,8 +53,8 @@ class ClockConfNode(AsyncSubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def handle_startup(self):
-        self.logger.info('handle_startup')
         self.async_loop.create_task(self.publish_clock())
+        self.logger.info('ready')
 
 
     def handle_message(self, message: Message):

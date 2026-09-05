@@ -26,7 +26,7 @@ import sys
 
 from mrcs_control.cli.args.mpu_args import MPUArgs
 from mrcs_control.cli.inventory.mpu_inventory import MPUInventory
-from mrcs_control.operations.mpu.mpu_node import MPUNode
+from mrcs_control.operations.motive_power_unit.mpu_node import MPUNode
 from mrcs_core.data.json import JSONify
 from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging

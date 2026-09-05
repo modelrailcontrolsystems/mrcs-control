@@ -9,6 +9,7 @@ Note that the cron components work in model time, not true time.
 Test with:
 mrcs_publisher -vti4 -t CRN -n 3 -m '{"event_id": "abc", "on": "1930-01-02T06:25:00.000+00:00"}'
 """
+
 from typing import List
 
 from mrcs_control.db.db_client import DbClient

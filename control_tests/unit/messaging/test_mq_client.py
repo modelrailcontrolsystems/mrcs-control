@@ -88,7 +88,7 @@ class TestMQClient(unittest.TestCase):
         subscriber = MQSubscriber(
             MQMode.TEST,
             MQTopology.QueueConfiguration(False, True, False),
-            EquipmentIdentifier(EquipmentType.TRN, None, 1),
+            EquipmentIdentifier(EquipmentType.TRK, None, 1),
             lambda msg: None
         )
         with self.assertRaises(RuntimeError):
@@ -99,7 +99,7 @@ class TestMQClient(unittest.TestCase):
         subscriber = MQSubscriber(
             MQMode.TEST,
             MQTopology.QueueConfiguration(False, True, False),
-            EquipmentIdentifier(EquipmentType.TRN, None, 1),
+            EquipmentIdentifier(EquipmentType.TRK, None, 1),
             lambda msg: None
         )
         mock_channel = MagicMock()
