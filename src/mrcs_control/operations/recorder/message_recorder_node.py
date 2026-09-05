@@ -47,7 +47,7 @@ class MessageRecorderNode(SubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def handle_message(self, message: Message):
-        self.logger.info(f'handle_message: {JSONify.as_jdict(message)}')
+        self.logger.debug(f'handle_message: {JSONify.as_jdict(message)}')
 
         message = PersistentMessage.narrow(message)
         message.save()
