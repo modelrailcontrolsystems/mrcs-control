@@ -28,6 +28,11 @@ class PersistentBlockOccupant(BlockOccupant, BlockPersistence, PersistentObject)
 
 
     @classmethod
+    def type_name(cls):
+        return BlockOccupant.type_name()  # Persistent classes are for internal use - advertise the base class
+
+
+    @classmethod
     def narrow(cls, occupant: BlockOccupant) -> Self:
         return cls(occupant.mpu_address, occupant.face)
 

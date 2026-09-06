@@ -26,6 +26,11 @@ class PersistentTrack(TrackReport, PersistentJSONable):
         return cls.conf_dir(), cls.__FILENAME
 
 
+    @classmethod
+    def type_name(cls):
+        return TrackReport.type_name()  # Persistent classes are for internal use - advertise the base class
+
+
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, mode: TrackMode):

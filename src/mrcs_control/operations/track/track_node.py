@@ -117,19 +117,20 @@ class TrackNode(AsyncSubscriberNode):
 
                 self.__publish_update_message(status)
 
-            if body_type == TrackReport.__name__:
+            elif body_type == TrackReport.__name__:
                 report = PersistentTrack.construct_from_jdict(message.body)
                 report.save(Host)
 
-            if body_type == BlockVoltageReport.__name__:
+            elif body_type == BlockVoltageReport.__name__:
                 report = BlockVoltageReport.construct_from_jdict(message.body)
                 PersistentBlockStatus.update_from_voltage(report)
 
-            if body_type == TurnoutReport.__name__:
+            elif body_type == TurnoutReport.__name__:
                 report = TurnoutReport.construct_from_jdict(message.body)
                 PersistentTurnoutStatus.update_from_turnout_report(report)
 
-            # TODO: log unhandled report types
+            else:
+                self.logger.warning(f'upsupported message:{message}')
 
             if self.on_message:
                 self.on_message(message)
