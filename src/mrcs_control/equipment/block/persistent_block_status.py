@@ -44,6 +44,11 @@ class PersistentBlockStatus(BlockStatus, BlockPersistence, PersistentObject):
 
 
     @classmethod
+    def type_name(cls):
+        return BlockStatus.type_name()  # Persistent classes are for internal use - advertise the base class
+
+
+    @classmethod
     def narrow(cls, block: BlockStatus) -> Self:
         return cls(block.label, block.block_address, block.direction, block.voltage)
 

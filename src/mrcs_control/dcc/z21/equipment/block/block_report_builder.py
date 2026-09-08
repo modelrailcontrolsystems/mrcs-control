@@ -36,7 +36,7 @@ class BlockReportBuilder(object):
         data = dataset.data
 
         if len(data) != 10:
-            raise ValueError(f'Z21BlockReport data requires 10 bytes, got {data.hex(" ")}')
+            raise ValueError(f'data requires 10 bytes, got {data.hex(" ")}')
 
         network_id, address, port, msg_type, value_1, value_2 = struct.unpack('<HHBBHH', data)
 

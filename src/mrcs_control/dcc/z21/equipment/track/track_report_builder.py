@@ -33,7 +33,7 @@ class TrackReportBuilder(object):
         data = dataset.data
 
         if len(data) != 1:
-            raise ValueError(f'Z21TrackReport data requires 1 byte, got {data.hex(" ")}')
+            raise ValueError(f'data requires 1 byte, got {data.hex(" ")}')
 
         # may raise ValueError
         mode = TrackMode(data[0])

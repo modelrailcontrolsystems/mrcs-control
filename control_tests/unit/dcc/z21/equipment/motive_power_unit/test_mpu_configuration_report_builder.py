@@ -12,7 +12,8 @@ https://www.jetbrains.com/help/pycharm/creating-tests.html
 import unittest
 
 from mrcs_control.dcc.z21.command.dataset import Dataset
-from mrcs_control.dcc.z21.equipment.motive_power_unit.mpu_configuration_report import MPUConfigurationReportBuilder
+from mrcs_control.dcc.z21.equipment.motive_power_unit.mpu_configuration_report_builder import \
+    MPUConfigurationReportBuilder
 
 
 # --------------------------------------------------------------------------------------------------------------------

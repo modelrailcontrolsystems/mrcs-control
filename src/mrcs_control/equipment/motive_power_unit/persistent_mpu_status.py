@@ -34,6 +34,11 @@ class PersistentMPUStatus(MPUStatus, MPUStatusPersistence, PersistentObject):
 
 
     @classmethod
+    def type_name(cls):
+        return MPUStatus.type_name()  # Persistent classes are for internal use - advertise the base class
+
+
+    @classmethod
     def narrow(cls, mpu: MPUStatus) -> Self:
         return cls(mpu.label, mpu.mpu_address, mpu.functions, mpu.speed_setting, mpu.speed, mpu.direction)
 

@@ -24,7 +24,7 @@ from mrcs_control.dcc.z21.command.command import Command
 from mrcs_control.dcc.z21.command.dataset import Dataset
 from mrcs_control.dcc.z21.command.header import Header
 from mrcs_control.dcc.z21.command.protocol import Protocol
-from mrcs_control.dcc.z21.equipment.equpiment_report import EquipmentReport
+from mrcs_control.dcc.z21.equipment.equpiment_report_builder import EquipmentReportBuilder
 from mrcs_core.equipment.control_router.control_router_conf import ControlRouterConf
 from mrcs_core.equipment.control_router.control_router_subscription import ControlRouterSubscription
 from mrcs_core.sys.ipv4_address import IPv4Address
@@ -117,7 +117,7 @@ class Station(object):
             self.__response_event.set()
 
         try:
-            self.on_response(EquipmentReport.construct_from_dataset(dataset))
+            self.on_response(EquipmentReportBuilder.construct_from_dataset(dataset))
         except TypeError:
             self.logger.warning(f'dataset_handler unsupported: {dataset}')
 

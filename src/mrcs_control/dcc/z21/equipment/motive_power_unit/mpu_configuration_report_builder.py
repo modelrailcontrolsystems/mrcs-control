@@ -34,7 +34,7 @@ class MPUConfigurationReportBuilder(object):
         data = dataset.data
 
         if len(data) < 2:
-            raise ValueError(f'Z21MPUConfigurationReport data requires at least 2 bytes, got {data.hex(" ")}')
+            raise ValueError(f'data requires at least 2 bytes, got {data.hex(" ")}')
 
         # defaults
         mpu_address = ((data[0] & 0x3f) << 8) | data[1]

@@ -1,69 +1,66 @@
 """
-Created on 31 Aug 2026
+Created on 6 Sep 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-A service that manages motive power units
+A service that updates the aspect of each MPU
 
 Test with:
-mrcs_control_subscriber -v -s MPU.*.002
+mrcs_control_subscriber -v -s TEL.*.2
 """
 
 from collections.abc import Callable
 from typing import List
 
-from mrcs_control.cli.inventory.mpu_inventory import MPUInventory
+from mrcs_control.cli.inventory.block_inventory import BlockInventory
+from mrcs_control.cli.inventory.turnout_inventory import TurnoutInventory
 from mrcs_control.db.db_client import DbClient
-from mrcs_control.dcc.z21.command.command import Command, XCommand
-from mrcs_control.equipment.motive_power_unit.persistent_mpu_status import PersistentMPUStatus
+from mrcs_control.equipment.block.persistent_block_status import PersistentBlockStatus
+from mrcs_control.equipment.turnout.persistent_turnout_status import PersistentTurnoutStatus
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
-from mrcs_control.operations.control_router.control_router_identity import ControlRouterSerial
-from mrcs_control.operations.control_router.control_router_node import ControlRouterNode
 from mrcs_control.operations.motive_power_unit.mpu_node_identity import MPUNodeSerial
 from mrcs_control.operations.node_topology import NodeTopology
+from mrcs_control.operations.telemetry.telementry_node_identity import TelemetryNodeSerial
+from mrcs_control.operations.track.track_node_identity import TrackNodeSerial
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONable
-from mrcs_core.equipment.motive_power_unit.mpu_configuration_report import MPUConfigurationReport
-from mrcs_core.equipment.motive_power_unit.mpu_decoder_report import MPUDecoderReport
+from mrcs_core.equipment.block.block_status import BlockStatus
 from mrcs_core.equipment.motive_power_unit.mpu_status import MPUStatus
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
 
 
+# TODO: subscribe to track power, because power off resets all speeds to zero
 # --------------------------------------------------------------------------------------------------------------------
 
-class MPUNode(AsyncSubscriberNode):
+class TelemetryNode(AsyncSubscriberNode):
     """
-    a service that manages motive power units
+    a service that updates the aspect of each MPU
     """
 
 
     @classmethod
     def id(cls):
-        return EquipmentIdentifier(EquipmentType.MPU, None, MPUNodeSerial.NODE)
+        return EquipmentIdentifier(EquipmentType.TEL, None, TelemetryNodeSerial.NODE)
 
 
     @classmethod
     def subscription_routing_keys(cls) -> list[SubscriptionRoutingKey]:
         subscriptions = [SubscriptionRoutingKey(EquipmentFilter.any(), cls.id())]
 
-        for serial in [ControlRouterSerial.MPU]:
-            subscriptions.append(
-                SubscriptionRoutingKey(EquipmentFilter.construct(EquipmentType.CRT, None, serial),
-                                       EquipmentFilter.any()))
+        mpu_source = EquipmentFilter.construct(EquipmentType.MPU, None, MPUNodeSerial.MPU_STATUS)
+        track_source = EquipmentFilter.construct(EquipmentType.TRK, None, TrackNodeSerial.BLOCK_STATUS)
+
+        for source in [mpu_source, track_source]:
+            subscriptions.append(SubscriptionRoutingKey(source, EquipmentFilter.any()))
 
         return subscriptions
 
 
     @classmethod
-    def control_routing_key(cls):
-        return PublicationRoutingKey(cls.id(), ControlRouterNode.id())
-
-
-    @classmethod
-    def status_routing_key(cls):
-        source = EquipmentIdentifier(EquipmentType.MPU, None, MPUNodeSerial.MPU_STATUS)
+    def aspect_routing_key(cls):
+        source = EquipmentIdentifier(EquipmentType.TEL, None, TelemetryNodeSerial.MPU_ASPECT)
         return PublicationRoutingKey(source, EquipmentFilter.any())
 
 
@@ -78,12 +75,11 @@ class MPUNode(AsyncSubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def handle_startup(self):
-        self.__publish_startup_messages()
         self.logger.info('ready')
 
 
     def handle_message(self, message: Message):
-        self.logger.debug(f'handle_message:{message.routing_key}')
+        self.logger.debug(f'handle_message:{message}')
 
         try:
             if message.routing_key.target == self.id():
@@ -93,15 +89,13 @@ class MPUNode(AsyncSubscriberNode):
 
             body_type = message.body.get('type')
 
-            if body_type == MPUConfigurationReport.type_name():
-                report = MPUConfigurationReport.construct_from_jdict(message.body)
-                status = PersistentMPUStatus.update_from_configuration_report(report)
+            if body_type == BlockStatus.type_name():
+                report = BlockStatus.construct_from_jdict(message.body)
+                self.logger.debug(report)
 
-                self.__publish_update_message(status)
-
-            elif body_type == MPUDecoderReport.type_name():
-                report = MPUDecoderReport.construct_from_jdict(message.body)
-                PersistentMPUStatus.update_from_decoder_report(report)
+            elif body_type == MPUStatus.type_name():
+                report = MPUStatus.construct_from_jdict(message.body)
+                self.logger.debug(report)
 
             else:
                 self.logger.warning(f'upsupported message:{message}')
@@ -115,37 +109,35 @@ class MPUNode(AsyncSubscriberNode):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __publish_startup_messages(self):
-        self.logger.debug('publish_startup_messages')
-
-        for address in PersistentMPUStatus.find_addresses():
-            message = Message(self.control_routing_key(), Command.lan_railcom_get_data(address))
-            self.async_loop.create_task(self.publish(message))
-
-            message = Message(self.control_routing_key(), XCommand.lan_x_get_mpu(address))
-            self.async_loop.create_task(self.publish(message))
-
-
-    def __publish_update_message(self, status: MPUStatus):
+    def __publish_update_message(self, aspect: BlockStatus):
         self.logger.debug('publish_update_message')
 
-        message = Message(self.status_routing_key(), status)
+        message = Message(self.aspect_routing_key(), aspect)
         self.async_loop.create_task(self.publish(message))
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def populate(self, mpus: MPUInventory) -> None:
+    def populate(self, blocks: BlockInventory, turnouts: TurnoutInventory) -> None:
         DbClient.set_client_db_mode(self.ops.db_mode)
-        PersistentMPUStatus.recreate_tables()
+        # PersistentBlockStatus.recreate_tables()
+        # PersistentTurnoutStatus.recreate_tables()
 
-        for mpu in mpus.items:
-            PersistentMPUStatus.narrow(mpu).save()
+        for block in blocks.items:
+            PersistentBlockStatus.narrow(block).save()
+
+        for turnout in turnouts.items:
+            PersistentTurnoutStatus.narrow(turnout).save()
 
 
-    def find_all_mpus(self) -> List[PersistentMPUStatus]:
+    def find_all_blocks(self) -> List[PersistentBlockStatus]:
         self.__setup()
-        return PersistentMPUStatus.find_all()
+        return PersistentBlockStatus.find_all()
+
+
+    def find_all_turnouts(self) -> List[PersistentTurnoutStatus]:
+        self.__setup()
+        return PersistentTurnoutStatus.find_all()
 
 
     def run(self, *args, **kwargs) -> None:
@@ -155,7 +147,8 @@ class MPUNode(AsyncSubscriberNode):
 
     def __setup(self):
         DbClient.set_client_db_mode(self.ops.db_mode)
-        PersistentMPUStatus.create_tables()
+        # PersistentBlockStatus.create_tables()
+        # PersistentTurnoutStatus.create_tables()
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -171,5 +164,5 @@ class MPUNode(AsyncSubscriberNode):
         on_message = self.on_message.__name__
         routing_keys = '[' + ', '.join([str(key) for key in self.subscription_routing_keys()]) + ']'
 
-        return (f'MPUNode:{{routing_keys:{routing_keys}, on_message:{on_message}, '
+        return (f'TelemetryNode:{{routing_keys:{routing_keys}, on_message:{on_message}, '
                 f'ops:{self.ops}, mq_client:{self.mq_client}}}')
