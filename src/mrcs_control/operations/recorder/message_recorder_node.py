@@ -11,13 +11,13 @@ from typing import List
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.messaging_node import SubscriberNode
-from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_control.operations.recorder.persistent_message import PersistentMessage
 from mrcs_control.operations.recorder.persistent_message_record import PersistentMessageRecord
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
+from mrcs_core.operations.node_topology import NodeTopology
 
 
 # --------------------------------------------------------------------------------------------------------------------

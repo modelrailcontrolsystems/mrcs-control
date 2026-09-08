@@ -10,11 +10,11 @@ from typing import Generic, Self, TypeVar
 
 from mrcs_control.messaging.mq_client import MQClient, MQPublisher, MQSubscriber
 from mrcs_control.messaging.mq_topology import MQTopology
-from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
+from mrcs_core.operations.node_topology import NodeTopology
 from mrcs_core.sys.logging import Logging
 
 

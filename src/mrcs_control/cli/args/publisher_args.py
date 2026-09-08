@@ -7,12 +7,12 @@ https://realpython.com/command-line-interfaces-python-argparse/
 https://stackoverflow.com/questions/34988908/argparse-with-two-values-for-one-argument
 """
 
-from mrcs_control.cli.args.multimode_control_args import MultimodeControlArgs
+from mrcs_core.cli.args.multimode_args import MultimodeArgs
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class PublisherArgs(MultimodeControlArgs):
+class PublisherArgs(MultimodeArgs):
     """unix command line handler"""
 
 

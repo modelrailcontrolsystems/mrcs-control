@@ -16,7 +16,6 @@ from typing import List
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
-from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_control.operations.time.clock_manager_node import ClockManagerNode
 from mrcs_control.operations.time.cron_serial import CronSerial
 from mrcs_control.operations.time.persistent_cronjob import PersistentCronjob
@@ -25,6 +24,7 @@ from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifi
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
+from mrcs_core.operations.node_topology import NodeTopology
 from mrcs_core.operations.time.clock import Clock
 from mrcs_core.operations.time.clock_iso_datetime import ClockISODatetime
 from mrcs_core.sys.host import Host

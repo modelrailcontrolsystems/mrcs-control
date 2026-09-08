@@ -26,7 +26,6 @@ from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
 from mrcs_control.operations.control_router.control_router_identity import ControlRouterSerial
 from mrcs_control.operations.control_router.control_router_node import ControlRouterNode
-from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_control.operations.track.track_node_identity import TrackNodeSerial
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONable
@@ -36,6 +35,7 @@ from mrcs_core.equipment.track.track_report import TrackReport
 from mrcs_core.equipment.turnout.turnout_report import TurnoutReport
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
+from mrcs_core.operations.node_topology import NodeTopology
 from mrcs_core.sys.host import Host
 
 

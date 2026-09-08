@@ -20,7 +20,6 @@ from mrcs_control.equipment.turnout.persistent_turnout_status import PersistentT
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
 from mrcs_control.operations.motive_power_unit.mpu_node_identity import MPUNodeSerial
-from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_control.operations.telemetry.telementry_node_identity import TelemetryNodeSerial
 from mrcs_control.operations.track.track_node_identity import TrackNodeSerial
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
@@ -29,6 +28,7 @@ from mrcs_core.equipment.block.block_status import BlockStatus
 from mrcs_core.equipment.motive_power_unit.mpu_status import MPUStatus
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
+from mrcs_core.operations.node_topology import NodeTopology
 
 
 # TODO: subscribe to track power, because power off resets all speeds to zero

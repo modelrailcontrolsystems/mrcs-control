@@ -6,8 +6,8 @@ Created on 6 Jun 2026
 https://realpython.com/command-line-interfaces-python-argparse/
 """
 
-from mrcs_control.cli.args.control_args import ControlArgs
 from mrcs_control.dcc.z21.command.command import Command, XCommand
+from mrcs_core.cli.args.common_args import CommonArgs
 from mrcs_core.equipment.motive_power_unit.mpu_enums import MPUDirection
 from mrcs_core.equipment.track.track_enums import TrackMode
 from mrcs_core.equipment.turnout.turnout_enums import TurnoutPosition
@@ -15,7 +15,7 @@ from mrcs_core.equipment.turnout.turnout_enums import TurnoutPosition
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class Z21Args(ControlArgs):
+class Z21Args(CommonArgs):
     """unix command line handler"""
 
 

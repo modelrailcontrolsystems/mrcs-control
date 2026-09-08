@@ -8,12 +8,12 @@ https://realpython.com/command-line-interfaces-python-argparse/
 
 from abc import ABC
 
-from mrcs_control.cli.args.multimode_control_args import MultimodeControlArgs
+from mrcs_core.cli.args.multimode_args import MultimodeArgs
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class SubscriberControlArgs(MultimodeControlArgs, ABC):
+class SubscriberControlArgs(MultimodeArgs, ABC):
     """unix command line handler"""
 
 
