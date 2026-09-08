@@ -17,9 +17,9 @@ from mrcs_control.cli.args.recorder_args import RecorderArgs
 from mrcs_control.cli.args.router_args import RouterArgs
 from mrcs_control.cli.args.track_args import TrackArgs
 from mrcs_control.cli.internal.topic_subscriber_node import TopicSubscriberNode
-from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_control.operations.time.cron_node import CronNode
 from mrcs_control.operations.track.track_node import TrackNode
+from mrcs_core.operations.node_topology import NodeTopology
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -118,6 +118,7 @@ class TestSubscriberNodeDrain(unittest.TestCase):
             self.assertFalse(args.drain)
             self.assertTrue(args.run)
 
+
     def test_cron_args_with_drain(self):
         with patch.object(sys, 'argv', ['mrcs_control_cron', '-t', '-d', '-r']):
             args = CronArgs('test')
@@ -125,6 +126,7 @@ class TestSubscriberNodeDrain(unittest.TestCase):
             self.assertTrue(args.drain)
             self.assertTrue(args.run)
             self.assertIn('drain:True', str(args))
+
 
     def test_crontab_args_with_drain(self):
         with patch.object(sys, 'argv', ['mrcs_control_crontab', '-t', '-d', '-s']):
@@ -134,6 +136,7 @@ class TestSubscriberNodeDrain(unittest.TestCase):
             self.assertTrue(args.subscribe)
             self.assertIn('drain:True', str(args))
 
+
     def test_recorder_args_with_drain(self):
         with patch.object(sys, 'argv', ['mrcs_control_recorder', '-t', '-d', '-s']):
             args = RecorderArgs('test')
@@ -141,6 +144,7 @@ class TestSubscriberNodeDrain(unittest.TestCase):
             self.assertTrue(args.drain)
             self.assertTrue(args.subscribe)
             self.assertIn('drain:True', str(args))
+
 
     def test_router_args_with_drain(self):
         with patch.object(sys, 'argv', ['mrcs_control_router', '-t', '-d', '-r']):
@@ -150,6 +154,7 @@ class TestSubscriberNodeDrain(unittest.TestCase):
             self.assertTrue(args.run)
             self.assertIn('drain:True', str(args))
 
+
     def test_clock_manager_args_with_drain(self):
         with patch.object(sys, 'argv', ['mrcs_control_clock_manager', '-t', '-d', '-s']):
             args = ClockManagerArgs('test')
@@ -158,6 +163,7 @@ class TestSubscriberNodeDrain(unittest.TestCase):
             self.assertTrue(args.subscribe)
             self.assertIn('drain:True', str(args))
 
+
     def test_clock_conf_args_with_drain(self):
         with patch.object(sys, 'argv', ['mrcs_control_clock_conf', '-t', '-d', '-n']):
             args = ClockConfArgs('test')
@@ -165,6 +171,7 @@ class TestSubscriberNodeDrain(unittest.TestCase):
             self.assertTrue(args.drain)
             self.assertTrue(args.now)
             self.assertIn('drain:True', str(args))
+
 
     def test_command_args_with_drain(self):
         with patch.object(sys, 'argv', ['mrcs_control_command', '-t', '-d', '-m']):

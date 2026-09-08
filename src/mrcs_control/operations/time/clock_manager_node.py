@@ -10,12 +10,12 @@ the change is broadcasted.
 
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.messaging_node import SubscriberNode
-from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_control.operations.time.cron_serial import CronSerial
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
+from mrcs_core.operations.node_topology import NodeTopology
 from mrcs_core.operations.time.clock import Clock
 from mrcs_core.sys.host import Host
 

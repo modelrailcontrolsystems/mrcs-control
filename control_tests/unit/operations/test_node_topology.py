@@ -13,8 +13,8 @@ import json
 import unittest
 from pathlib import Path
 
-from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_core.messaging.exchange import Exchange
+from mrcs_core.operations.node_topology import NodeTopology
 
 
 # --------------------------------------------------------------------------------------------------------------------

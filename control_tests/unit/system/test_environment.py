@@ -11,8 +11,8 @@ https://www.jetbrains.com/help/pycharm/creating-tests.html
 
 import unittest
 
-from mrcs_control.operations.node_topology import NodeTopology
 from mrcs_control.sys.environment import Environment
+from mrcs_core.operations.node_topology import NodeTopology
 from mrcs_core.sys.logging import Logging
 
 

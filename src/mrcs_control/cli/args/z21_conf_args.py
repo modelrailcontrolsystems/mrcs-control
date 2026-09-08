@@ -8,9 +8,9 @@ https://realpython.com/command-line-interfaces-python-argparse/
 
 import argparse
 
-from mrcs_control.cli.args.control_args import ControlArgs
 from mrcs_control.dcc.z21.command.broadcast import Broadcast
 from mrcs_control.dcc.z21.command.station import Station
+from mrcs_core.cli.args.common_args import CommonArgs
 from mrcs_core.sys.ipv4_address import IPv4Address
 
 
@@ -25,7 +25,7 @@ class CustomFormatter(argparse.HelpFormatter):
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class Z21ConfArgs(ControlArgs):
+class Z21ConfArgs(CommonArgs):
     """unix command line handler"""
 
 
