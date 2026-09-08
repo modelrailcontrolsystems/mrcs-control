@@ -34,7 +34,7 @@ class ControlRouterReportBuilder(object):
         data = dataset.data
 
         if len(data) != 16:
-            raise ValueError(f'Z21ControlRouterReport data requires 16 bytes, got {data.hex(" ")}')
+            raise ValueError(f'data requires 16 bytes, got {data.hex(" ")}')
 
         (main_current, prog_current, filtered_main_current,
          temperature, supply_voltage, track_voltage, central_state,

@@ -34,7 +34,7 @@ class MPUDecoderReportBuilder(object):
         data = dataset.data
 
         if len(data) != 13:
-            raise ValueError(f'Z21MPUDecoderReport data requires 13 bytes, got {data.hex(" ")}')
+            raise ValueError(f'data requires 13 bytes, got {data.hex(" ")}')
 
         address, receive_count, error_count, _, opts, speed, qos, _ = struct.unpack('<HLHBBBBB', data)
         mpu_address = address & 0x3fff

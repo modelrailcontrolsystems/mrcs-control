@@ -8,7 +8,7 @@ Created on 6 Sep 2026
 source repo: mrcs_control
 
 DESCRIPTION
-A service that manages MPU telemetry
+A service that updates MPU aspects
 
 The service begins by requesting MPU configuration and decoder reports from the MPUs in its data table.
 
@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    args = TelemetryArgs('a service that manages MPU telemetry')
+    args = TelemetryArgs('a service that updates MPU aspects')
 
     Logging.config('mrcs_control_telemetry', verbose=args.verbose)  # verbose=args.verbose / level=logging.DEBUG
     logger = Logging.getLogger()

@@ -12,7 +12,7 @@ https://www.jetbrains.com/help/pycharm/creating-tests.html
 import unittest
 
 from mrcs_control.dcc.z21.command.dataset import Dataset
-from mrcs_control.dcc.z21.equipment.block.block_report import BlockReportBuilder
+from mrcs_control.dcc.z21.equipment.block.block_report_builder import BlockReportBuilder
 
 
 # --------------------------------------------------------------------------------------------------------------------

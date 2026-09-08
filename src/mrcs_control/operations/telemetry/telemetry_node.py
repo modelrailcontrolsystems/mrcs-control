@@ -3,7 +3,7 @@ Created on 6 Sep 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-A service that monitors the aspect of each MPU
+A service that updates the aspect of each MPU
 
 Test with:
 mrcs_control_subscriber -v -s TEL.*.2
@@ -31,11 +31,12 @@ from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
 
 
+# TODO: subscribe to track power, because power off resets all speeds to zero
 # --------------------------------------------------------------------------------------------------------------------
 
 class TelemetryNode(AsyncSubscriberNode):
     """
-    a service that monitors the aspect of each MPU
+    a service that updates the aspect of each MPU
     """
 
 
