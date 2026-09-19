@@ -8,7 +8,7 @@ A structured representation of a BlockStatus
 {
     "type": "BlockStatus",
     "label": "N01",
-    "direction": "UP",
+    "heading": "UP",
     "voltage": "OCCUPIED_WITH_VOLTAGE",
     "occupants": [
         {
@@ -29,7 +29,7 @@ from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.equipment.block.block_persistence import BlockPersistence
 from mrcs_control.equipment.block.persistent_block_occupant import PersistentBlockOccupant
 from mrcs_control.equipment.turnout.persistent_turnout_status import PersistentTurnoutStatus
-from mrcs_core.equipment.block.block_enums import BlockDirection, BlockVoltage
+from mrcs_core.equipment.block.block_enums import BlockHeading, BlockVoltage
 from mrcs_core.equipment.block.block_occupant import BlockOccupant
 from mrcs_core.equipment.block.block_status import BlockStatus
 from mrcs_core.equipment.turnout.turnout_status import TurnoutStatus
@@ -50,22 +50,22 @@ class PersistentBlockStatus(BlockStatus, BlockPersistence, PersistentObject):
 
     @classmethod
     def narrow(cls, block: BlockStatus) -> Self:
-        return cls(block.label, block.block_address, block.direction, block.voltage)
+        return cls(block.label, block.block_address, block.heading, block.voltage)
 
 
     @classmethod
     def construct_from_db(cls, row, *child_rows) -> Self:
-        label, block_address, direction, voltage = row
+        label, block_address, heading, voltage = row
         occupants = [PersistentBlockOccupant.construct_from_db(occupant_row) for occupant_row in child_rows]
 
-        return cls(label, block_address, BlockDirection[direction], BlockVoltage[voltage], *occupants)
+        return cls(label, block_address, BlockHeading[heading], BlockVoltage[voltage], *occupants)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, label: str, block_address: str, direction: BlockDirection, voltage: BlockVoltage,
+    def __init__(self, label: str, block_address: str, heading: BlockHeading, voltage: BlockVoltage,
                  *occupants: BlockOccupant):
-        super().__init__(label, block_address, direction, voltage, *occupants)
+        super().__init__(label, block_address, heading, voltage, *occupants)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -84,7 +84,7 @@ class PersistentBlockStatus(BlockStatus, BlockPersistence, PersistentObject):
     # ----------------------------------------------------------------------------------------------------------------
 
     def as_db_insert(self):
-        return self.label, self.block_address, self.direction.name, self.voltage.name
+        return self.label, self.block_address, self.heading.name, self.voltage.name
 
 
     def as_db_update(self):

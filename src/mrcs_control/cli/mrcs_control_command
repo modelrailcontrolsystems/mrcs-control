@@ -11,7 +11,7 @@ DESCRIPTION
 A tool for publishing commands.
 
 Command notes:
-* --set-mpu - DIR of 0 = FORWARD, 1 = REVERSE
+* --set-mpu-drive - DIR of F = FORWARD, R = REVERSE
 * --turnout - turnout address is 1-based, not 0-based
 *--can-detectors - if the reports should be displayed, then the --monitor option must be used
 
@@ -19,8 +19,8 @@ A --drain function is available - this drains the queue used by mrcs_control_com
 are invoked. The function is useful if problematic messages have been published to the queue.
 
 SYNOPSIS
-mrcs_control_command [-h] [-i INDENT] [-v] [--version] [-t] [-d] [-m] [-r | -p {0,1} | -u ADDR POSITION |
--c ADDR | -g ADDR | -s ADDR DIRECTION SPEED]
+mrcs_control_command [-h] [-i INDENT] [-v] [--version] [-t] [-d] [-m] [-r | -p {0,1} | -c | -u ADDR POS | -e ADDR |
+-g ADDR | -s ADDR DIR SPEED]
 
 EXAMPLES
 mrcs_control_command -t -u 4 1

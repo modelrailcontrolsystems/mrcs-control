@@ -56,7 +56,7 @@ class BlockPersistence(PersistentObject, ABC):
             CREATE TABLE IF NOT EXISTS {table} (
             label TEXT PRIMARY KEY, 
             address TEXT UNIQUE, 
-            direction TEXT, 
+            heading TEXT, 
             voltage TEXT)
             '''
         client.execute(sql)
@@ -97,7 +97,7 @@ class BlockPersistence(PersistentObject, ABC):
         client = DbClient.instance(cls.db_name())
 
         table = cls.block_table()
-        sql = f'SELECT label, address, direction, voltage FROM {table} ORDER BY label'
+        sql = f'SELECT label, address, heading, voltage FROM {table} ORDER BY label'
         client.execute(sql)
         block_rows = client.fetchall()
 
@@ -122,7 +122,7 @@ class BlockPersistence(PersistentObject, ABC):
         client = DbClient.instance(cls.db_name())
 
         table = cls.block_table()
-        sql = f'SELECT label, address, direction, voltage FROM {table} WHERE label = ?'
+        sql = f'SELECT label, address, heading, voltage FROM {table} WHERE label = ?'
         client.execute(sql, data=(label,))
         block_row = client.fetchone()
 
@@ -161,7 +161,7 @@ class BlockPersistence(PersistentObject, ABC):
             label = item.as_db_insert()[0]
 
             table = cls.block_table()
-            sql = f'REPLACE INTO {table} (label, address, direction, voltage) VALUES (?, ?, ?, ?)'
+            sql = f'REPLACE INTO {table} (label, address, heading, voltage) VALUES (?, ?, ?, ?)'
             client.execute(sql, data=item.as_db_insert())
 
             # any existing occupants are deleted by cascade on REPLACE
@@ -189,7 +189,7 @@ class BlockPersistence(PersistentObject, ABC):
             sql = f'UPDATE {table} SET voltage = ? WHERE address = ?'
             client.execute(sql, data=(report.voltage.name, report.block_address))
 
-            sql = f'SELECT label, address, direction, voltage FROM {table} WHERE address = ?'
+            sql = f'SELECT label, address, heading, voltage FROM {table} WHERE address = ?'
             client.execute(sql, data=(report.block_address,))
             block_row = client.fetchone()
 

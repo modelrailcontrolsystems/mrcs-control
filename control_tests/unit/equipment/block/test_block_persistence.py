@@ -54,11 +54,11 @@ class TestBlockPersistence(unittest.TestCase):
 
     def test_setup(self):
         obj1, obj2 = self.__setup_db()
-        self.assertEqual('BlockStatus:{label:BN01, block_address:5/6, direction:UP, '
+        self.assertEqual('BlockStatus:{label:BN01, block_address:5/6, heading:UP, '
                          'voltage:OCCUPIED_WITH_VOLTAGE, '
                          'occupants:[BlockOccupant:{mpu_address:4660, face:FACE_FORWARD}, '
                          'BlockOccupant:{mpu_address:17767, face:FACE_BACKWARD}]}', str(obj1))
-        self.assertEqual('BlockStatus:{label:BN02, block_address:5/7, direction:UP, '
+        self.assertEqual('BlockStatus:{label:BN02, block_address:5/7, heading:UP, '
                          'voltage:OCCUPIED_NO_VOLTAGE, '
                          'occupants:[BlockOccupant:{mpu_address:1767, face:FACE_BACKWARD}, '
                          'BlockOccupant:{mpu_address:4660, face:FACE_FORWARD}]}', str(obj2))
@@ -121,7 +121,7 @@ class TestBlockPersistence(unittest.TestCase):
             jdict = json.load(fp)
         obj2 = BlockVoltageReport.construct_from_jdict(jdict)
         obj3 = obj1.update_from_voltage(obj2)
-        self.assertEqual('BlockStatus:{label:BN01, block_address:5/6, direction:UP, '
+        self.assertEqual('BlockStatus:{label:BN01, block_address:5/6, heading:UP, '
                          'voltage:FREE_NO_VOLTAGE, '
                          'occupants:[BlockOccupant:{mpu_address:4660, face:FACE_FORWARD}, '
                          'BlockOccupant:{mpu_address:17767, face:FACE_BACKWARD}]}',

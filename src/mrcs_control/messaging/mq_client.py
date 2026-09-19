@@ -168,7 +168,7 @@ class MQManager(MQClient):
         self.channel.queue_delete(queue_name, if_unused=True)
 
 
-    def queue_purge(self, queue_name: str) -> int:
+    def queue_purge(self, queue_name: str) -> int | None:
         self.logger.debug(f'MQManager - queue_purge:{queue_name}')
 
         if self.channel is None:
@@ -290,7 +290,7 @@ class MQSubscriber(MQPublisher):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def queue_purge(self) -> int:
+    def queue_purge(self) -> int | None:
         self.logger.debug(f'MQSubscriber - queue_purge:{self.queue_name}')
 
         if self.channel is None:

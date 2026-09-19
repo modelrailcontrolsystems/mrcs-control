@@ -26,7 +26,7 @@ from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
 from mrcs_control.operations.control_router.control_router_identity import ControlRouterSerial
 from mrcs_control.operations.control_router.control_router_node import ControlRouterNode
-from mrcs_control.operations.track.track_node_identity import TrackNodeSerial
+from mrcs_control.operations.track.track_node_identity import TrackNodeCommand, TrackNodeSerial
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONable
 from mrcs_core.equipment.block.block_report import BlockOccupancyReport, BlockVoltageReport
@@ -102,47 +102,62 @@ class TrackNode(AsyncSubscriberNode):
 
         try:
             if message.routing_key.target == self.id():
-                self.logger.info(f'received command:{message.body}')
-                # TODO: act on commands
-                return
-
-            body_type = message.body.get('type')
-
-            # TODO: keep a count / timing of occupancy reports for each block -
-            # TODO: subsequent reports within a time period are handled differently
-
-            if body_type == BlockOccupancyReport.__name__:
-                report = BlockOccupancyReport.construct_from_jdict(message.body)
-                status = PersistentBlockStatus.update_from_block_occupancy_report(report)
-
-                self.__publish_update_message(status)
-
-            elif body_type == TrackReport.__name__:
-                report = PersistentTrack.construct_from_jdict(message.body)
-                report.save(Host)
-
-            elif body_type == BlockVoltageReport.__name__:
-                report = BlockVoltageReport.construct_from_jdict(message.body)
-                PersistentBlockStatus.update_from_voltage(report)
-
-            elif body_type == TurnoutReport.__name__:
-                report = TurnoutReport.construct_from_jdict(message.body)
-                PersistentTurnoutStatus.update_from_turnout_report(report)
+                self.__handle_command_message(message)
 
             else:
-                self.logger.warning(f'upsupported message:{message}')
-
-            if self.on_message:
-                self.on_message(message)
+                self.__handle_control_router_message(message)
 
         except Exception as exc:
             self.logger.warning(f'handle_message:{type(exc).__name__}:{exc} on:{message}')
 
 
+    def __handle_command_message(self, message: Message):
+        self.logger.debug(f'handle_command_message:{message}')
+
+        if message.body == TrackNodeCommand.FIND_ALL_TURNOUTS:
+            self.__publish_find_turnouts_message(message.routing_key.source)
+
+        else:
+            self.logger.warning(f'upsupported message:{message}')
+
+
+    def __handle_control_router_message(self, message: Message):
+        self.logger.debug(f'handle_control_router_message:{message}')
+
+        body_type = message.body.get('type')
+
+        # TODO: keep a count / timing of occupancy reports for each block -
+        # TODO: subsequent reports within a time period are handled differently
+
+        if body_type == BlockOccupancyReport.__name__:
+            report = BlockOccupancyReport.construct_from_jdict(message.body)
+            status = PersistentBlockStatus.update_from_block_occupancy_report(report)
+
+            self.__publish_update_message(status)
+
+        elif body_type == TrackReport.__name__:
+            report = PersistentTrack.construct_from_jdict(message.body)
+            report.save(Host)
+
+        elif body_type == BlockVoltageReport.__name__:
+            report = BlockVoltageReport.construct_from_jdict(message.body)
+            PersistentBlockStatus.update_from_voltage(report)
+
+        elif body_type == TurnoutReport.__name__:
+            report = TurnoutReport.construct_from_jdict(message.body)
+            PersistentTurnoutStatus.update_from_turnout_report(report)
+
+        else:
+            self.logger.warning(f'upsupported message:{message}')
+
+        if self.on_message:
+            self.on_message(message)
+
+
     # ----------------------------------------------------------------------------------------------------------------
 
     def __publish_startup_message(self):
-        self.logger.debug('publish_message')
+        self.logger.debug('publish_startup_message')
 
         message = Message(self.control_routing_key(), Command.lan_can_detector())
         self.async_loop.create_task(self.publish(message))
@@ -152,6 +167,13 @@ class TrackNode(AsyncSubscriberNode):
         self.logger.debug('publish_update_message')
 
         message = Message(self.status_routing_key(), status)
+        self.async_loop.create_task(self.publish(message))
+
+
+    def __publish_find_turnouts_message(self, client: EquipmentIdentifier):
+        self.logger.debug('publish_find_turnouts_message')
+
+        message = Message(PublicationRoutingKey(self.id(), client), PersistentTurnoutStatus.find_all())
         self.async_loop.create_task(self.publish(message))
 
 

@@ -6,6 +6,7 @@ Created on 6 Jun 2026
 https://realpython.com/command-line-interfaces-python-argparse/
 """
 
+from mrcs_control.cli.args.mpu_drive_action import MPUDriveAction
 from mrcs_control.dcc.z21.command.command import Command, XCommand
 from mrcs_core.cli.args.common_args import CommonArgs
 from mrcs_core.equipment.motive_power_unit.mpu_enums import MPUDirection
@@ -34,19 +35,10 @@ class Z21Args(CommonArgs):
                            help='get mpu decoder at ADDR')
         group.add_argument('-g', '--get-mpu', action='store', type=int, metavar=('ADDR',),
                            help='get mpu at ADDR')
-        group.add_argument('-s', '--set-mpu-drive', action='store', type=int, nargs=3, metavar=('ADDR', 'DIR', 'SPEED'),
-                           help='set mpu ADDR DIR SPEED')
+        group.add_argument('-s', '--set-mpu-drive', action=MPUDriveAction, nargs=3, metavar=('ADDR', 'DIR', 'SPEED'),
+                           help='set mpu ADDR { FWD | REV } SPEED')
 
         self._args = self._parser.parse_args()
-
-        if self._args.set_mpu_drive is not None:
-            direction = self._args.set_mpu_drive[1]
-            if not (0 <= direction <= 1):
-                self._parser.error(f"argument -s/--set-mpu-drive: DIR must be in range 0-1 (got {direction})")
-
-            speed = self._args.set_mpu_drive[2]
-            if not (0 <= speed <= 255):
-                self._parser.error(f"argument -s/--set-mpu-drive: SPEED must be in range 0-255 (got {speed})")
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -80,7 +72,7 @@ class Z21Args(CommonArgs):
             return XCommand.lan_x_get_mpu(self.get_mpu)
 
         if self.set_mpu_drive is not None:
-            direction = MPUDirection.REVERSE if self.set_mpu_drive[1] else MPUDirection.FORWARD
+            direction = MPUDirection.FORWARD if self.set_mpu_drive[1] == 'FWD' else MPUDirection.REVERSE
             return XCommand.lan_x_set_mpu_drive(self.set_mpu_drive[0], direction, self.set_mpu_drive[2])
 
         return None
@@ -125,7 +117,7 @@ class Z21Args(CommonArgs):
 
     @property
     def set_mpu_drive(self):
-        return self._args.set_mpu
+        return self._args.set_mpu_drive
 
 
     # ----------------------------------------------------------------------------------------------------------------
