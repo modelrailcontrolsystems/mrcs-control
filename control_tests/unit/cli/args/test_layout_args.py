@@ -19,33 +19,33 @@ from mrcs_core.inventory.layout.location import Location
 class TestLayoutArgs(unittest.TestCase):
 
     def test_path_up(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', 'shelf_001', '-p', 'U', 'B1', 'S1', 'B2', 'S2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', 'shelf_001', '-p', 'UP', 'B1/S1', 'B2/S2']):
             args = LayoutArgs('test')
             self.assertEqual('shelf_001', args.layout)
-            self.assertEqual(('U', 'B1', 'S1', 'B2', 'S2'), args.path)
+            self.assertEqual(('UP', 'B1/S1', 'B2/S2'), args.path)
             self.assertEqual(BlockHeading.UP, args.path_heading)
             self.assertEqual(Location('B1', 'S1'), args.path_start)
             self.assertEqual(Location('B2', 'S2'), args.path_end)
 
 
     def test_path_down_lowercase(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', 'shelf_001', '-p', 'd', 'B1', 'S1', 'B2', 'S2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', 'shelf_001', '-p', 'dn', 'B1/S1', 'B2/S2']):
             args = LayoutArgs('test')
             self.assertEqual('shelf_001', args.layout)
-            self.assertEqual(('D', 'B1', 'S1', 'B2', 'S2'), args.path)
+            self.assertEqual(('DN', 'B1/S1', 'B2/S2'), args.path)
             self.assertEqual(BlockHeading.DOWN, args.path_heading)
             self.assertEqual(Location('B1', 'S1'), args.path_start)
             self.assertEqual(Location('B2', 'S2'), args.path_end)
 
 
     def test_path_invalid_heading(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', 'shelf_001', '-p', 'X', 'B1', 'S1', 'B2', 'S2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', 'shelf_001', '-p', 'X', 'B1/S1', 'B2/S2']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
 
     def test_path_missing_argument(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', 'shelf_001', '-p', 'U', 'B1', 'S1', 'B2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', 'shelf_001', '-p', 'UP', 'B1/S1']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
@@ -69,10 +69,10 @@ class TestLayoutArgs(unittest.TestCase):
 
 
     def test_str(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', 'shelf_001', '-p', 'U', 'B1', 'S1', 'B2', 'S2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', 'shelf_001', '-p', 'UP', 'B1/S1', 'B2/S2']):
             args = LayoutArgs('test')
             self.assertIn("layout:shelf_001", str(args))
-            self.assertIn("path:('U', 'B1', 'S1', 'B2', 'S2')", str(args))
+            self.assertIn("path:('UP', 'B1/S1', 'B2/S2')", str(args))
 
 
 # --------------------------------------------------------------------------------------------------------------------
