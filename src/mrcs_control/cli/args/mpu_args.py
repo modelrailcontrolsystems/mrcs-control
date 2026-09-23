@@ -47,5 +47,5 @@ class MPUArgs(SubscriberControlArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):  #
-        return (f'MPUArgs:{{test:{self.test}, drain:{self.drain}, populate:{self.populate}, list:{self.list}, '
+        return (f'MPUArgs:{{test:{self.test}, populate:{self.populate}, drain:{self.drain}, list:{self.list}, '
                 f'run:{self.run}, indent:{self.indent}, verbose:{self.verbose}}}')
