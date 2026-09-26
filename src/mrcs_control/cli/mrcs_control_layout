@@ -8,59 +8,43 @@ Created on 13 Sep 2026
 source repo: mrcs_control
 
 DESCRIPTION
-A utility to interrogate layouts.
+A utility for navigating layouts.
 
 SYNOPSIS
-mrcs_control_layout [-h] [-i INDENT] [-v] [--version] [-t] [-p HEADING START END] layout
+mrcs_control_layout [-h] [-i INDENT] [-v] [--version] [-t] [-s HEADING START END | -p HEADING START END] layout
 
 EXAMPLES
-mrcs_control_layout -v -i4 -p UP BS01/SG01 BS04/SG01 shelf_001
+mrcs_control_layout -v -i4 -s UP BS01/SG01 BS04/SG01 shelf_001
+mrcs_control_layout -v -i4 shelf_001 -p UP Alpha/1 Beta/1
 """
 
 import sys
 
 from mrcs_control.cli.args.layout_args import LayoutArgs
-from mrcs_control.cli.internal.topic_subscriber_node import TopicSubscriberNode
-from mrcs_control.operations.track.track_node import TrackNode
-from mrcs_control.operations.track.track_node_identity import TrackNodeCommand
+from mrcs_control.cli.internal.turnout_configuration_finder import TurnoutConfigurationFinder
 from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONify
-from mrcs_core.equipment.turnout.turnout_configuration import TurnoutConfiguration
-from mrcs_core.equipment.turnout.turnout_status import TurnoutStatus
 from mrcs_core.inventory.layout.layout import Layout
-from mrcs_core.messaging.message import Message
-from mrcs_core.messaging.routing_key import PublicationRoutingKey
 from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-def on_message(message):
-    global turnouts
-
-    turnouts = [TurnoutStatus.construct_from_jdict(jdict) for jdict in message.body]
-    node.request_shutdown()
-
-
-# --------------------------------------------------------------------------------------------------------------------
-
 if __name__ == '__main__':
 
-    turnouts = []
+    config = None
+    path = None
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    args = LayoutArgs('utility to interrogate layouts')
+    args = LayoutArgs('a utility for navigating layouts')
 
     Logging.config('mrcs_control_layout', verbose=args.verbose)  # verbose=args.verbose / level=logging.DEBUG
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
 
     this_id = EquipmentIdentifier(EquipmentType.TST, None, 2)
-
-    publication_routing_key = PublicationRoutingKey(this_id, TrackNode.id())
-    subscription_routing_key = publication_routing_key.reversed()
 
     # ----------------------------------------------------------------------------------------------------------------
 
@@ -72,36 +56,45 @@ if __name__ == '__main__':
         logger.error(exc)
         exit(1)
 
-    if args.path:
+    if args.segment_path or args.platform_path:
+        finder = TurnoutConfigurationFinder(this_id)
+        config = finder.find(args.mode.value)
+
+    if args.segment_path:
         locations = layout.locations
 
-        if args.path_start not in locations:
-            logger.error(f'The start location {args.path_start.shortform} is not in the layout.')
+        if args.segment_path_start not in locations:
+            logger.error(f'The start location {args.segment_path_start.shortform} is not in the layout.')
             exit(2)
 
-        if args.path_end not in locations:
-            logger.error(f'The end location {args.path_end.shortform} is not in the layout.')
+        if args.segment_path_end not in locations:
+            logger.error(f'The end location {args.segment_path_end.shortform} is not in the layout.')
             exit(2)
-
-        TopicSubscriberNode.set_id(this_id)
-        TopicSubscriberNode.set_subscription_routing_keys([subscription_routing_key])
-
-        node = TopicSubscriberNode.construct_node(args.mode.value, on_message)
-        logger.info(f'node: {node}')
-
-        # start subscriber...
-        command_message = Message(publication_routing_key, TrackNodeCommand.FIND_ALL_TURNOUTS)
-        node.run(initial_publication=command_message)
-
-        # subscriber has now stopped...
-        config = TurnoutConfiguration.construct_from_turnouts(*turnouts)
 
         try:
-            path = layout.path(config, args.path_heading, args.path_start, args.path_end)
-            print(JSONify.dumps(path, indent=args.indent))
-
-            logger.info(f'total length: {path.total_length}')
+            path = layout.segment_path(config, args.path_heading, args.segment_path_start, args.segment_path_end)
         except ValueError as exc:
             print(exc, file=sys.stderr)
+            exit(1)
 
-    # ----------------------------------------------------------------------------------------------------------------
+    if args.platform_path:
+        platform_labels = layout.platform_labels
+
+        if args.platform_path_start not in platform_labels:
+            logger.error(f'The start platform {args.platform_path_start.shortform} is not in the layout.')
+            exit(2)
+
+        if args.platform_path_end not in platform_labels:
+            logger.error(f'The end platform {args.platform_path_end.shortform} is not in the layout.')
+            exit(2)
+
+        try:
+            path = layout.platform_path(config, args.path_heading, args.platform_path_start, args.platform_path_end)
+        except ValueError as exc:
+            print(exc, file=sys.stderr)
+            exit(1)
+
+    if path is not None:
+        print(JSONify.dumps(path, indent=args.indent))
+        # noinspection unresolved-references
+        logger.info(f'total length: {path.total_length}')
