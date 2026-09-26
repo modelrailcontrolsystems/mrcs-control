@@ -18,9 +18,9 @@ from mrcs_control.cli.args.mpu_drive_action import MPUDriveAction
 class TestCommandArgs(unittest.TestCase):
 
     def test_set_mpu_drive_forward(self):
-        with patch.object(sys, 'argv', ['mrcs_control_command', '-s', '4', 'F', '128']):
+        with patch.object(sys, 'argv', ['mrcs_control_command', '-s', '4', 'FWD', '128']):
             args = CommandArgs('test')
-            self.assertEqual((4, 'F', 128), args.set_mpu_drive)
+            self.assertEqual((4, 'FWD', 128), args.set_mpu_drive)
             self.assertTrue(args.has_command)
 
             cmd = args.command
@@ -29,9 +29,9 @@ class TestCommandArgs(unittest.TestCase):
 
 
     def test_set_mpu_drive_reverse_lowercase(self):
-        with patch.object(sys, 'argv', ['mrcs_control_command', '-s', '12', 'r', '0']):
+        with patch.object(sys, 'argv', ['mrcs_control_command', '-s', '12', 'rev', '0']):
             args = CommandArgs('test')
-            self.assertEqual((12, 'R', 0), args.set_mpu_drive)
+            self.assertEqual((12, 'REV', 0), args.set_mpu_drive)
             self.assertTrue(args.has_command)
 
             cmd = args.command
@@ -40,15 +40,15 @@ class TestCommandArgs(unittest.TestCase):
 
 
     def test_set_mpu_drive_max_speed(self):
-        with patch.object(sys, 'argv', ['mrcs_control_command', '-s', '3', 'F', '255']):
+        with patch.object(sys, 'argv', ['mrcs_control_command', '-s', '3', 'FWD', '255']):
             args = CommandArgs('test')
-            self.assertEqual((3, 'F', 255), args.set_mpu_drive)
+            self.assertEqual((3, 'FWD', 255), args.set_mpu_drive)
             self.assertEqual('XCommand:{header:LAN_X, x_header:LAN_X_SET_LOCO_FUNC, argv:[0x13, 0x3, 0xff]}',
                              str(args.command))
 
 
     def test_set_mpu_drive_invalid_addr(self):
-        with patch.object(sys, 'argv', ['mrcs_control_command', '-s', 'abc', 'F', '100']):
+        with patch.object(sys, 'argv', ['mrcs_control_command', '-s', 'abc', 'FWD', '100']):
             with self.assertRaises(SystemExit):
                 CommandArgs('test')
 
@@ -60,19 +60,19 @@ class TestCommandArgs(unittest.TestCase):
 
 
     def test_set_mpu_drive_invalid_speed_above_max(self):
-        with patch.object(sys, 'argv', ['mrcs_control_command', '-s', '4', 'F', '256']):
+        with patch.object(sys, 'argv', ['mrcs_control_command', '-s', '4', 'FWD', '256']):
             with self.assertRaises(SystemExit):
                 CommandArgs('test')
 
 
     def test_set_mpu_drive_invalid_speed_below_min(self):
-        with patch.object(sys, 'argv', ['mrcs_control_command', '-s', '4', 'F', '-1']):
+        with patch.object(sys, 'argv', ['mrcs_control_command', '-s', '4', 'FWD', '-1']):
             with self.assertRaises(SystemExit):
                 CommandArgs('test')
 
 
     def test_set_mpu_drive_invalid_speed_non_integer(self):
-        with patch.object(sys, 'argv', ['mrcs_control_command', '-s', '4', 'F', 'fast']):
+        with patch.object(sys, 'argv', ['mrcs_control_command', '-s', '4', 'FWD', 'fast']):
             with self.assertRaises(SystemExit):
                 CommandArgs('test')
 

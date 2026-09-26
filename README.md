@@ -40,11 +40,18 @@ The following service supports the MRCS APIs:
 
 #### Operations
 
+RabbitMQ must be running on the host. Install and run (permanently) with the following:
+
+`
+brew install rabbitmq
+`
+
 `
 brew services restart rabbitmq
 `
+
 `
-/usr/local/opt/rabbitmq/sbin/rabbitmqctl enable_feature_flag all
+rabbitmqctl enable_feature_flag all
 `
 
 [Deleting queues in RabbitMQ](https://stackoverflow.com/questions/6742938/deleting-queues-in-rabbitmq)
