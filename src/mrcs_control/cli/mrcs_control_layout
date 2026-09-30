@@ -10,12 +10,16 @@ source repo: mrcs_control
 DESCRIPTION
 A utility for navigating layouts.
 
+The utility requires the backend services to be running in order to determine the layout's turnout positions.
+
 SYNOPSIS
-mrcs_control_layout [-h] [-i INDENT] [-v] [--version] [-t] [-s HEADING START END | -p HEADING START END] layout
+mrcs_control_layout [-h] [-i INDENT] [-v] [--version] [-t] (-l | -r LAYOUT | -s LAYOUT |
+-g HEADING START END | -p HEADING START END)
 
 EXAMPLES
-mrcs_control_layout -v -i4 -s UP BS01/SG01 BS04/SG01 shelf_001
-mrcs_control_layout -v -i4 shelf_001 -p UP Alpha/1 Beta/1
+mrcs_control_layout -v -i4 -l
+mrcs_control_layout -v -i4 -g UP BS01/SG01 BS04/SG01 shelf_001
+mrcs_control_layout -v -i4 -p UP Alpha/1 Beta/1
 """
 
 import sys
@@ -25,6 +29,7 @@ from mrcs_control.cli.internal.turnout_configuration_finder import TurnoutConfig
 from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONify
 from mrcs_core.inventory.layout.layout import Layout
+from mrcs_core.inventory.layout.layout_conf import LayoutConf
 from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging
 
@@ -33,6 +38,7 @@ from mrcs_core.sys.logging import Logging
 
 if __name__ == '__main__':
 
+    layout = None
     config = None
     path = None
 
@@ -48,7 +54,43 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    layout = Layout.load(Host, name=args.layout)
+    if args.list:
+        layouts = Layout.list(Host)
+        print(JSONify.dumps(layouts, indent=args.indent))
+        exit(0)
+
+    if args.report:
+        layout = Layout.load(Host, args.report)
+
+        if layout is None:
+            logger.error(f'Layout {args.report} is not known.')
+            exit(2)
+
+        print(JSONify.dumps(layout, indent=args.indent))
+        exit(0)
+
+    if args.set_selected_layout:
+        if args.set_selected_layout not in Layout.list(Host):
+            logger.error(f'Layout {args.set_selected_layout} is not known.')
+            exit(2)
+
+        conf = LayoutConf(args.set_selected_layout)
+        conf.save(Host)
+        exit(0)
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    try:
+        layout = LayoutConf.load_selected_layout(Host)
+    except Exception as exc:
+        logger.error(exc)
+        exit(2)
+
+    if layout is None:
+        logger.error(f'No layout is selected. Use mrcs_control_layout --set-selected-layout to set one.')
+        exit(1)
+
+    logger.info(f'layout: {layout.label}')
 
     try:
         layout.validate()
@@ -56,9 +98,8 @@ if __name__ == '__main__':
         logger.error(exc)
         exit(1)
 
-    if args.segment_path or args.platform_path:
-        finder = TurnoutConfigurationFinder(this_id)
-        config = finder.find(args.mode.value)
+    finder = TurnoutConfigurationFinder(this_id)
+    config = finder.find(args.mode.value)
 
     if args.segment_path:
         locations = layout.locations
