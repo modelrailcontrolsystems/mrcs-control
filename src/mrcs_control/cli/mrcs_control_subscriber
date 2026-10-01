@@ -9,6 +9,7 @@ source repo: mrcs_control
 
 DESCRIPTION
 A general-purpose tool for subscribing to topics.
+
 Multiple publisher sources can be specified. Messages are written to stdout in json format.
 At least one source must be specified. The default message recipient (target) is '*.*.*'.
 

@@ -18,6 +18,7 @@ import struct
 
 from mrcs_control.dcc.z21.command.dataset import Dataset
 from mrcs_control.dcc.z21.equipment.block.z21_block_occupant import Z21BlockOccupant
+from mrcs_core.equipment.block.block_address import BlockAddress
 from mrcs_core.equipment.block.block_enums import BlockVoltage
 from mrcs_core.equipment.block.block_id import BlockID
 from mrcs_core.equipment.block.block_report import BlockOccupancyReport, BlockVoltageReport
@@ -43,7 +44,7 @@ class BlockReportBuilder(object):
         detector_address = address + 1
         detector_channel = port + 1
 
-        id = BlockID(detector_address, detector_channel, network_id)
+        id = BlockID(BlockAddress(detector_address, detector_channel), network_id)
 
         if msg_type == 0x01:
             voltage = BlockVoltage(value_1)

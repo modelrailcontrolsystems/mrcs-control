@@ -10,6 +10,7 @@ https://www.jetbrains.com/help/pycharm/creating-tests.html
 """
 
 import json
+import sqlite3
 import unittest
 from pathlib import Path
 
@@ -19,6 +20,7 @@ from mrcs_control.db.db_client import DbClient, DbMode
 from mrcs_control.equipment.block.persistent_block_status import PersistentBlockStatus
 from mrcs_control.equipment.turnout.persistent_turnout_status import PersistentTurnoutStatus
 from mrcs_control.test.test_helper import TestHelper
+from mrcs_core.equipment.block.block_address import BlockAddress
 from mrcs_core.equipment.block.block_enums import BlockOccupantFace
 from mrcs_core.equipment.block.block_id import BlockID
 from mrcs_core.equipment.block.block_occupant import BlockOccupant
@@ -54,11 +56,11 @@ class TestBlockPersistence(unittest.TestCase):
 
     def test_setup(self):
         obj1, obj2 = self.__setup_db()
-        self.assertEqual('BlockStatus:{label:BN01, block_address:5/6, heading:UP, '
+        self.assertEqual('BlockStatus:{label:BN01, address:BlockAddress:{detector:5, channel:6}, heading:UP, '
                          'voltage:OCCUPIED_WITH_VOLTAGE, '
                          'occupants:[BlockOccupant:{mpu_address:4660, face:FACE_FORWARD}, '
                          'BlockOccupant:{mpu_address:17767, face:FACE_BACKWARD}]}', str(obj1))
-        self.assertEqual('BlockStatus:{label:BN02, block_address:5/7, heading:UP, '
+        self.assertEqual('BlockStatus:{label:BN02, address:BlockAddress:{detector:5, channel:7}, heading:UP, '
                          'voltage:OCCUPIED_NO_VOLTAGE, '
                          'occupants:[BlockOccupant:{mpu_address:1767, face:FACE_BACKWARD}, '
                          'BlockOccupant:{mpu_address:4660, face:FACE_FORWARD}]}', str(obj2))
@@ -67,6 +69,8 @@ class TestBlockPersistence(unittest.TestCase):
     def test_find(self):
         obj1, _ = self.__setup_db()
         obj2 = PersistentBlockStatus.find(obj1.label)
+        assert obj2 is not None
+        self.assertEqual(BlockAddress(5, 6), obj2.address)
         self.assertEqual(obj1, obj2)
 
 
@@ -121,7 +125,7 @@ class TestBlockPersistence(unittest.TestCase):
             jdict = json.load(fp)
         obj2 = BlockVoltageReport.construct_from_jdict(jdict)
         obj3 = obj1.update_from_voltage(obj2)
-        self.assertEqual('BlockStatus:{label:BN01, block_address:5/6, heading:UP, '
+        self.assertEqual('BlockStatus:{label:BN01, address:BlockAddress:{detector:5, channel:6}, heading:UP, '
                          'voltage:FREE_NO_VOLTAGE, '
                          'occupants:[BlockOccupant:{mpu_address:4660, face:FACE_FORWARD}, '
                          'BlockOccupant:{mpu_address:17767, face:FACE_BACKWARD}]}',
@@ -131,7 +135,7 @@ class TestBlockPersistence(unittest.TestCase):
     def test_update_from_block_occupancy_report(self):
         obj1, _ = self.__setup_db()
         report = BlockOccupancyReport(
-            block_id=BlockID(5, 6, 0x1234),
+            block_id=BlockID(BlockAddress(5, 6), 0x1234),
             occupant_group=1,
             occupants=[BlockOccupant(9999, BlockOccupantFace.FACE_FORWARD)],
         )
@@ -142,6 +146,40 @@ class TestBlockPersistence(unittest.TestCase):
         self.assertEqual(1, len(obj2.occupants))
         self.assertEqual(9999, obj2.occupants[0].mpu_address)
         self.assertEqual(BlockOccupantFace.FACE_FORWARD, obj2.occupants[0].face)
+
+
+    def test_update_from_block_occupancy_report_unknown_address(self):
+        obj1, obj2 = self.__setup_db()
+        report = BlockOccupancyReport(
+            block_id=BlockID(BlockAddress(9, 9), 0x1234),
+            occupant_group=1,
+            occupants=[BlockOccupant(9999, BlockOccupantFace.FACE_FORWARD)],
+        )
+
+        with self.assertRaises(KeyError):
+            PersistentBlockStatus.update_from_block_occupancy_report(report)
+
+        self.assertEqual(obj1, PersistentBlockStatus.find(obj1.label))
+        self.assertEqual(obj2, PersistentBlockStatus.find(obj2.label))
+
+
+    def test_update_from_block_occupancy_report_rollback(self):
+        obj1, _ = self.__setup_db()
+
+        # duplicate occupants violate the occupant table primary key, after existing occupants are deleted
+        report = BlockOccupancyReport(
+            block_id=BlockID(BlockAddress(5, 6), 0x1234),
+            occupant_group=1,
+            occupants=[BlockOccupant(9999, BlockOccupantFace.FACE_FORWARD),
+                       BlockOccupant(9999, BlockOccupantFace.FACE_BACKWARD)],
+        )
+
+        with self.assertRaises(sqlite3.IntegrityError):
+            PersistentBlockStatus.update_from_block_occupancy_report(report)
+
+        obj2 = PersistentBlockStatus.find(obj1.label)
+        assert obj2 is not None
+        self.assertEqual(obj1.occupants, obj2.occupants)
 
 
     def test_delete(self):

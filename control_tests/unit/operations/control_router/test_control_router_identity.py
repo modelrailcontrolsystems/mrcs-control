@@ -12,6 +12,7 @@ https://www.jetbrains.com/help/pycharm/creating-tests.html
 import unittest
 
 from mrcs_control.operations.control_router.control_router_identity import ControlRouterIdentity
+from mrcs_core.equipment.block.block_address import BlockAddress
 from mrcs_core.equipment.block.block_enums import BlockVoltage
 from mrcs_core.equipment.block.block_id import BlockID
 from mrcs_core.equipment.block.block_report import BlockOccupancyReport, BlockVoltageReport
@@ -31,7 +32,7 @@ from mrcs_core.equipment.turnout.turnout_report import TurnoutReport
 class TestControlRouterIdentity(unittest.TestCase):
 
     def test_identity_common(self):
-        obj1 = BlockID(1, 2, 3)
+        obj1 = BlockID(BlockAddress(1, 2), 3)
         obj2 = ControlRouterIdentity.get(obj1)
         self.assertEqual('EquipmentIdentifier:{equipment_type:CRT, sector_number:None, serial_number:UNCLASSIFIED{2}}',
                          str(obj2))
@@ -46,14 +47,14 @@ class TestControlRouterIdentity(unittest.TestCase):
 
 
     def test_identity_block_cccupancy(self):
-        obj1 = BlockOccupancyReport(BlockID(1, 2, 3), 1, [])
+        obj1 = BlockOccupancyReport(BlockID(BlockAddress(1, 2), 3), 1, [])
         obj2 = ControlRouterIdentity.get(obj1)
         self.assertEqual('EquipmentIdentifier:{equipment_type:CRT, sector_number:None, serial_number:BLOCK{7}}',
                          str(obj2))
 
 
     def test_identity_block_voltage(self):
-        obj1 = BlockVoltageReport(BlockID(1, 2, 3), BlockVoltage.FREE_NO_VOLTAGE)
+        obj1 = BlockVoltageReport(BlockID(BlockAddress(1, 2), 3), BlockVoltage.FREE_NO_VOLTAGE)
         obj2 = ControlRouterIdentity.get(obj1)
         self.assertEqual('EquipmentIdentifier:{equipment_type:CRT, sector_number:None, serial_number:BLOCK{7}}',
                          str(obj2))

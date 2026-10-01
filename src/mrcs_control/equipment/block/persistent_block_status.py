@@ -29,6 +29,7 @@ from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.equipment.block.block_persistence import BlockPersistence
 from mrcs_control.equipment.block.persistent_block_occupant import PersistentBlockOccupant
 from mrcs_control.equipment.turnout.persistent_turnout_status import PersistentTurnoutStatus
+from mrcs_core.equipment.block.block_address import BlockAddress
 from mrcs_core.equipment.block.block_enums import BlockHeading, BlockVoltage
 from mrcs_core.equipment.block.block_occupant import BlockOccupant
 from mrcs_core.equipment.block.block_status import BlockStatus
@@ -50,22 +51,24 @@ class PersistentBlockStatus(BlockStatus, BlockPersistence, PersistentObject):
 
     @classmethod
     def narrow(cls, block: BlockStatus) -> Self:
-        return cls(block.label, block.block_address, block.heading, block.voltage)
+        return cls(block.label, block.address, block.heading, block.voltage)
 
 
     @classmethod
     def construct_from_db(cls, row, *child_rows) -> Self:
-        label, block_address, heading, voltage = row
+        label, shortform_address, heading, voltage = row
+
+        address = BlockAddress.construct_from_shortform(shortform_address)
         occupants = [PersistentBlockOccupant.construct_from_db(occupant_row) for occupant_row in child_rows]
 
-        return cls(label, block_address, BlockHeading[heading], BlockVoltage[voltage], *occupants)
+        return cls(label, address, BlockHeading[heading], BlockVoltage[voltage], *occupants)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, label: str, block_address: str, heading: BlockHeading, voltage: BlockVoltage,
+    def __init__(self, label: str, address: BlockAddress, heading: BlockHeading, voltage: BlockVoltage,
                  *occupants: BlockOccupant):
-        super().__init__(label, block_address, heading, voltage, *occupants)
+        super().__init__(label, address, heading, voltage, *occupants)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -84,7 +87,7 @@ class PersistentBlockStatus(BlockStatus, BlockPersistence, PersistentObject):
     # ----------------------------------------------------------------------------------------------------------------
 
     def as_db_insert(self):
-        return self.label, self.block_address, self.heading.name, self.voltage.name
+        return self.label, self.address.shortform, self.heading.name, self.voltage.name
 
 
     def as_db_update(self):

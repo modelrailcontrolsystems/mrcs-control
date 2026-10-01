@@ -10,7 +10,7 @@ source repo: mrcs_control
 DESCRIPTION
 A utility for navigating layouts.
 
-The utility requires the backend services to be running in order to determine the layout's turnout positions.
+The utility requires the backend services to be running in order to determine the layout's current turnout positions.
 
 SYNOPSIS
 mrcs_control_layout [-h] [-i INDENT] [-v] [--version] [-t] (-l | -r LAYOUT | -s LAYOUT |
@@ -18,7 +18,7 @@ mrcs_control_layout [-h] [-i INDENT] [-v] [--version] [-t] (-l | -r LAYOUT | -s 
 
 EXAMPLES
 mrcs_control_layout -v -i4 -l
-mrcs_control_layout -v -i4 -g UP BS01/SG01 BS04/SG01 shelf_001
+mrcs_control_layout -v -i4 -g UP BS01/SG01 BS04/SG01 shelf_001  # TODO: update these
 mrcs_control_layout -v -i4 -p UP Alpha/1 Beta/1
 """
 
@@ -34,6 +34,7 @@ from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging
 
 
+# TODO: report by dot path
 # --------------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
@@ -61,7 +62,6 @@ if __name__ == '__main__':
 
     if args.report:
         layout = Layout.load(Host, args.report)
-
         if layout is None:
             logger.error(f'Layout {args.report} is not known.')
             exit(2)
@@ -70,7 +70,7 @@ if __name__ == '__main__':
         exit(0)
 
     if args.set_selected_layout:
-        if args.set_selected_layout not in Layout.list(Host):
+        if args.set_selected_layout not in Layout.list(Host):  # TODO: this code could go in LayoutConf?
             logger.error(f'Layout {args.set_selected_layout} is not known.')
             exit(2)
 

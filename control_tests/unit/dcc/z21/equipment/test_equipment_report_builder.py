@@ -33,7 +33,7 @@ class TestEquipmentReport(unittest.TestCase):
         report = EquipmentReportBuilder.construct_from_dataset(dataset)
 
         self.assertIsInstance(report, BlockVoltageReport)
-        self.assertEqual('BlockVoltageReport:{block_id:BlockID:{detector_address:5, channel:1, '
+        self.assertEqual('BlockVoltageReport:{block_id:BlockID:{address:BlockAddress:{detector:5, channel:1}, '
                          'reporter_id:0xdb78}, voltage:OCCUPIED_WITH_VOLTAGE}', str(report))
 
 
