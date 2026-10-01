@@ -16,7 +16,7 @@ are invoked. The function is useful if problematic messages have been published 
 
 In --verbose mode, the reports are written to the logger.
 
-The control router process runs a keep-alive, periodically interrogating the control router station.  If the station
+The control router process runs a keep-alive, periodically interrogating the control router station. If the station
 is not available, incomming messages will remain on the queue until the station is available again. Note that -
 in the current regime - command messages may be lost during the interval between the station being unavailable and its
 unavailability being established.
@@ -40,6 +40,7 @@ SEE ALSO
 mrcs_control_z21
 mrcs_control_z21_conf
 """
+
 import sys
 
 from mrcs_control.cli.args.router_args import RouterArgs

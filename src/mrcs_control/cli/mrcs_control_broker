@@ -11,10 +11,11 @@ DESCRIPTION
 A tool to manage message broker exchanges and queues. The --test argument specifies which exchanges and queues are
 being managed.
 
-Note that, if an exchange is selected for deletion, all queues bound to it are deleted.
+Note that, if an exchange is selected for deletion, all queues bound to it are also deleted.
 
 It is essential to delete a queue if a routing key has changed - the queue is normally durable, and so are its
-routing keys! No process may be attached to the broker when deleting takes place.
+routing keys! No process may be attached to the broker when deleting takes place - any such process should be
+terminated first.
 
 SYNOPSIS
 mrcs_control_broker [-h] [-i INDENT] [-v] [--version] [-t] (-e | -q) [-d DELETE | -z]

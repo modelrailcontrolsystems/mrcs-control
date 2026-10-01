@@ -187,14 +187,14 @@ class BlockPersistence(PersistentObject, ABC):
 
             table = cls.block_table()
             sql = f'UPDATE {table} SET voltage = ? WHERE address = ?'
-            client.execute(sql, data=(report.voltage.name, report.block_address))
+            client.execute(sql, data=(report.voltage.name, report.address.shortform))
 
             sql = f'SELECT label, address, heading, voltage FROM {table} WHERE address = ?'
-            client.execute(sql, data=(report.block_address,))
+            client.execute(sql, data=(report.address.shortform,))
             block_row = client.fetchone()
 
             if not block_row:
-                raise KeyError(f'no BlockStatus with address {report.block_address}')
+                raise KeyError(f'no BlockStatus with address {report.address.shortform}')
 
             table = cls.occupant_table()
             sql = f'SELECT mpu_address, face FROM {table} WHERE block_label = ?'
@@ -214,8 +214,6 @@ class BlockPersistence(PersistentObject, ABC):
     def update_from_block_occupancy_report(cls, report: BlockOccupancyReport) -> Self:
         client = DbClient.instance(cls.db_name())
 
-        cls.delete_occupants(report.block_id)
-
         try:
             client.txIMMEDIATE()
 
@@ -223,9 +221,17 @@ class BlockPersistence(PersistentObject, ABC):
             block_table = cls.block_table()
 
             sql = f'SELECT label FROM {block_table} WHERE address = ?'
-            client.execute(sql, data=(report.block_address,))
+            client.execute(sql, data=(report.address.shortform,))
             row = client.fetchone()
+
+            if not row:
+                raise KeyError(f'no BlockStatus with address {report.address.shortform}')
+
             label = row[0]
+
+            # delete within the transaction, so that existing occupants are restored on rollback
+            sql = f'DELETE FROM {occupant_table} WHERE block_label = ?'
+            client.execute(sql, data=(label,))
 
             for occupant in report.occupants:
                 sql = f'INSERT INTO {occupant_table} (block_label, mpu_address, face) VALUES (?, ?, ?)'
@@ -274,7 +280,7 @@ class BlockPersistence(PersistentObject, ABC):
 
             sql = (f'DELETE FROM {occupant_table} '
                    f'WHERE block_label = (SELECT label FROM {block_table} WHERE address = ?)')
-            client.execute(sql, data=(block_id.block_address,))
+            client.execute(sql, data=(block_id.address.shortform,))
 
             client.txCOMMIT()
 
