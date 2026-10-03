@@ -60,15 +60,6 @@ if __name__ == '__main__':
         print(JSONify.dumps(layouts, indent=args.indent))
         exit(0)
 
-    if args.report:
-        layout = Layout.load(Host, args.report)
-        if layout is None:
-            logger.error(f'Layout {args.report} is not known.')
-            exit(2)
-
-        print(JSONify.dumps(layout, indent=args.indent))
-        exit(0)
-
     if args.set_selected_layout:
         if args.set_selected_layout not in Layout.list(Host):  # TODO: this code could go in LayoutConf?
             logger.error(f'Layout {args.set_selected_layout} is not known.')
@@ -91,6 +82,20 @@ if __name__ == '__main__':
         exit(1)
 
     logger.info(f'layout: {layout.label}')
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    if args.segment_report:
+        try:
+            blocks = layout.segment_report(args.report_node_block, args.report_node_segment)
+        except KeyError as exc:
+            logger.error(f'The node {exc.args[0]} could not be found.')
+            exit(2)
+
+        print(JSONify.dumps(blocks, indent=args.indent))
+        exit(0)
+
+    # ----------------------------------------------------------------------------------------------------------------
 
     try:
         layout.validate()
