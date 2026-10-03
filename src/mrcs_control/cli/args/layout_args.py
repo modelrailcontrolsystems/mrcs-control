@@ -10,7 +10,7 @@ from mrcs_control.cli.args.layout_platform_path_action import LayoutPlatformPath
 from mrcs_control.cli.args.layout_segment_path_action import LayoutSegmentPathAction
 
 from mrcs_core.cli.args.multimode_args import MultimodeArgs
-from mrcs_core.data.dot_dict import DotDict
+from mrcs_core.data.dot import Dot
 from mrcs_core.equipment.block.block_enums import BlockHeading
 from mrcs_core.inventory.layout.location import Location
 from mrcs_core.inventory.platform.platform_label import PlatformLabel
@@ -70,12 +70,12 @@ class LayoutArgs(MultimodeArgs):
 
     @property
     def report_node_block(self):
-        return DotDict.node(self._args.segment_report, 0)
+        return Dot.node(self._args.segment_report, 0)
 
 
     @property
     def report_node_segment(self):
-        return DotDict.node(self._args.segment_report, 1)
+        return Dot.node(self._args.segment_report, 1)
 
 
     @property
@@ -85,12 +85,12 @@ class LayoutArgs(MultimodeArgs):
 
     @property
     def report_node_station(self):
-        return DotDict.node(self._args.platform_report, 0)
+        return Dot.node(self._args.platform_report, 0)
 
 
     @property
     def report_node_platform(self):
-        return DotDict.node(self._args.platform_report, 1)
+        return Dot.node(self._args.platform_report, 1)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -115,14 +115,14 @@ class LayoutArgs(MultimodeArgs):
     def segment_path_start(self):
         if self._args.segment_path is None:
             return None
-        return Location.construct_from_shortform(self._args.segment_path[1])
+        return Location.construct_from_dot_path(self._args.segment_path[1])
 
 
     @property
     def segment_path_end(self):
         if self._args.segment_path is None:
             return None
-        return Location.construct_from_shortform(self._args.segment_path[2])
+        return Location.construct_from_dot_path(self._args.segment_path[2])
 
 
     @property

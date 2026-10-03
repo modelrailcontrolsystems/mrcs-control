@@ -152,13 +152,13 @@ class TestLayoutArgs(unittest.TestCase):
     # Segment path ---------------------------------------------------------------------------------------------------
 
     def test_segment_path_up(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sp', 'UP', 'B1/S1', 'B2/S2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sp', 'UP', 'B1.S1', 'B2.S2']):
             args = LayoutArgs('test')
             self.assertFalse(args.list)
             self.assertIsNone(args.set_selected_layout)
             self.assertFalse(args.segment_report)
             self.assertFalse(args.platform_report)
-            self.assertEqual(('UP', 'B1/S1', 'B2/S2'), args.segment_path)
+            self.assertEqual(('UP', 'B1.S1', 'B2.S2'), args.segment_path)
             self.assertEqual(BlockHeading.UP, args.path_heading)
             self.assertEqual(Location('B1', 'S1'), args.segment_path_start)
             self.assertEqual(Location('B2', 'S2'), args.segment_path_end)
@@ -168,34 +168,34 @@ class TestLayoutArgs(unittest.TestCase):
 
 
     def test_segment_path_down_lowercase(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sp', 'dn', 'B1/S1', 'B2/S2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sp', 'dn', 'B1.S1', 'B2.S2']):
             args = LayoutArgs('test')
-            self.assertEqual(('DN', 'B1/S1', 'B2/S2'), args.segment_path)
+            self.assertEqual(('DN', 'B1.S1', 'B2.S2'), args.segment_path)
             self.assertEqual(BlockHeading.DOWN, args.path_heading)
             self.assertEqual(Location('B1', 'S1'), args.segment_path_start)
             self.assertEqual(Location('B2', 'S2'), args.segment_path_end)
 
 
     def test_segment_path_invalid_heading(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sp', 'X', 'B1/S1', 'B2/S2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sp', 'X', 'B1.S1', 'B2.S2']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
 
     def test_segment_path_invalid_start(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sp', 'UP', 'B1', 'B2/S2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sp', 'UP', 'B1', 'B2.S2']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
 
     def test_segment_path_invalid_end(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sp', 'UP', 'B1/S1', 'B2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sp', 'UP', 'B1.S1', 'B2']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
 
     def test_segment_path_missing_argument(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sp', 'UP', 'B1/S1']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sp', 'UP', 'B1.S1']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
@@ -272,11 +272,11 @@ class TestLayoutArgs(unittest.TestCase):
     # String representation ------------------------------------------------------------------------------------------
 
     def test_str(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sp', 'UP', 'B1/S1', 'B2/S2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sp', 'UP', 'B1.S1', 'B2.S2']):
             args = LayoutArgs('test')
             self.assertEqual(
                 "LayoutArgs:{list:False, set_selected_layout:None, segment_report:False, platform_report:False, "
-                "segment_path:('UP', 'B1/S1', 'B2/S2'), platform_path:None, "
+                "segment_path:('UP', 'B1.S1', 'B2.S2'), platform_path:None, "
                 "indent:None, verbose:False}", str(args))
 
 

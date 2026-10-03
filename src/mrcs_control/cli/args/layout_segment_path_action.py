@@ -30,12 +30,12 @@ class LayoutSegmentPathAction(Action):
             parser.error(f"argument {opt}: HEADING must be 'UP' or 'DN' (got '{values[0]}')")
 
         try:
-            Location.construct_from_shortform(values[1])
+            Location.construct_from_dot_path(values[1])
         except ValueError:
             parser.error(f"argument {opt}: START is malformed' (got '{values[1]}')")
 
         try:
-            Location.construct_from_shortform(values[2])
+            Location.construct_from_dot_path(values[2])
         except ValueError:
             parser.error(f"argument {opt}: END is malformed' (got '{values[2]}')")
 
