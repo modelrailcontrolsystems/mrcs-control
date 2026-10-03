@@ -6,8 +6,8 @@ Created on 6 Jun 2026
 https://realpython.com/command-line-interfaces-python-argparse/
 """
 
-from mrcs_control.cli.args.layout_platform_path_action import LayoutPlatformPathAction
-from mrcs_control.cli.args.layout_segment_path_action import LayoutSegmentPathAction
+from mrcs_control.cli.args.layout_actions import LayoutBlockReportAction, LayoutPlatformPathAction, \
+    LayoutSegmentPathAction, LayoutStationReportAction
 
 from mrcs_core.cli.args.multimode_args import MultimodeArgs
 from mrcs_core.data.dot import Dot
@@ -32,19 +32,19 @@ class LayoutArgs(MultimodeArgs):
         group.add_argument('-sl', '--set-selected-layout', action='store', type=str, metavar='LAYOUT',
                            help='set selected layout')
 
-        group.add_argument('-sr', '--segment-report', action='store', type=str, nargs='?', const='*',
+        group.add_argument('-br', '--block-report', action=LayoutBlockReportAction, type=str, nargs='?', const='*',
                            metavar='BLK[.SEG]', help='print block(s) with segment(s)')
 
-        group.add_argument('-pr', '--platform-report', action='store', type=str, nargs='?', const='*',
+        group.add_argument('-sr', '--station-report', action=LayoutStationReportAction, type=str, nargs='?', const='*',
                            metavar='STN[.PLT]', help='print station(s) with platform(s)')
 
         group.add_argument('-sp', '--segment-path', action=LayoutSegmentPathAction, nargs=3,
                            metavar=('HEADING', 'BLK1.SEG1', 'BLK2.SEG2'),
-                           help='find path with HEADING: { UP | DN } from START to END')
+                           help='find path with HEADING: { UP | DN } from BLK1.SEG1 to BLK2.SEG2')
 
         group.add_argument('-pp', '--platform-path', action=LayoutPlatformPathAction, nargs=3,
                            metavar=('HEADING', 'STN1.PLT1', 'STN2.PLT2'),
-                           help='find path with HEADING: { UP | DN } from START to END')
+                           help='find path with HEADING: { UP | DN } from STN1.PLT1 to STN2.PLT2')
 
         self._args = self._parser.parse_args()
 
@@ -64,33 +64,35 @@ class LayoutArgs(MultimodeArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     @property
-    def segment_report(self):
-        return self._args.segment_report is not None
+    def block_report(self):
+        return self._args.block_report is not None
 
 
     @property
     def report_node_block(self):
-        return Dot.node(self._args.segment_report, 0)
+        return Dot.node(self._args.block_report, 0)
 
 
     @property
     def report_node_segment(self):
-        return Dot.node(self._args.segment_report, 1)
+        return Dot.node(self._args.block_report, 1)
 
+
+    # ----------------------------------------------------------------------------------------------------------------
 
     @property
-    def platform_report(self):
-        return self._args.platform_report is not None
+    def station_report(self):
+        return self._args.station_report is not None
 
 
     @property
     def report_node_station(self):
-        return Dot.node(self._args.platform_report, 0)
+        return Dot.node(self._args.station_report, 0)
 
 
     @property
     def report_node_platform(self):
-        node = Dot.node(self._args.platform_report, 1)  # TODO: needs to be checked with an Action class
+        node = Dot.node(self._args.station_report, 1)  # validated by LayoutStationReportAction
         return None if node is None else int(node)
 
 
@@ -126,6 +128,8 @@ class LayoutArgs(MultimodeArgs):
         return SegmentLocation.construct_from_dot_path(self._args.segment_path[2])
 
 
+    # ----------------------------------------------------------------------------------------------------------------
+
     @property
     def platform_path(self):
         return self._args.platform_path
@@ -150,6 +154,6 @@ class LayoutArgs(MultimodeArgs):
     def __str__(self, *args, **kwargs):
         return (
             f'LayoutArgs:{{list:{self.list}, set_selected_layout:{self.set_selected_layout}, '
-            f'segment_report:{self.segment_report}, platform_report:{self.platform_report}, '
+            f'block_report:{self.block_report}, station_report:{self.station_report}, '
             f'segment_path:{self.segment_path}, platform_path:{self.platform_path}, '
             f'indent:{self.indent}, verbose:{self.verbose}}}')

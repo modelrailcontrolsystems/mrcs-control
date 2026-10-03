@@ -13,11 +13,13 @@ A utility for navigating layouts.
 The utility requires the backend services to be running in order to determine the layout's current turnout positions.
 
 SYNOPSIS
-mrcs_control_layout [-h] [-i INDENT] [-v] [--version] [-t] (-l | -sl LAYOUT | -sr [BLK[.SEG]] | -pr [STN[.PLT]] |
--sp HEADING BLK1.SEG1 BLK2.SEG2 | -pp HEADING STN1.PLT1 STN2.PLT2)
+usage: mrcs_control_layout [-h] [-i INDENT] [-v] [--version] [-t] (-l | -sl LAYOUT | -br [BLK[.SEG]] | -sr [STN[.PLT]]
+ | -sp HEADING BLK1.SEG1 BLK2.SEG2 | -pp HEADING STN1.PLT1 STN2.PLT2)
 
 EXAMPLES
 mrcs_control_layout -v -i4 -l
+mrcs_control_layout -v -i4 -br BS02
+mrcs_control_layout -v -i4 -sr Beta
 mrcs_control_layout -v -i4 -sp UP BS01.SG01 BS07.SG01
 mrcs_control_layout -v -i4 -pp UP Alpha.1 Beta.1
 """
@@ -86,9 +88,9 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    if args.segment_report:
+    if args.block_report:
         try:
-            blocks = layout.segment_report(args.report_node_block, args.report_node_segment)
+            blocks = layout.block_report(args.report_node_block, args.report_node_segment)
         except KeyError as exc:
             logger.error(f'The node {exc.args[0]} could not be found.')
             exit(2)
@@ -96,9 +98,9 @@ if __name__ == '__main__':
         print(JSONify.dumps(blocks, indent=args.indent))
         exit(0)
 
-    if args.platform_report:
+    if args.station_report:
         try:
-            stations = layout.platform_report(args.report_node_station, args.report_node_platform)
+            stations = layout.station_report(args.report_node_station, args.report_node_platform)
         except KeyError as exc:
             logger.error(f'The node {exc.args[0]} could not be found.')
             exit(2)
@@ -129,7 +131,7 @@ if __name__ == '__main__':
             exit(2)
 
         try:
-            path = layout.segment_path(config, args.path_heading, args.segment_path_start, args.segment_path_end)
+            path = layout.segment_route(config, args.path_heading, args.segment_path_start, args.segment_path_end)
         except ValueError as exc:
             print(exc, file=sys.stderr)
             exit(1)
@@ -146,7 +148,7 @@ if __name__ == '__main__':
             exit(2)
 
         try:
-            path = layout.platform_path(config, args.path_heading, args.platform_path_start, args.platform_path_end)
+            path = layout.platform_route(config, args.path_heading, args.platform_path_start, args.platform_path_end)
         except ValueError as exc:
             print(exc, file=sys.stderr)
             exit(1)

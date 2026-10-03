@@ -9,9 +9,9 @@ import unittest
 from argparse import ArgumentParser, Namespace
 from unittest.mock import patch
 
+from mrcs_control.cli.args.layout_actions import LayoutBlockReportAction, LayoutPlatformPathAction, \
+    LayoutSegmentPathAction, LayoutStationReportAction
 from mrcs_control.cli.args.layout_args import LayoutArgs
-from mrcs_control.cli.args.layout_platform_path_action import LayoutPlatformPathAction
-from mrcs_control.cli.args.layout_segment_path_action import LayoutSegmentPathAction
 from mrcs_core.equipment.block.block_enums import BlockHeading
 from mrcs_core.inventory.platform.platform_location import PlatformLocation
 from mrcs_core.inventory.segment.segment_location import SegmentLocation
@@ -28,8 +28,8 @@ class TestLayoutArgs(unittest.TestCase):
             args = LayoutArgs('test')
             self.assertTrue(args.list)
             self.assertIsNone(args.set_selected_layout)
-            self.assertFalse(args.segment_report)
-            self.assertFalse(args.platform_report)
+            self.assertFalse(args.block_report)
+            self.assertFalse(args.station_report)
             self.assertIsNone(args.segment_path)
             self.assertIsNone(args.platform_path)
             self.assertIsNone(args.path_heading)
@@ -40,8 +40,8 @@ class TestLayoutArgs(unittest.TestCase):
             args = LayoutArgs('test')
             self.assertFalse(args.list)
             self.assertEqual('shelf_001', args.set_selected_layout)
-            self.assertFalse(args.segment_report)
-            self.assertFalse(args.platform_report)
+            self.assertFalse(args.block_report)
+            self.assertFalse(args.station_report)
             self.assertIsNone(args.segment_path)
             self.assertIsNone(args.platform_path)
             self.assertIsNone(args.path_heading)
@@ -54,97 +54,121 @@ class TestLayoutArgs(unittest.TestCase):
 
 
     def test_mutually_exclusive(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-l', '-sl']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-l', '-br']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
 
     # Block report ---------------------------------------------------------------------------------------------------
 
-    def test_segment_report_all(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr']):
+    def test_block_report_all(self):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-br']):
             args = LayoutArgs('test')
             self.assertFalse(args.list)
             self.assertIsNone(args.set_selected_layout)
-            self.assertTrue(args.segment_report)
+            self.assertTrue(args.block_report)
             self.assertIsNone(args.report_node_block)
             self.assertIsNone(args.report_node_segment)
-            self.assertFalse(args.platform_report)
+            self.assertFalse(args.station_report)
             self.assertIsNone(args.segment_path)
             self.assertIsNone(args.platform_path)
 
 
-    def test_segment_report_wildcard(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', '*']):
+    def test_block_report_wildcard(self):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-br', '*']):
             args = LayoutArgs('test')
-            self.assertTrue(args.segment_report)
+            self.assertTrue(args.block_report)
             self.assertIsNone(args.report_node_block)
             self.assertIsNone(args.report_node_segment)
 
 
-    def test_segment_report_block(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'BS01']):
+    def test_block_report_block(self):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-br', 'BS01']):
             args = LayoutArgs('test')
-            self.assertTrue(args.segment_report)
+            self.assertTrue(args.block_report)
             self.assertEqual('BS01', args.report_node_block)
             self.assertIsNone(args.report_node_segment)
 
 
-    def test_segment_report_block_segment(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'BS01.SG02']):
+    def test_block_report_block_segment(self):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-br', 'BS01.SG02']):
             args = LayoutArgs('test')
-            self.assertTrue(args.segment_report)
+            self.assertTrue(args.block_report)
             self.assertEqual('BS01', args.report_node_block)
             self.assertEqual('SG02', args.report_node_segment)
 
 
-    def test_segment_report_too_many_arguments(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'BS01', 'SG02']):
+    def test_block_report_too_many_arguments(self):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-br', 'BS01', 'SG02']):
+            with self.assertRaises(SystemExit):
+                LayoutArgs('test')
+
+
+    def test_block_report_too_many_nodes(self):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-br', 'BS01.SG02.X']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
 
     # Station report -------------------------------------------------------------------------------------------------
 
-    def test_platform_report_all(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pr']):
+    def test_station_report_all(self):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr']):
             args = LayoutArgs('test')
             self.assertFalse(args.list)
             self.assertIsNone(args.set_selected_layout)
-            self.assertFalse(args.segment_report)
-            self.assertTrue(args.platform_report)
+            self.assertFalse(args.block_report)
+            self.assertTrue(args.station_report)
             self.assertIsNone(args.report_node_station)
             self.assertIsNone(args.report_node_platform)
             self.assertIsNone(args.segment_path)
             self.assertIsNone(args.platform_path)
 
 
-    def test_platform_report_wildcard(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pr', '*']):
+    def test_station_report_wildcard(self):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', '*']):
             args = LayoutArgs('test')
-            self.assertTrue(args.platform_report)
+            self.assertTrue(args.station_report)
             self.assertIsNone(args.report_node_station)
             self.assertIsNone(args.report_node_platform)
 
 
-    def test_platform_report_station(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pr', 'TST']):
+    def test_station_report_station(self):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'TST']):
             args = LayoutArgs('test')
-            self.assertTrue(args.platform_report)
+            self.assertTrue(args.station_report)
             self.assertEqual('TST', args.report_node_station)
             self.assertIsNone(args.report_node_platform)
 
 
-    def test_platform_report_station_platform(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pr', 'TST.1']):
+    def test_station_report_station_platform(self):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'TST.1']):
             args = LayoutArgs('test')
-            self.assertTrue(args.platform_report)
+            self.assertTrue(args.station_report)
             self.assertEqual('TST', args.report_node_station)
             self.assertEqual(1, args.report_node_platform)
 
 
-    def test_platform_report_too_many_arguments(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pr', 'TST', '1']):
+    def test_station_report_station_platform_not_integer(self):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'TST.x']):
+            with self.assertRaises(SystemExit):
+                LayoutArgs('test')
+
+
+    def test_station_report_station_platform_empty(self):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'TST.']):
+            with self.assertRaises(SystemExit):
+                LayoutArgs('test')
+
+
+    def test_station_report_too_many_arguments(self):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'TST', '1']):
+            with self.assertRaises(SystemExit):
+                LayoutArgs('test')
+
+
+    def test_station_report_too_many_nodes(self):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'TST.1.X']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
@@ -156,8 +180,8 @@ class TestLayoutArgs(unittest.TestCase):
             args = LayoutArgs('test')
             self.assertFalse(args.list)
             self.assertIsNone(args.set_selected_layout)
-            self.assertFalse(args.segment_report)
-            self.assertFalse(args.platform_report)
+            self.assertFalse(args.block_report)
+            self.assertFalse(args.station_report)
             self.assertEqual(('UP', 'B1.S1', 'B2.S2'), args.segment_path)
             self.assertEqual(BlockHeading.UP, args.path_heading)
             self.assertEqual(SegmentLocation('B1', 'S1'), args.segment_path_start)
@@ -194,6 +218,16 @@ class TestLayoutArgs(unittest.TestCase):
                 LayoutArgs('test')
 
 
+    def test_segment_path_too_many_nodes(self):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sp', 'UP', 'B1.S1.X', 'B2.S2']):
+            with self.assertRaises(SystemExit):
+                LayoutArgs('test')
+
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sp', 'UP', 'B1.S1', 'B2.S2.X']):
+            with self.assertRaises(SystemExit):
+                LayoutArgs('test')
+
+
     def test_segment_path_missing_argument(self):
         with patch.object(sys, 'argv', ['mrcs_control_layout', '-sp', 'UP', 'B1.S1']):
             with self.assertRaises(SystemExit):
@@ -207,8 +241,8 @@ class TestLayoutArgs(unittest.TestCase):
             args = LayoutArgs('test')
             self.assertFalse(args.list)
             self.assertIsNone(args.set_selected_layout)
-            self.assertFalse(args.segment_report)
-            self.assertFalse(args.platform_report)
+            self.assertFalse(args.block_report)
+            self.assertFalse(args.station_report)
             self.assertEqual(('UP', 'Station.1', 'Station.2'), args.platform_path)
             self.assertEqual(BlockHeading.UP, args.path_heading)
             self.assertEqual(PlatformLocation('Station', 1), args.platform_path_start)
@@ -245,6 +279,16 @@ class TestLayoutArgs(unittest.TestCase):
                 LayoutArgs('test')
 
 
+    def test_platform_path_too_many_nodes(self):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pp', 'UP', 'Station.1.X', 'Station.2']):
+            with self.assertRaises(SystemExit):
+                LayoutArgs('test')
+
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pp', 'UP', 'Station.1', 'Station.2.X']):
+            with self.assertRaises(SystemExit):
+                LayoutArgs('test')
+
+
     def test_platform_path_missing_argument(self):
         with patch.object(sys, 'argv', ['mrcs_control_layout', '-pp', 'UP', 'Station.1']):
             with self.assertRaises(SystemExit):
@@ -269,22 +313,54 @@ class TestLayoutArgs(unittest.TestCase):
         self.assertFalse(hasattr(namespace, 'platform_path'))
 
 
+    def test_station_report_action_none_values(self):
+        action = LayoutStationReportAction(option_strings=['-sr', '--station-report'], dest='station_report')
+        parser = ArgumentParser()
+        namespace = Namespace()
+        action(parser, namespace, None)
+        self.assertFalse(hasattr(namespace, 'station_report'))
+
+
+    def test_station_report_action_stores_values(self):
+        action = LayoutStationReportAction(option_strings=['-sr', '--station-report'], dest='station_report')
+        parser = ArgumentParser()
+        namespace = Namespace()
+        action(parser, namespace, 'TST.1')
+        self.assertEqual('TST.1', namespace.station_report)
+
+
+    def test_block_report_action_none_values(self):
+        action = LayoutBlockReportAction(option_strings=['-br', '--block-report'], dest='block_report')
+        parser = ArgumentParser()
+        namespace = Namespace()
+        action(parser, namespace, None)
+        self.assertFalse(hasattr(namespace, 'block_report'))
+
+
+    def test_block_report_action_stores_values(self):
+        action = LayoutBlockReportAction(option_strings=['-br', '--block-report'], dest='block_report')
+        parser = ArgumentParser()
+        namespace = Namespace()
+        action(parser, namespace, 'BS01.SG02')
+        self.assertEqual('BS01.SG02', namespace.block_report)
+
+
     # String representation ------------------------------------------------------------------------------------------
 
     def test_str(self):
         with patch.object(sys, 'argv', ['mrcs_control_layout', '-sp', 'UP', 'B1.S1', 'B2.S2']):
             args = LayoutArgs('test')
             self.assertEqual(
-                "LayoutArgs:{list:False, set_selected_layout:None, segment_report:False, platform_report:False, "
+                "LayoutArgs:{list:False, set_selected_layout:None, block_report:False, station_report:False, "
                 "segment_path:('UP', 'B1.S1', 'B2.S2'), platform_path:None, "
                 "indent:None, verbose:False}", str(args))
 
 
-    def test_str_segment_report(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'BS01.SG02']):
+    def test_str_block_report(self):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-br', 'BS01.SG02']):
             args = LayoutArgs('test')
             self.assertEqual(
-                "LayoutArgs:{list:False, set_selected_layout:None, segment_report:True, platform_report:False, "
+                "LayoutArgs:{list:False, set_selected_layout:None, block_report:True, station_report:False, "
                 "segment_path:None, platform_path:None, "
                 "indent:None, verbose:False}", str(args))
 
