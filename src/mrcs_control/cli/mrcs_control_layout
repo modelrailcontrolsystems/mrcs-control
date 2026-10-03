@@ -13,13 +13,13 @@ A utility for navigating layouts.
 The utility requires the backend services to be running in order to determine the layout's current turnout positions.
 
 SYNOPSIS
-mrcs_control_layout [-h] [-i INDENT] [-v] [--version] [-t] (-l | -r LAYOUT | -s LAYOUT |
--g HEADING START END | -p HEADING START END)
+mrcs_control_layout [-h] [-i INDENT] [-v] [--version] [-t] (-l | -sl LAYOUT | -sr [BLK[.SEG]] | -pr [STN[.PLT]] |
+-sp HEADING BLK1.SEG1 BLK2.SEG2 | -pp HEADING STN1.PLT1 STN2.PLT2)
 
 EXAMPLES
 mrcs_control_layout -v -i4 -l
-mrcs_control_layout -v -i4 -g UP BS01/SG01 BS04/SG01 shelf_001  # TODO: update these
-mrcs_control_layout -v -i4 -p UP Alpha/1 Beta/1
+mrcs_control_layout -v -i4 -sp UP BS01.SG01 BS07.SG01
+mrcs_control_layout -v -i4 -pp UP Alpha.1 Beta.1
 """
 
 import sys
@@ -34,7 +34,6 @@ from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging
 
 
-# TODO: report by dot path
 # --------------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
@@ -69,13 +68,15 @@ if __name__ == '__main__':
         conf.save(Host)
         exit(0)
 
-    # ----------------------------------------------------------------------------------------------------------------
+        # ----------------------------------------------------------------------------------------------------------------
 
-    try:
-        layout = LayoutConf.load_selected_layout(Host)
-    except Exception as exc:
-        logger.error(exc)
-        exit(2)
+    layout = LayoutConf.load_selected_layout(Host)
+
+    # try:
+    #     layout = LayoutConf.load_selected_layout(Host)
+    # except Exception as exc:
+    #     logger.error(f'{exc.__class__.__name__}:{exc}')
+    #     exit(2)
 
     if layout is None:
         logger.error(f'No layout is selected. Use mrcs_control_layout --set-selected-layout to set one.')
@@ -95,6 +96,16 @@ if __name__ == '__main__':
         print(JSONify.dumps(blocks, indent=args.indent))
         exit(0)
 
+    if args.platform_report:
+        try:
+            stations = layout.platform_report(args.report_node_station, args.report_node_platform)
+        except KeyError as exc:
+            logger.error(f'The node {exc.args[0]} could not be found.')
+            exit(2)
+
+        print(JSONify.dumps(stations, indent=args.indent))
+        exit(0)
+
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
@@ -107,14 +118,14 @@ if __name__ == '__main__':
     config = finder.find(args.mode.value)
 
     if args.segment_path:
-        locations = layout.locations
+        locations = layout.segment_locations
 
         if args.segment_path_start not in locations:
-            logger.error(f'The start location {args.segment_path_start.shortform} is not in the layout.')
+            logger.error(f'The start location {args.segment_path_start.dot_path} is not in the layout.')
             exit(2)
 
         if args.segment_path_end not in locations:
-            logger.error(f'The end location {args.segment_path_end.shortform} is not in the layout.')
+            logger.error(f'The end location {args.segment_path_end.dot_path} is not in the layout.')
             exit(2)
 
         try:
@@ -124,14 +135,14 @@ if __name__ == '__main__':
             exit(1)
 
     if args.platform_path:
-        platform_labels = layout.platform_labels
+        locations = layout.platform_locations
 
-        if args.platform_path_start not in platform_labels:
-            logger.error(f'The start platform {args.platform_path_start.shortform} is not in the layout.')
+        if args.platform_path_start not in locations:
+            logger.error(f'The start platform {args.platform_path_start.dot_path} is not in the layout.')
             exit(2)
 
-        if args.platform_path_end not in platform_labels:
-            logger.error(f'The end platform {args.platform_path_end.shortform} is not in the layout.')
+        if args.platform_path_end not in locations:
+            logger.error(f'The end platform {args.platform_path_end.dot_path} is not in the layout.')
             exit(2)
 
         try:

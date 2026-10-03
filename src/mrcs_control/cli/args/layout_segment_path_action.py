@@ -8,7 +8,7 @@ https://realpython.com/command-line-interfaces-python-argparse/
 
 from argparse import Action
 
-from mrcs_core.inventory.layout.location import Location
+from mrcs_core.inventory.segment.segment_location import SegmentLocation
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -30,12 +30,12 @@ class LayoutSegmentPathAction(Action):
             parser.error(f"argument {opt}: HEADING must be 'UP' or 'DN' (got '{values[0]}')")
 
         try:
-            Location.construct_from_dot_path(values[1])
+            SegmentLocation.construct_from_dot_path(values[1])
         except ValueError:
             parser.error(f"argument {opt}: START is malformed' (got '{values[1]}')")
 
         try:
-            Location.construct_from_dot_path(values[2])
+            SegmentLocation.construct_from_dot_path(values[2])
         except ValueError:
             parser.error(f"argument {opt}: END is malformed' (got '{values[2]}')")
 

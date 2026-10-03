@@ -12,8 +12,8 @@ from mrcs_control.cli.args.layout_segment_path_action import LayoutSegmentPathAc
 from mrcs_core.cli.args.multimode_args import MultimodeArgs
 from mrcs_core.data.dot import Dot
 from mrcs_core.equipment.block.block_enums import BlockHeading
-from mrcs_core.inventory.layout.location import Location
-from mrcs_core.inventory.platform.platform_label import PlatformLabel
+from mrcs_core.inventory.platform.platform_location import PlatformLocation
+from mrcs_core.inventory.segment.segment_location import SegmentLocation
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -90,7 +90,8 @@ class LayoutArgs(MultimodeArgs):
 
     @property
     def report_node_platform(self):
-        return Dot.node(self._args.platform_report, 1)
+        node = Dot.node(self._args.platform_report, 1)  # TODO: needs to be checked with an Action class
+        return None if node is None else int(node)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -115,14 +116,14 @@ class LayoutArgs(MultimodeArgs):
     def segment_path_start(self):
         if self._args.segment_path is None:
             return None
-        return Location.construct_from_dot_path(self._args.segment_path[1])
+        return SegmentLocation.construct_from_dot_path(self._args.segment_path[1])
 
 
     @property
     def segment_path_end(self):
         if self._args.segment_path is None:
             return None
-        return Location.construct_from_dot_path(self._args.segment_path[2])
+        return SegmentLocation.construct_from_dot_path(self._args.segment_path[2])
 
 
     @property
@@ -134,14 +135,14 @@ class LayoutArgs(MultimodeArgs):
     def platform_path_start(self):
         if self._args.platform_path is None:
             return None
-        return PlatformLabel.construct_from_shortform(self._args.platform_path[1])
+        return PlatformLocation.construct_from_dot_path(self._args.platform_path[1])
 
 
     @property
     def platform_path_end(self):
         if self._args.platform_path is None:
             return None
-        return PlatformLabel.construct_from_shortform(self._args.platform_path[2])
+        return PlatformLocation.construct_from_dot_path(self._args.platform_path[2])
 
 
     # ----------------------------------------------------------------------------------------------------------------
