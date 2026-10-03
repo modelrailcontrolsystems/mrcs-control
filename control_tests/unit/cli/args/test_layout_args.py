@@ -13,8 +13,8 @@ from mrcs_control.cli.args.layout_args import LayoutArgs
 from mrcs_control.cli.args.layout_platform_path_action import LayoutPlatformPathAction
 from mrcs_control.cli.args.layout_segment_path_action import LayoutSegmentPathAction
 from mrcs_core.equipment.block.block_enums import BlockHeading
-from mrcs_core.inventory.layout.location import Location
-from mrcs_core.inventory.platform.platform_label import PlatformLabel
+from mrcs_core.inventory.platform.platform_location import PlatformLocation
+from mrcs_core.inventory.segment.segment_location import SegmentLocation
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -140,7 +140,7 @@ class TestLayoutArgs(unittest.TestCase):
             args = LayoutArgs('test')
             self.assertTrue(args.platform_report)
             self.assertEqual('TST', args.report_node_station)
-            self.assertEqual('1', args.report_node_platform)
+            self.assertEqual(1, args.report_node_platform)
 
 
     def test_platform_report_too_many_arguments(self):
@@ -160,8 +160,8 @@ class TestLayoutArgs(unittest.TestCase):
             self.assertFalse(args.platform_report)
             self.assertEqual(('UP', 'B1.S1', 'B2.S2'), args.segment_path)
             self.assertEqual(BlockHeading.UP, args.path_heading)
-            self.assertEqual(Location('B1', 'S1'), args.segment_path_start)
-            self.assertEqual(Location('B2', 'S2'), args.segment_path_end)
+            self.assertEqual(SegmentLocation('B1', 'S1'), args.segment_path_start)
+            self.assertEqual(SegmentLocation('B2', 'S2'), args.segment_path_end)
             self.assertIsNone(args.platform_path)
             self.assertIsNone(args.platform_path_start)
             self.assertIsNone(args.platform_path_end)
@@ -172,8 +172,8 @@ class TestLayoutArgs(unittest.TestCase):
             args = LayoutArgs('test')
             self.assertEqual(('DN', 'B1.S1', 'B2.S2'), args.segment_path)
             self.assertEqual(BlockHeading.DOWN, args.path_heading)
-            self.assertEqual(Location('B1', 'S1'), args.segment_path_start)
-            self.assertEqual(Location('B2', 'S2'), args.segment_path_end)
+            self.assertEqual(SegmentLocation('B1', 'S1'), args.segment_path_start)
+            self.assertEqual(SegmentLocation('B2', 'S2'), args.segment_path_end)
 
 
     def test_segment_path_invalid_heading(self):
@@ -203,50 +203,50 @@ class TestLayoutArgs(unittest.TestCase):
     # Platform path --------------------------------------------------------------------------------------------------
 
     def test_platform_path_up(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pp', 'UP', 'Station/1', 'Station/2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pp', 'UP', 'Station.1', 'Station.2']):
             args = LayoutArgs('test')
             self.assertFalse(args.list)
             self.assertIsNone(args.set_selected_layout)
             self.assertFalse(args.segment_report)
             self.assertFalse(args.platform_report)
-            self.assertEqual(('UP', 'Station/1', 'Station/2'), args.platform_path)
+            self.assertEqual(('UP', 'Station.1', 'Station.2'), args.platform_path)
             self.assertEqual(BlockHeading.UP, args.path_heading)
-            self.assertEqual(PlatformLabel('Station', 1), args.platform_path_start)
-            self.assertEqual(PlatformLabel('Station', 2), args.platform_path_end)
+            self.assertEqual(PlatformLocation('Station', 1), args.platform_path_start)
+            self.assertEqual(PlatformLocation('Station', 2), args.platform_path_end)
             self.assertIsNone(args.segment_path)
             self.assertIsNone(args.segment_path_start)
             self.assertIsNone(args.segment_path_end)
 
 
     def test_platform_path_down_lowercase(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pp', 'dn', 'Station/1', 'Station/2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pp', 'dn', 'Station.1', 'Station.2']):
             args = LayoutArgs('test')
-            self.assertEqual(('DN', 'Station/1', 'Station/2'), args.platform_path)
+            self.assertEqual(('DN', 'Station.1', 'Station.2'), args.platform_path)
             self.assertEqual(BlockHeading.DOWN, args.path_heading)
-            self.assertEqual(PlatformLabel('Station', 1), args.platform_path_start)
-            self.assertEqual(PlatformLabel('Station', 2), args.platform_path_end)
+            self.assertEqual(PlatformLocation('Station', 1), args.platform_path_start)
+            self.assertEqual(PlatformLocation('Station', 2), args.platform_path_end)
 
 
     def test_platform_path_invalid_heading(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pp', 'X', 'Station/1', 'Station/2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pp', 'X', 'Station.1', 'Station.2']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
 
     def test_platform_path_invalid_start(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pp', 'UP', 'Station', 'Station/2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pp', 'UP', 'Station', 'Station.2']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
 
     def test_platform_path_invalid_end(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pp', 'UP', 'Station/1', 'Station']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pp', 'UP', 'Station.1', 'Station']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
 
     def test_platform_path_missing_argument(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-p', 'UP', 'Station/1']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pp', 'UP', 'Station.1']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
@@ -262,7 +262,7 @@ class TestLayoutArgs(unittest.TestCase):
 
 
     def test_platform_path_action_none_values(self):
-        action = LayoutPlatformPathAction(option_strings=['-p', '--platform-path'], dest='platform_path')
+        action = LayoutPlatformPathAction(option_strings=['-pp', '--platform-path'], dest='platform_path')
         parser = ArgumentParser()
         namespace = Namespace()
         action(parser, namespace, None)

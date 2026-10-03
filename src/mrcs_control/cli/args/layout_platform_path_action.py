@@ -8,7 +8,7 @@ https://realpython.com/command-line-interfaces-python-argparse/
 
 from argparse import Action
 
-from mrcs_core.inventory.platform.platform_label import PlatformLabel
+from mrcs_core.inventory.platform.platform_location import PlatformLocation
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -30,12 +30,12 @@ class LayoutPlatformPathAction(Action):
             parser.error(f"argument {opt}: HEADING must be 'UP' or 'DN' (got '{values[0]}')")
 
         try:
-            PlatformLabel.construct_from_shortform(values[1])
+            PlatformLocation.construct_from_dot_path(values[1])
         except ValueError:
             parser.error(f"argument {opt}: START is malformed' (got '{values[1]}')")
 
         try:
-            PlatformLabel.construct_from_shortform(values[2])
+            PlatformLocation.construct_from_dot_path(values[2])
         except ValueError:
             parser.error(f"argument {opt}: END is malformed' (got '{values[2]}')")
 
