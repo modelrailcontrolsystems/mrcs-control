@@ -149,11 +149,11 @@ if __name__ == '__main__':
         locations = layout.segment_locations
 
         if args.segment_route_start not in locations:
-            logger.error(f'The start location {args.segment_route_start.dot_path} is not in the layout.')
+            logger.error(f'The start segment {args.segment_route_start.dot_path} is not in the layout.')
             exit(2)
 
         if args.segment_route_end not in locations:
-            logger.error(f'The end location {args.segment_route_end.dot_path} is not in the layout.')
+            logger.error(f'The end segment {args.segment_route_end.dot_path} is not in the layout.')
             exit(2)
 
         try:
