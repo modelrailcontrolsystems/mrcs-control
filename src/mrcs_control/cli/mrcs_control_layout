@@ -46,8 +46,8 @@ from mrcs_control.cli.args.layout_args import LayoutArgs
 from mrcs_control.cli.internal.turnout_configuration_finder import TurnoutConfigurationFinder
 from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONify
-from mrcs_core.inventory.layout.layout import Layout
-from mrcs_core.inventory.layout.layout_conf import LayoutConf
+from mrcs_core.layout.layout import Layout
+from mrcs_core.layout.layout_conf import LayoutConf
 from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging
 

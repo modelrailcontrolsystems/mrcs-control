@@ -13,8 +13,8 @@ from mrcs_control.cli.args.layout_actions import LayoutBlockReportAction, Layout
     LayoutSegmentPathAction, LayoutStationReportAction
 from mrcs_control.cli.args.layout_args import LayoutArgs
 from mrcs_core.equipment.block.block_enums import BlockHeading
-from mrcs_core.inventory.platform.platform_location import PlatformLocation
-from mrcs_core.inventory.segment.segment_location import SegmentLocation
+from mrcs_core.layout.platform.platform_location import PlatformLocation
+from mrcs_core.layout.segment.segment_location import SegmentLocation
 
 
 # --------------------------------------------------------------------------------------------------------------------
