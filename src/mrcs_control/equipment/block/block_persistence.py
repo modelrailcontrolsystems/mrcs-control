@@ -152,7 +152,7 @@ class BlockPersistence(PersistentObject, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def insert(cls, item: PersistentObject) -> None:  # TODO: parameter should be BlockDesign
+    def insert(cls, item: PersistentObject) -> None:
         client = DbClient.instance(cls.db_name())
 
         try:
