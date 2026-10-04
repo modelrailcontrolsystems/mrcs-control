@@ -9,8 +9,8 @@ https://realpython.com/command-line-interfaces-python-argparse/
 from argparse import Action
 
 from mrcs_core.data.dot import Dot
-from mrcs_core.inventory.platform.platform_location import PlatformLocation
-from mrcs_core.inventory.segment.segment_location import SegmentLocation
+from mrcs_core.layout.platform.platform_location import PlatformLocation
+from mrcs_core.layout.segment.segment_location import SegmentLocation
 
 
 # --------------------------------------------------------------------------------------------------------------------
