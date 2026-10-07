@@ -348,10 +348,11 @@ class TestLayoutArgs(unittest.TestCase):
     # String representation ------------------------------------------------------------------------------------------
 
     def test_str(self):
+        self.maxDiff = None
         with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'UP', 'B1.S1', 'B2.S2']):
             args = LayoutArgs('test')
-            self.assertEqual("LayoutArgs:{list:False, set_selected_layout:None, block_inventory:False, "
-                             "turnout_inventory:False, block_view:False, station_view:False, "
+            self.assertEqual("LayoutArgs:{list:False, set_selected_layout:None, block_abstract:False, "
+                             "turnout_abstract:False, block_view:False, station_view:False, "
                              "segment_route:('UP', 'B1.S1', 'B2.S2'), platform_route:None, "
                              "indent:None, verbose:False}", str(args))
 
@@ -360,8 +361,8 @@ class TestLayoutArgs(unittest.TestCase):
         self.maxDiff = None
         with patch.object(sys, 'argv', ['mrcs_control_layout', '-bv', 'BS01.SG02']):
             args = LayoutArgs('test')
-            self.assertEqual("LayoutArgs:{list:False, set_selected_layout:None, block_inventory:False, "
-                             "turnout_inventory:False, block_view:True, station_view:False, segment_route:None, "
+            self.assertEqual("LayoutArgs:{list:False, set_selected_layout:None, block_abstract:False, "
+                             "turnout_abstract:False, block_view:True, station_view:False, segment_route:None, "
                              "platform_route:None, indent:None, verbose:False}", str(args))
 
 
