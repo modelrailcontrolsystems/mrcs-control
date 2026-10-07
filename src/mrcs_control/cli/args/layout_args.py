@@ -32,8 +32,9 @@ class LayoutArgs(MultimodeArgs):
         group.add_argument('-sl', '--set-selected-layout', action='store', type=str, metavar='LAYOUT',
                            help='set selected layout')
 
-        group.add_argument('-bi', '--block-inventory', action='store_true', help='print block inventory')
-        group.add_argument('-ti', '--turnout-inventory', action='store_true', help='print turnout inventory')
+        group.add_argument('-ba', '--block-abstract', action='store_true', help='print block abstract')
+
+        group.add_argument('-ta', '--turnout-abstract', action='store_true', help='print turnout abstract')
 
         group.add_argument('-bv', '--block-view', action=LayoutBlockReportAction, type=str, nargs='?', const='*',
                            metavar='BLK[.SEG]', help='print block(s) with segment(s)')
@@ -67,13 +68,13 @@ class LayoutArgs(MultimodeArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     @property
-    def block_inventory(self):
-        return self._args.block_inventory
+    def block_abstract(self):
+        return self._args.block_abstract
 
 
     @property
-    def turnout_inventory(self):
-        return self._args.turnout_inventory
+    def turnout_abstract(self):
+        return self._args.turnout_abstract
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -168,7 +169,7 @@ class LayoutArgs(MultimodeArgs):
 
     def __str__(self, *args, **kwargs):
         return (f'LayoutArgs:{{list:{self.list}, set_selected_layout:{self.set_selected_layout}, '
-                f'block_inventory:{self.block_inventory}, turnout_inventory:{self.turnout_inventory}, '
+                f'block_abstract:{self.block_abstract}, turnout_abstract:{self.turnout_abstract}, '
                 f'block_view:{self.block_view}, station_view:{self.station_view}, '
                 f'segment_route:{self.segment_route}, platform_route:{self.platform_route}, '
                 f'indent:{self.indent}, verbose:{self.verbose}}}')

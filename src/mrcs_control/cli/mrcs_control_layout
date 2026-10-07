@@ -11,16 +11,16 @@ DESCRIPTION
 A utility for navigating layouts. Functions:
 * --list - list all the layouts
 * --set-selected-layout - if there is only one layout, then this is not needed
-* --block-inventory - list the BlockStatus records - these are used to populate the database
-* --turnout-inventory - list the TurnoutStatus records - these are used to populate the database
+* --block-abstract - list BlockStatus records - these are used to populate a database
+* --turnout-abstract - list TurnoutStatus records - these are used to populate a database
 * --block-view - display the selected block and segments. If no location is specified, all blocks are shown
 * --station-view - display the selected station and platforms. If no location is specified, all stations are shown
 * --segment-route - show the route (if available) from the start segment to the end segment
 * --platform-route - show the route (if available) from the start platform to the end platform
 
 Notes:
-The --block-view and --station-view flags take optional dot-path identifiers, indicating a specific location,
-broader location, or the whole component group.
+The --block-view and --station-view flags take optional dot-path identifiers, indicating a specific segment / platform
+location, broader block / station location, or the whole component group.
 
 The --segment-route and --platform-route flags take pairs of compulsory dot-path identifiers, indicating
 fully-specified locations.
@@ -29,11 +29,13 @@ For --segment-route and --platform-route the utility requires the backend servic
 determine the layout's current turnout positions.
 
 SYNOPSIS
-usage: mrcs_control_layout [-h] [-i INDENT] [-v] [--version] [-t] (-l | -sl LAYOUT | -bi | -ti | -bv [BLK[.SEG]] |
+mrcs_control_layout [-h] [-i INDENT] [-v] [--version] [-t] (-l | -sl LAYOUT | -ba | -ta | -bv [BLK[.SEG]] |
 -sv [STN[.PLT]] | -sr HEADING BLK1.SEG1 BLK2.SEG2 | -pr HEADING STN1.PLT1 STN2.PLT2)
 
 EXAMPLES
 mrcs_control_layout -v -i4 -l
+mrcs_control_layout -v -i4 -ba
+mrcs_control_layout -v -i4 -ta
 mrcs_control_layout -v -i4 -bv BS02
 mrcs_control_layout -v -i4 -sv Beta
 mrcs_control_layout -v -i4 -sr UP BS01.SG01 BS07.SG01
@@ -102,13 +104,13 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    if args.block_inventory:
-        inventory = layout.block_inventory()
+    if args.block_abstract:
+        inventory = layout.block_abstract()
         print(JSONify.dumps(inventory, indent=args.indent))
         exit(0)
 
-    if args.turnout_inventory:
-        inventory = layout.turnout_inventory()
+    if args.turnout_abstract:
+        inventory = layout.turnout_abstract()
         print(JSONify.dumps(inventory, indent=args.indent))
         exit(0)
 
