@@ -17,7 +17,7 @@ from mrcs_control.dcc.z21.equipment.motive_power_unit.mpu_decoder_report_builder
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class TestZ21MPUDecoderReport(unittest.TestCase):
+class TestMPUDecoderReportBuilder(unittest.TestCase):
 
     def test_construct(self):
         chars = bytes([0x11, 0x00, 0x88, 0x00, 0x34, 0x12, 0xc8, 0x01, 0x00, 0x00, 0x15, 0x03, 0x00, 0xab, 0x5a,

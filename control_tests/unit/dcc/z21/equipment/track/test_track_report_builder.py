@@ -17,7 +17,7 @@ from mrcs_control.dcc.z21.equipment.track.track_report_builder import TrackRepor
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class TestZ21TrackReport(unittest.TestCase):
+class TestTrackReportBuilder(unittest.TestCase):
 
     def test_construct_track_on(self):
         chars = bytes([0x07, 0x00, 0x40, 0x00, 0x61, 0x01, 0x60])
