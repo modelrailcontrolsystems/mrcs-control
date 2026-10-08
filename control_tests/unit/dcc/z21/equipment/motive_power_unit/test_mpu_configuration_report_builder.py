@@ -18,7 +18,7 @@ from mrcs_control.dcc.z21.equipment.motive_power_unit.mpu_configuration_report_b
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class TestZ21MPUConfigurationReport(unittest.TestCase):
+class TestMPUConfigurationReportBuilder(unittest.TestCase):
 
     def test_construct(self):
         chars = bytes([0x0f, 0x00, 0x40, 0x00, 0xef, 0x00, 0x04, 0x0c, 0xb5, 0x01, 0x00, 0x00, 0x00, 0x00, 0x53])

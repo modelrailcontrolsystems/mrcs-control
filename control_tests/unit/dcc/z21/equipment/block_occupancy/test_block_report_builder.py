@@ -18,7 +18,7 @@ from mrcs_core.equipment.block.block_address import BlockAddress
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class TestZ21BlockReport(unittest.TestCase):
+class TestBlockReportBuilder(unittest.TestCase):
 
     def test_construct_block_voltage_report_4_0(self):
         chars = bytes([0x0e, 0x00, 0xc4, 0x00, 0x78, 0xdb, 0x04, 0x00, 0x00, 0x01, 0x00, 0x11, 0x00, 0x00])

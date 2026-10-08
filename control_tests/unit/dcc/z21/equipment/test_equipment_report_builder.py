@@ -25,7 +25,7 @@ from mrcs_core.equipment.turnout.turnout_report import TurnoutReport
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class TestEquipmentReport(unittest.TestCase):
+class TestEquipmentReportBuilder(unittest.TestCase):
 
     def test_construct_block_report(self):
         chars = bytes([0x0e, 0x00, 0xc4, 0x00, 0x78, 0xdb, 0x04, 0x00, 0x00, 0x01, 0x00, 0x11, 0x00, 0x00])

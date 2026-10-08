@@ -19,7 +19,7 @@ from mrcs_control.dcc.z21.equipment.turnout.turnout_report_builder import Turnou
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class TestZ21TurnoutReport(unittest.TestCase):
+class TestTurnoutReportBuilder(unittest.TestCase):
 
     def test_construct_turnout_p0(self):
         chars = bytes([0x09, 0x00, 0x40, 0x00, 0x43, 0x00, 0x00, 0x01, 0x42])

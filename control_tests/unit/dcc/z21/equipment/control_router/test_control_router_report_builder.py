@@ -17,7 +17,7 @@ from mrcs_control.dcc.z21.equipment.control_router.control_router_report_builder
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class TestZ21ControlRouterReport(unittest.TestCase):
+class TestControlRouterReportBuilder(unittest.TestCase):
 
     def test_construct_control_router(self):
         chars = bytes([0x14, 0x00, 0x84, 0x00, 0x0c, 0x01, 0x00, 0x00, 0xce, 0x00, 0x1f, 0x00, 0x1f, 0x4e, 0x14, 0x37,
