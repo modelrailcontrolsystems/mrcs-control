@@ -3,7 +3,7 @@ Created on 2 Jan 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-A simple subscriber node
+A simple, general-purpose subscriber node with a non-persistent queue
 
 Test with:
 mrcs_publisher -vti4 -t CRN -n 3 -m '{"event_id": "abc", "on": "1930-01-02T06:25:00.000+00:00"}'
@@ -80,6 +80,7 @@ class TopicSubscriberNode(AsyncSubscriberNode):
 
     async def publish_message(self):
         self.logger.debug('publish_message')
+
         message = self.initial_publication
         if message is not None:
             self.async_loop.create_task(self.publish(message))

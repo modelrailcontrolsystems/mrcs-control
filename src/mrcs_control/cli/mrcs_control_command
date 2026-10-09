@@ -11,19 +11,22 @@ DESCRIPTION
 A tool for publishing commands.
 
 Command notes:
-* --set-mpu-drive - DIR of F = FORWARD, R = REVERSE
-* --turnout - turnout address is 1-based, not 0-based
-*--can-detectors - if the reports should be displayed, then the --monitor option must be used
+* --set-mpu-drive - DIR of FWD = FORWARD, REV = REVERSE
+* --turnout - turnout address is 1-based
+* --can-detectors - if the reports should be displayed, then the --monitor option must be used
+* --get-cv - the MPU must be on a programming track, the track power should be set to ON after CV operations
 
 A --drain function is available - this drains the queue used by mrcs_control_command before any other functions
 are invoked. The function is useful if problematic messages have been published to the queue.
 
 SYNOPSIS
-mrcs_control_command [-h] [-i INDENT] [-v] [--version] [-t] [-d] [-m] [-r | -p {0,1} | -c | -u ADDR POS | -e ADDR |
--g ADDR | -s ADDR DIR SPEED]
+mrcs_control_command [-h] [-i INDENT] [-v] [--version] [-t] [-d] [-m] [-rs | -tp {0,1} | -cd | -st ADDR POS |
+-gd ADDR | -gm ADDR | -sm ADDR DIR SPEED | -gc ADDR]
 
 EXAMPLES
-mrcs_control_command -t -u 4 1
+mrcs_control_command -v -i4 -gc 1
+mrcs_control_command -v -i4 -tp 1
+mrcs_control_command -v -i4 -st 1 0
 
 SEE ALSO
 mrcs_control_publisher
@@ -56,7 +59,12 @@ def on_message(message):
 
     print(JSONify.dumps(message.body, indent=args.indent))
 
-    report = EquipmentReport.construct_from_jdict(message.body)
+    try:
+        report = EquipmentReport.construct_from_jdict(message.body)
+    except Exception as ex:
+        logger.error(ex)
+        exit(1)
+
     if not args.monitor and isinstance(report, args.command.report_type):
         exit(0)
 

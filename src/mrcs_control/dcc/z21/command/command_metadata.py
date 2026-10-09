@@ -7,7 +7,8 @@ The CommandMetadata and XCommandMetadata classes provide information that is com
 header, including how to build the command object, and what responses are expected from the Z21.
 The catalogues indicate which commands are supported.
 
-Note:
+Notes:
+* Aguments to command builders are always of type int
 * The argc field indicates the number of arguments that the Command or XCommand factory method requies. Other
 arguments to the dataset may be supplied by a custom argv builder method.
 * The return type assumes that the appropriate broadcast subscription is enabled.
@@ -22,6 +23,7 @@ from typing import Dict, Protocol, Type
 
 from mrcs_control.dcc.z21.command.header import Header, XHeader
 from mrcs_core.equipment.control_router.control_router_report import ControlRouterReport
+from mrcs_core.equipment.conviguration_variable.cv_report import CVReport
 from mrcs_core.equipment.motive_power_unit.mpu_configuration_report import MPUConfigurationReport
 from mrcs_core.equipment.motive_power_unit.mpu_decoder_report import MPUDecoderReport
 from mrcs_core.equipment.motive_power_unit.mpu_enums import MPUDirection, ThrottleSteps
@@ -136,6 +138,7 @@ class XCommandMetadata(CommandMetadata):
     @classmethod
     def init(cls):
         cls.__CATALOG = {
+            XHeader.LAN_X_CV_READ: cls(XHeader.LAN_X_CV_READ, 1, cls.argv_get_cv, '>BH', CVReport),
             XHeader.LAN_X_GET_LOCO: cls(XHeader.LAN_X_GET_LOCO, 1, cls.argv_get_mpu, '>BH', MPUConfigurationReport),
             XHeader.LAN_X_SET_LOCO_DRIVE: cls(XHeader.LAN_X_SET_LOCO_FUNC, 3, cls.argv_set_mpu_drive, '>BHB',
                                               MPUConfigurationReport),
@@ -155,9 +158,9 @@ class XCommandMetadata(CommandMetadata):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def argv_turnout(cls, *args: int) -> tuple[int, ...]:
-        db2 = 0xa9 if args[1] == TurnoutPosition.P1 else 0xa8
-        return args[0], db2
+    def argv_get_cv(cls, *args: int) -> tuple[int, ...]:
+        db0 = 0x11
+        return db0, args[0]
 
 
     @classmethod
@@ -172,6 +175,12 @@ class XCommandMetadata(CommandMetadata):
         direction = 0x80 if args[1] == MPUDirection.FORWARD else 0x00
         db3 = direction | args[2]
         return db0, args[0], db3
+
+
+    @classmethod
+    def argv_turnout(cls, *args: int) -> tuple[int, ...]:
+        db2 = 0xa9 if args[1] == TurnoutPosition.P1 else 0xa8
+        return args[0], db2
 
 
     # ----------------------------------------------------------------------------------------------------------------

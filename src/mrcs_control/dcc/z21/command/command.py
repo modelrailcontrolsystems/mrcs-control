@@ -43,7 +43,7 @@ class Command(JSONable):
 
 
     @classmethod
-    def lan_can_detector(cls, can_network_id=0xd000) -> Self:  # default is 'all CAN detectors'
+    def lan_can_detector(cls, can_network_id: int = 0xd000) -> Self:  # default is 'all CAN detectors'
         return cls.construct(Header.LAN_CAN_DETECTOR, 0x00, can_network_id)
 
 
@@ -60,18 +60,18 @@ class Command(JSONable):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def construct(cls, header: Header, *argv) -> Self:
+    def construct(cls, header: Header, *constructor_argv) -> Self:
         try:
             meta = CommandMetadata.find(header)
         except TypeError:
             raise TypeError(f'unsupported header: {header}')
 
-        if len(argv) != meta.argc:
-            raise ValueError(f'{header} requires {meta.argc} got: {len(argv)}')
+        if len(constructor_argv) != meta.argc:
+            raise ValueError(f'{header} requires {meta.argc} got: {len(constructor_argv)}')
 
-        argv = meta.argv_builder(*argv)
+        cmd_argv = meta.argv_builder(*constructor_argv)
 
-        return cls(header, *argv)
+        return cls(header, *cmd_argv)
 
 
     @classmethod
@@ -178,7 +178,7 @@ class XCommand(Command):
 
     @classmethod
     def lan_x_set_turnout(cls, address: int, position: TurnoutPosition) -> Self:
-        return cls.construct_x(XHeader.LAN_X_SET_TURNOUT, address - 1, position)  # use 1-based turnout addresses
+        return cls.construct_x(XHeader.LAN_X_SET_TURNOUT, address - 1, position)  # 1-based turnout addresses
 
 
     @classmethod
@@ -191,21 +191,26 @@ class XCommand(Command):
         return cls.construct_x(XHeader.LAN_X_SET_LOCO_DRIVE, address, direction, speed)
 
 
+    @classmethod
+    def lan_x_get_cv(cls, address: int) -> Self:
+        return cls.construct_x(XHeader.LAN_X_CV_READ, address - 1)  # 1-based CV addresses
+
+
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def construct_x(cls, x_header: XHeader, *argv: int) -> Self:
+    def construct_x(cls, x_header: XHeader, *constructor_argv: int) -> Self:
         try:
             meta = XCommandMetadata.find_x(x_header)
         except TypeError:
             raise TypeError(f'unsupported header: {x_header}')
 
-        if len(argv) != meta.argc:
-            raise ValueError(f'{x_header} requires {meta.argc} got: {len(argv)}')
+        if len(constructor_argv) != meta.argc:
+            raise ValueError(f'{x_header} requires {meta.argc} got: {len(constructor_argv)}')
 
-        argv = meta.argv_builder(*argv)
+        cmd_argv = meta.argv_builder(*constructor_argv)
 
-        return cls(x_header, *argv)
+        return cls(x_header, *cmd_argv)
 
 
     @classmethod
