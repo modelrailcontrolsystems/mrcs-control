@@ -17,6 +17,7 @@ https://gitlab.com/z21-fpm/z21_python
 from mrcs_control.dcc.z21.command.dataset import Dataset
 from mrcs_control.dcc.z21.command.header import Header, XHeader
 from mrcs_control.dcc.z21.equipment.block.block_report_builder import BlockReportBuilder
+from mrcs_control.dcc.z21.equipment.configuration_variable.cv_report_builder import CVReportBuilder
 from mrcs_control.dcc.z21.equipment.control_router.control_router_report_builder import ControlRouterReportBuilder
 from mrcs_control.dcc.z21.equipment.motive_power_unit.mpu_configuration_report_builder import \
     MPUConfigurationReportBuilder
@@ -35,13 +36,14 @@ class EquipmentReportBuilder(object):
 
     __HEADER_MAPPING = {
         Header.LAN_CAN_DETECTOR: BlockReportBuilder,
-        Header.LAN_SYSTEM_DATA_CHANGED: ControlRouterReportBuilder,
         Header.LAN_RAILCOM_DATA_CHANGED: MPUDecoderReportBuilder,
+        Header.LAN_SYSTEM_DATA_CHANGED: ControlRouterReportBuilder
     }
 
     __X_HEADER_MAPPING = {
-        XHeader.LAN_X_LOCO_INFO: MPUConfigurationReportBuilder,
         XHeader.LAN_X_BC_TRACK_POWER: TrackReportBuilder,
+        XHeader.LAN_X_CV_RESULT: CVReportBuilder,
+        XHeader.LAN_X_LOCO_INFO: MPUConfigurationReportBuilder,
         XHeader.LAN_X_TURNOUT_INFO: TurnoutReportBuilder
     }
 

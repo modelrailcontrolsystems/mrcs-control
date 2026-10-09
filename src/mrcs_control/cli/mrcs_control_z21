@@ -8,22 +8,23 @@ Created on 6 Jun 2026
 source repo: mrcs_control
 
 DESCRIPTION
-A utility to excercise a Roco Z21 control router station directly.
+A tool to excercise a Roco Z21 control router station directly.
 
 This utility is provided for development and test purposes - the production interface to the Z21 is provided by the
 mrcs_control_router messaging interface.
 
 Command notes:
 * --set-mpu-drive - DIR of FWD = FORWARD, REV = REVERSE
-* --turnout - turnout address is 1-based, not 0-based
-* --can-detectors - if the detector reports should be displayed, then the --monitor option must be used
+* --turnout - turnout address is 1-based
+* --can-detectors - if the reports should be displayed, then the --monitor option must be used
+* --get-cv - the MPU must be on a programming track, the track power should be set to ON after CV operations
 
 The mrcs_z21_conf utility should be used before the first use of this utility in order to establish a control router
 configuration.
 
 SYNOPSIS
-mrcs_control_z21 [-h] [-i INDENT] [-v] [--version] [-m] [-r | -p {0,1} | -c | -u ADDR POS | -e ADDR |
--g ADDR | -s ADDR DIR SPEED]
+mrcs_control_z21 [-h] [-i INDENT] [-v] [--version] [-m] [-rs | -tp {0,1} | -cd | -st ADDR POS | -gd ADDR | -gm ADDR |
+-sm ADDR DIR SPEED | -gc ADDR]
 
 EXAMPLES
 mrcs_control_z21 -v -m
@@ -55,14 +56,14 @@ from mrcs_core.sys.logging import Logging
 
 def mrcs_control_on_dataset(report: JSONable):
     if args.monitor:
-        print(JSONify.dumps(report))
+        print(JSONify.dumps(report, indent=args.indent))
         return
 
     if args.command is None or args.command.report_type is None:
         return
 
     if isinstance(report, args.command.report_type):
-        print(JSONify.dumps(report))
+        print(JSONify.dumps(report, indent=args.indent))
         exit(0)
 
 
@@ -81,6 +82,7 @@ async def monitor():
 
         if args.has_command:
             command = args.command
+
             await station.send_command(command)
             if command.report_type is None:
                 return
@@ -96,7 +98,7 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    args = Z21Args('a utility to excercise a Roco Z21 control router')
+    args = Z21Args('a tool to excercise a Roco Z21 control router')
 
     Logging.config('mrcs_control_z21', verbose=args.verbose)  # level=logging.DEBUG / verbose=args.verbose
     logger = Logging.getLogger()

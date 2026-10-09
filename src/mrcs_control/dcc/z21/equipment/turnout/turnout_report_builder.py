@@ -38,7 +38,7 @@ class TurnoutReportBuilder(object):
         if len(data) != 3:
             raise ValueError(f'data requires 3 bytes, got {data.hex(" ")}')
 
-        turnout_address = struct.unpack('>H', data[:2])[0] + 1  # we use 1-based turnout addresses
+        turnout_address = struct.unpack('>H', data[:2])[0] + 1  # 1-based turnout addresses
 
         # may raise ValueError
         position = TurnoutPosition(data[2] & 0x03)
