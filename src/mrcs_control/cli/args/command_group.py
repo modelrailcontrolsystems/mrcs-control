@@ -8,7 +8,7 @@ https://realpython.com/command-line-interfaces-python-argparse/
 
 from abc import ABC
 
-from mrcs_control.cli.args.command_group_actions import MPUDriveAction, TurnoutAction, Valid
+from mrcs_control.cli.args.command_group_actions import CVAction, MPUDriveAction, TurnoutAction, Valid
 from mrcs_control.dcc.z21.command.command import Command, XCommand
 from mrcs_core.cli.args.common_args import CommonArgs
 from mrcs_core.equipment.motive_power_unit.mpu_enums import MPUDirection
@@ -41,6 +41,8 @@ class CommandGroup(CommonArgs, ABC):
                            help='set mpu ADDR { FWD | REV } SPEED')
         group.add_argument('-gc', '--get-cv', action='store', type=Valid.natural_number, metavar=('ADDR',),
                            help='get CV at ADDR')
+        group.add_argument('-sc', '--set-cv', action=CVAction, nargs=2, metavar=('ADDR', 'VALUE'),
+                           help='set CV at ADDR to VALUE')
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -49,7 +51,7 @@ class CommandGroup(CommonArgs, ABC):
     def has_command(self):
         return (self.router_state or self.track_power is not None or self.set_turnout is not None or
                 self.can_detectors or self.get_decoder is not None or self.get_mpu is not None or
-                self.set_mpu_drive is not None or self.get_cv is not None)
+                self.set_mpu_drive is not None or self.get_cv is not None or self.set_cv is not None)
 
 
     @property
@@ -80,6 +82,9 @@ class CommandGroup(CommonArgs, ABC):
 
         if self.get_cv is not None:
             return XCommand.lan_x_get_cv(self.get_cv)
+
+        if self.set_cv is not None:
+            return XCommand.lan_x_set_cv(self.set_cv[0], self.set_cv[1])
 
         return None
 
@@ -129,3 +134,8 @@ class CommandGroup(CommonArgs, ABC):
     @property
     def get_cv(self):
         return self._args.get_cv
+
+
+    @property
+    def set_cv(self):
+        return self._args.set_cv

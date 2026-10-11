@@ -196,6 +196,11 @@ class XCommand(Command):
         return cls.construct_x(XHeader.LAN_X_CV_READ, address - 1)  # 1-based CV addresses
 
 
+    @classmethod
+    def lan_x_set_cv(cls, address: int, value: int) -> Self:
+        return cls.construct_x(XHeader.LAN_X_CV_WRITE, address - 1, value)  # 1-based CV addresses
+
+
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod

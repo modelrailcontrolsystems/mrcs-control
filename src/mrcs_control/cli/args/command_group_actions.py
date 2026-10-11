@@ -40,6 +40,33 @@ class Valid(object):
 
 # --------------------------------------------------------------------------------------------------------------------
 
+class CVAction(Action):
+    """
+    argparse action for CV command (ADDR VALUE)
+    """
+
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        if values is None:
+            return
+
+        opt = option_string if option_string else '-sc/--set-cv'
+
+        try:
+            addr = Valid.int(values[0], min_value=1)
+        except ValueError:
+            parser.error(f"argument {opt}: ADDR must be a natural number (got '{values[0]}')")
+
+        try:
+            value = Valid.int(values[1], min_value=0, max_value=255)
+        except ValueError:
+            parser.error(f"argument {opt}: VALUE must be 0 to 255 (got '{values[1]}')")
+
+        setattr(namespace, self.dest, (addr, value))
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
 class MPUDriveAction(Action):
     """
     argparse action for MPU drive command (ADDR DIR SPEED)
@@ -55,7 +82,7 @@ class MPUDriveAction(Action):
         try:
             addr = Valid.int(values[0], min_value=1)
         except ValueError:
-            parser.error(f"argument {opt}: ADDR must be a positive integer (got '{values[0]}')")
+            parser.error(f"argument {opt}: ADDR must be a natural number (got '{values[0]}')")
 
         direction = values[1].upper()
         if direction not in ('FWD', 'REV'):
@@ -86,7 +113,7 @@ class TurnoutAction(Action):
         try:
             addr = Valid.int(values[0], min_value=1)
         except ValueError:
-            parser.error(f"argument {opt}: ADDR must be a positive integer (got '{values[0]}')")
+            parser.error(f"argument {opt}: ADDR must be a natural number (got '{values[0]}')")
 
         try:
             pos = Valid.int(values[1], min_value=0, max_value=1)
