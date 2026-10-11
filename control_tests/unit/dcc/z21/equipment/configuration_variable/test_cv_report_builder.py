@@ -24,3 +24,9 @@ class TestCVReportBuilder(unittest.TestCase):
         obj1 = Dataset.construct_from_bytes(chars)
         obj2 = CVReportBuilder.construct_from_dataset(obj1)
         self.assertEqual('CVReport:{cv_address:259, value:3}', str(obj2))  # 1-based addressing
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    unittest.main()
