@@ -61,3 +61,9 @@ class TestControlRouterSerial(unittest.TestCase):
     def test_serial_mpu(self):
         obj1 = ControlRouterSerial.MPU
         self.assertEqual('MPU{9}', str(obj1))
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    unittest.main()

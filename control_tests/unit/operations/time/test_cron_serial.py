@@ -36,3 +36,9 @@ class TestCronSerial(unittest.TestCase):
     def test_cron_clock_conf(self):
         obj1 = CronSerial.CLOCK_CONF
         self.assertEqual('CLOCK_CONF{4}', str(obj1))
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    unittest.main()

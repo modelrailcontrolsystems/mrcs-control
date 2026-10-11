@@ -31,3 +31,9 @@ class TestEnvironment(unittest.IsolatedAsyncioTestCase):
         Environment.set(NodeTopology.LIVE)
         obj1 = Environment.get()
         self.assertEqual('Environment:{log_name:test, log_level:20, queuing:NodeTopology.LIVE}', str(obj1))
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    unittest.main()

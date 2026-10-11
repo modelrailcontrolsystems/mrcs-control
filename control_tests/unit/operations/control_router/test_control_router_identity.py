@@ -87,3 +87,9 @@ class TestControlRouterIdentity(unittest.TestCase):
         obj2 = ControlRouterIdentity.get(obj1)
         self.assertEqual('EquipmentIdentifier:{equipment_type:CRT, sector_number:None, serial_number:TURNOUT{6}}',
                          str(obj2))
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    unittest.main()
