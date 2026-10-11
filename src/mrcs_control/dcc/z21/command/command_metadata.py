@@ -139,6 +139,7 @@ class XCommandMetadata(CommandMetadata):
     def init(cls):
         cls.__CATALOG = {
             XHeader.LAN_X_CV_READ: cls(XHeader.LAN_X_CV_READ, 1, cls.argv_get_cv, '>BH', CVReport),
+            XHeader.LAN_X_CV_WRITE: cls(XHeader.LAN_X_CV_WRITE, 2, cls.argv_set_cv, '>BHB', CVReport),
             XHeader.LAN_X_GET_LOCO: cls(XHeader.LAN_X_GET_LOCO, 1, cls.argv_get_mpu, '>BH', MPUConfigurationReport),
             XHeader.LAN_X_SET_LOCO_DRIVE: cls(XHeader.LAN_X_SET_LOCO_FUNC, 3, cls.argv_set_mpu_drive, '>BHB',
                                               MPUConfigurationReport),
@@ -161,6 +162,12 @@ class XCommandMetadata(CommandMetadata):
     def argv_get_cv(cls, *args: int) -> tuple[int, ...]:
         db0 = 0x11
         return db0, args[0]
+
+
+    @classmethod
+    def argv_set_cv(cls, *args: int) -> tuple[int, ...]:
+        db0 = 0x12
+        return db0, args[0], args[1]
 
 
     @classmethod
