@@ -93,7 +93,7 @@ if __name__ == '__main__':
     try:
         layout = LayoutConf.load_selected_layout(Host)
     except Exception as exc:
-        logger.error(f'{exc.__class__.__name__} in layout component {exc}')
+        logger.error(f'Error in layout component: {exc}.')
         exit(2)
 
     if layout is None:
