@@ -50,7 +50,7 @@ class TopicSubscriberNode(AsyncSubscriberNode):
 
 
     @classmethod
-    def set_subscription_routing_keys(cls, routing_keys: list[SubscriptionRoutingKey]):
+    def set_subscription_routing_keys(cls, *routing_keys: SubscriptionRoutingKey):
         cls.__routing_keys = routing_keys
 
 

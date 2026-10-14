@@ -47,12 +47,12 @@ from mrcs_control.dcc.z21.command.command import Command
 from mrcs_control.dcc.z21.command.station import Station
 from mrcs_core.data.json import JSONable, JSONify
 from mrcs_core.equipment.control_router.control_router_conf import ControlRouterConf
+from mrcs_core.equipment.error.invalid_request_report import InvalidRequestReport
 from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging
 
 
 # --------------------------------------------------------------------------------------------------------------------
-
 
 def mrcs_control_on_dataset(report: JSONable):
     if args.monitor:
@@ -62,7 +62,7 @@ def mrcs_control_on_dataset(report: JSONable):
     if args.command is None or args.command.report_type is None:
         return
 
-    if isinstance(report, args.command.report_type):
+    if isinstance(report, args.command.report_type) or isinstance(report, InvalidRequestReport):
         print(JSONify.dumps(report, indent=args.indent))
         exit(0)
 

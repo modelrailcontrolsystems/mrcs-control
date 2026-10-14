@@ -1,0 +1,159 @@
+#!/usr/bin/env python3
+
+"""
+Created on 11 Oct 2026
+
+@author: Bruno Beloff (bbeloff@me.com)
+
+source repo: mrcs_control
+
+DESCRIPTION
+A utility for navigating inventories. Functions:
+* --list - list all the inventories
+* --set-selected-inventory - if there is only one inventory, then this is not needed
+* --mpu-abstract - list BlockStatus records - these are used to populate a database
+* --mpu-view - display the selected MPU and its CVs. If no MPU is specified, all MPUs are shown
+* --list-cvs - list the supported CVs
+* --read-cvs - read the CVs on the MPU and store in the inventory file
+* --write-cvs - write all of the writable CVs from the inventory file onto the MPU
+
+To update the CVs on the MPU, edit the inventory file, then run mrcs_control_inventory --set-cvs MPU.
+Make sure that the correct MPU is on the programming track.
+
+SYNOPSIS
+usage: mrcs_control_inventory [-h] [-i INDENT] [-v] [--version] [-t] [-d] (-l | -si INVENTORY | -ma | -mv [MPU] |
+-lc | -rc MPU | -wc MPU)
+
+EXAMPLES
+mrcs_control_inventory -v -i4 -l
+mrcs_control_inventory -v -i4 -ma
+mrcs_control_inventory -v -i4 -mv DB59
+mrcs_control_inventory -v -i4 -rc DB59
+"""
+
+import sys
+
+from pika.exceptions import AMQPError
+
+from mrcs_control.cli.args.inventory_args import InventoryArgs
+from mrcs_control.cli.internal.cv_commander import CVCommander
+from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType
+from mrcs_core.data.json import JSONify
+from mrcs_core.inventory.configuration_variable.cv_address import CVAddress
+from mrcs_core.inventory.inventory import Inventory
+from mrcs_core.inventory.inventory_conf import InventoryConf
+from mrcs_core.sys.host import Host
+from mrcs_core.sys.logging import Logging
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+
+    commander = None
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    args = InventoryArgs('a utility for navigating inventories')
+
+    Logging.config('mrcs_control_inventory', verbose=args.verbose)  # verbose=args.verbose / level=logging.DEBUG
+    logger = Logging.getLogger()
+    logger.info(f'args: {args}')
+
+    this_id = EquipmentIdentifier(EquipmentType.TST, None, 4)  # TODO: enums for CLIs!
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    if args.list:
+        inventories = Inventory.list(Host)
+        print(JSONify.dumps(inventories, indent=args.indent))
+        exit(0)
+
+    if args.list_cvs:
+        print(JSONify.dumps({cv.name: cv.value for cv in CVAddress}, indent=args.indent))
+        exit(0)
+
+    if args.set_selected_inventory:
+        if args.set_selected_inventory not in Inventory.list(Host):
+            logger.error(f'Inventory {args.set_selected_inventory} is not known.')
+            exit(2)
+
+        conf = InventoryConf(args.set_selected_inventory)
+        conf.save(Host)
+        exit(0)
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    try:
+        inventory = InventoryConf.load_selected_inventory(Host)
+    except Exception as exc:
+        logger.error(f'Error in inventory component: {exc}.')
+        exit(1)
+
+    if inventory is None:
+        logger.error(f'No inventory is selected. Use mrcs_control_inventory --set-selected-inventory to set one.')
+        exit(1)
+
+    logger.info(f'inventory: {inventory.description}')
+
+    try:
+        inventory.validate()
+    except Exception as exc:
+        logger.error(exc)
+        exit(1)
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    if args.mpu_abstract:
+        inventory = inventory.mpu_abstract()
+        print(JSONify.dumps(inventory, indent=args.indent))
+        exit(0)
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    if args.mpu_view:
+        try:
+            mpus = inventory.mpu_report(args.mpu_view_label)
+        except KeyError as exc:
+            logger.error(f'The MPU {exc.args[0]} could not be found.')
+            exit(2)
+
+        print(JSONify.dumps(mpus, indent=args.indent))
+        exit(0)
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    try:
+        commander = CVCommander(args.mode.value, this_id)
+
+        if args.read_cvs:
+            mpu = inventory.mpu(args.read_cvs)
+            if not mpu:
+                logger.error(f'The MPU {args.read_cvs} could not be found.')
+                exit(2)
+
+            commander.read_all()
+            inventory.mpu(args.read_cvs).set_cvs(*commander.cvs)
+            inventory.save(Host)
+            exit(0)
+
+        if args.write_cvs:
+            mpu = inventory.mpu(args.write_cvs)
+            if not mpu:
+                logger.error(f'The MPU {args.write_cvs} could not be found.')
+                exit(2)
+
+            commander.write(*mpu.cvs)
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    except AMQPError as exc:
+        logger.error(exc)
+        exit(1)
+
+    except KeyboardInterrupt:
+        print(file=sys.stderr)
+
+    finally:
+        if commander is not None:
+            commander.close()

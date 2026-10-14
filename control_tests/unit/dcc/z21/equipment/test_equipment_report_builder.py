@@ -77,7 +77,7 @@ class TestEquipmentReportBuilder(unittest.TestCase):
         report = EquipmentReportBuilder.construct_from_dataset(dataset)
 
         self.assertIsInstance(report, TrackReport)
-        self.assertEqual('TrackReport:{mode:POWER_ON}', str(report))
+        self.assertEqual('TrackReport:{mode:POWER_ON{0x01}}', str(report))
 
 
     def test_construct_turnout_report(self):
