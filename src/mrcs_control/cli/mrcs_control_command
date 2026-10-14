@@ -34,9 +34,7 @@ mrcs_control_subscriber
 mrcs_control_z21
 """
 
-import json
 import sys
-from json import JSONDecodeError
 
 from pika.exceptions import AMQPError
 
@@ -46,6 +44,7 @@ from mrcs_control.operations.control_router.control_router_node import ControlRo
 from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONify
 from mrcs_core.equipment.equipment_report import EquipmentReport
+from mrcs_core.equipment.error.invalid_request_report import InvalidRequestReport
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
 from mrcs_core.sys.logging import Logging
@@ -65,24 +64,8 @@ def on_message(message):
         logger.error(ex)
         exit(1)
 
-    if not args.monitor and isinstance(report, args.command.report_type):
+    if not args.monitor and isinstance(report, args.command.report_type) or isinstance(report, InvalidRequestReport):
         exit(0)
-
-
-def publish_message(body):
-    try:
-        if not node:
-            raise RuntimeError('publisher not set')
-
-        message = Message(publication_routing_key, json.loads(body))
-        node.publish(message)
-
-        logger.info(JSONify.dumps(message, indent=args.indent))
-        return True
-
-    except JSONDecodeError as jde:
-        logger.error(f'{jde.__class__.__name__}: {body}')
-        return False
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -110,7 +93,7 @@ if __name__ == '__main__':
 
     try:
         TopicSubscriberNode.set_id(this_id)
-        TopicSubscriberNode.set_subscription_routing_keys([subscription_routing_key])
+        TopicSubscriberNode.set_subscription_routing_keys(subscription_routing_key)
 
         node = TopicSubscriberNode.construct_node(args.mode.value, on_message)
         logger.info(f'node: {node}')
@@ -120,8 +103,6 @@ if __name__ == '__main__':
 
         command_message = Message(publication_routing_key, args.command) if args.has_command else None
         node.run(initial_publication=command_message)
-
-
 
     # ----------------------------------------------------------------------------------------------------------------
 

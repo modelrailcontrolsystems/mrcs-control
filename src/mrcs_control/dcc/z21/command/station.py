@@ -96,7 +96,6 @@ class Station(object):
             )
 
         except OSError as exc:
-            print(f'exc:{exc}')
             if exc.errno == errno.EADDRINUSE:
                 raise RuntimeError(
                     f'Z21 client UDP port {self.conf.port} is already in use; '

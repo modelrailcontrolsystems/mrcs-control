@@ -24,7 +24,7 @@ class BlockInventory(PersistentJSONable):
 
     @classmethod
     def persistence_location(cls):
-        return cls.inventory_dir(), cls.__FILENAME
+        return 'scaffolding', cls.__FILENAME
 
 
     @classmethod

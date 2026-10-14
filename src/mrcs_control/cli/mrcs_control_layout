@@ -94,13 +94,13 @@ if __name__ == '__main__':
         layout = LayoutConf.load_selected_layout(Host)
     except Exception as exc:
         logger.error(f'Error in layout component: {exc}.')
-        exit(2)
+        exit(1)
 
     if layout is None:
         logger.error(f'No layout is selected. Use mrcs_control_layout --set-selected-layout to set one.')
         exit(1)
 
-    logger.info(f'layout: {layout.label}')
+    logger.info(f'layout: {layout.description}')
 
     # ----------------------------------------------------------------------------------------------------------------
 

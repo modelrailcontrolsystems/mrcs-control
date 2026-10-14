@@ -87,7 +87,7 @@ if __name__ == '__main__':
 
     try:
         TopicSubscriberNode.set_id(target)
-        TopicSubscriberNode.set_subscription_routing_keys(subscriptions)
+        TopicSubscriberNode.set_subscription_routing_keys(*subscriptions)
 
         node = TopicSubscriberNode.construct_node(args.mode.value, on_message)
         logger.info(f'node: {node}')

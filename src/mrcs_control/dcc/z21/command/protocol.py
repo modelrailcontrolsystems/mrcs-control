@@ -62,8 +62,7 @@ class Protocol(DatagramProtocol):
                 offset += dataset.total_len
 
             except (ValueError, struct.error) as exc:
-                self.logger.error('datagram_received on %s at offset %d: %s <%s>', addr, offset, exc,
-                                  data[offset:].hex(' '))
+                self.logger.error(f'datagram_received on {addr} at offset {offset}: {exc} <{data[offset:].hex(" ")}>')
                 return
 
 

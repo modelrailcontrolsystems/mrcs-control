@@ -41,7 +41,7 @@ class TurnoutConfigurationFinder(object):
         subscription_routing_key = publication_routing_key.reversed()
 
         TopicSubscriberNode.set_id(self.id)
-        TopicSubscriberNode.set_subscription_routing_keys([subscription_routing_key])
+        TopicSubscriberNode.set_subscription_routing_keys(subscription_routing_key)
 
         self.__node = TopicSubscriberNode.construct_node(ops, self.on_message)
 
