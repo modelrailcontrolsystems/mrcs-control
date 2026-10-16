@@ -15,9 +15,9 @@ from datetime import timezone
 from zoneinfo import ZoneInfo
 
 from mrcs_control.operations.recorder.persistent_message_record import PersistentMessageRecord
-from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier
 from mrcs_core.data.iso_datetime import ISODatetime
 from mrcs_core.data.json import JSONify
+from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
 from mrcs_core.messaging.routing_key import PublicationRoutingKey
 from mrcs_core.operations.recorder.message_record import MessageRecord
 

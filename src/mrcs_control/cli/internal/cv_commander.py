@@ -8,11 +8,13 @@ Commands CV reads and writes
 
 from enum import StrEnum
 
+from mrcs_core.equipment.equipment_enums import EquipmentType
+
 from mrcs_control.cli.internal.topic_subscriber_node import TopicSubscriberNode
 from mrcs_control.dcc.z21.command.command import XCommand
 from mrcs_control.operations.control_router.control_router_node import ControlRouterNode
-from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.equipment.conviguration_variable.cv_report import CVReport
+from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
 from mrcs_core.equipment.track.track_enums import TrackMode
 from mrcs_core.equipment.track.track_report import TrackReport
 from mrcs_core.inventory.configuration_variable.cv import CV
@@ -48,7 +50,7 @@ class CVCommander(object):
 
         self.__publication_routing_key = PublicationRoutingKey(self.id, ControlRouterNode.id())
 
-        control_router_filter = EquipmentFilter(EquipmentType.CRT, None, None)  # TODO: tidy everywhere!
+        control_router_filter = EquipmentFilter(EquipmentType.CRT, None, None)
         self.__subscription_routing_key = SubscriptionRoutingKey(control_router_filter, EquipmentFilter.any())
 
         TopicSubscriberNode.set_id(self.id)

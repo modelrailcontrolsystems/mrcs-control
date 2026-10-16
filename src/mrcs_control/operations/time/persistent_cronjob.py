@@ -19,8 +19,8 @@ from typing import Self
 
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.operations.time.cronjob_persistence import CronjobPersistence
-from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.data.iso_datetime import ISODatetime
+from mrcs_core.equipment.equipment_identity import EquipmentIdentifier
 from mrcs_core.messaging.message import Message
 from mrcs_core.operations.time.cronjob import Cronjob
 

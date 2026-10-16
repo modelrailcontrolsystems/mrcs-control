@@ -14,8 +14,9 @@ import unittest
 
 from mrcs_control.operations.time.persistent_cronjob import PersistentCronjob
 from mrcs_control.test.test_helper import TestHelper
-from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType
 from mrcs_core.data.iso_datetime import ISODatetime
+from mrcs_core.equipment.equipment_enums import EquipmentType
+from mrcs_core.equipment.equipment_identity import EquipmentIdentifier
 
 
 # --------------------------------------------------------------------------------------------------------------------

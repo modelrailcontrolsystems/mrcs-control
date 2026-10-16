@@ -14,7 +14,8 @@ from typing import Any, Self
 
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
-from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType
+from mrcs_core.equipment.equipment_enums import CLU, EquipmentType
+from mrcs_core.equipment.equipment_identity import EquipmentIdentifier
 from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
@@ -28,7 +29,7 @@ class TopicSubscriberNode(AsyncSubscriberNode):
     a simple subscriber node
     """
 
-    __id = EquipmentIdentifier(EquipmentType.TST, None, 1)
+    __id = EquipmentIdentifier(EquipmentType.CLU, None, CLU.SUBSCRIBER)
 
 
     @classmethod

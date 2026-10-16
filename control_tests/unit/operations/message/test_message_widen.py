@@ -12,7 +12,7 @@ https://www.jetbrains.com/help/pycharm/creating-tests.html
 import unittest
 
 from mrcs_control.operations.recorder.persistent_message import PersistentMessage
-from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier
+from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey
 

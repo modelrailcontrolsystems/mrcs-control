@@ -36,13 +36,14 @@ mrcs_control_z21
 
 import sys
 
+from mrcs_core.equipment.equipment_enums import CLU, EquipmentType
 from pika.exceptions import AMQPError
 
 from mrcs_control.cli.args.command_args import CommandArgs
 from mrcs_control.cli.internal.topic_subscriber_node import TopicSubscriberNode
 from mrcs_control.operations.control_router.control_router_node import ControlRouterNode
-from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONify
+from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
 from mrcs_core.equipment.equipment_report import EquipmentReport
 from mrcs_core.equipment.error.invalid_request_report import InvalidRequestReport
 from mrcs_core.messaging.message import Message
@@ -83,7 +84,7 @@ if __name__ == '__main__':
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')
 
-    this_id = EquipmentIdentifier(EquipmentType.TST, None, 1)
+    this_id = EquipmentIdentifier(EquipmentType.TST, None, CLU.COMMANDER)
     publication_routing_key = PublicationRoutingKey(this_id, ControlRouterNode.id())
 
     control_router_filter = EquipmentFilter(EquipmentType.CRT, None, None)

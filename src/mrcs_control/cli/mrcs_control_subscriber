@@ -32,8 +32,8 @@ import sys
 
 from mrcs_control.cli.args.subscriber_args import SubscriberArgs
 from mrcs_control.cli.internal.topic_subscriber_node import TopicSubscriberNode
-from mrcs_core.data.equipment_identity import EquipmentFilter
 from mrcs_core.data.json import JSONify
+from mrcs_core.equipment.equipment_identity import EquipmentFilter
 from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
 from mrcs_core.sys.logging import Logging
 
