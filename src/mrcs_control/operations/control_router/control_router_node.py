@@ -27,11 +27,11 @@ from mrcs_control.dcc.z21.command.station import Station
 from mrcs_control.equipment.control_router.persistent_control_router import PersistentControlRouter
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
-from mrcs_control.operations.control_router.control_router_identity import ControlRouterIdentity, ControlRouterSerial
+from mrcs_control.operations.control_router.control_router_identity import ControlRouterIdentity
 from mrcs_core.data.json import JSONable
 from mrcs_core.equipment.control_router.control_router_conf import ControlRouterConf
 from mrcs_core.equipment.control_router.control_router_report import ControlRouterReport
-from mrcs_core.equipment.equipment_enums import EquipmentType
+from mrcs_core.equipment.equipment_enums import CRT, EquipmentType
 from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
@@ -54,7 +54,7 @@ class ControlRouterNode(AsyncSubscriberNode):
 
     @classmethod
     def id(cls):
-        return EquipmentIdentifier(EquipmentType.CRT, None, ControlRouterSerial.ROUTER)
+        return EquipmentIdentifier(EquipmentType.CRT, None, CRT.ROUTER)
 
 
     @classmethod

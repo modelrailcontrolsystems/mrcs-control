@@ -15,8 +15,6 @@ mrcs_control_subscriber -v -s TRK.*.2
 from collections.abc import Callable
 from typing import List
 
-from mrcs_core.equipment.equipment_enums import EquipmentType
-
 from mrcs_control.cli.inventory.block_inventory import BlockInventory
 from mrcs_control.cli.inventory.turnout_inventory import TurnoutInventory
 from mrcs_control.db.db_client import DbClient
@@ -26,12 +24,12 @@ from mrcs_control.equipment.track.persistent_track import PersistentTrack
 from mrcs_control.equipment.turnout.persistent_turnout_status import PersistentTurnoutStatus
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
-from mrcs_control.operations.control_router.control_router_identity import ControlRouterSerial
 from mrcs_control.operations.control_router.control_router_node import ControlRouterNode
 from mrcs_control.operations.track.track_node_identity import TrackNodeCommand, TrackNodeSerial
 from mrcs_core.data.json import JSONable
 from mrcs_core.equipment.block.block_report import BlockOccupancyReport, BlockVoltageReport
 from mrcs_core.equipment.block.block_status import BlockStatus
+from mrcs_core.equipment.equipment_enums import CRT, EquipmentType
 from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
 from mrcs_core.equipment.track.track_report import TrackReport
 from mrcs_core.equipment.turnout.turnout_report import TurnoutReport
@@ -58,7 +56,7 @@ class TrackNode(AsyncSubscriberNode):
     def subscription_routing_keys(cls) -> list[SubscriptionRoutingKey]:
         subscriptions = [SubscriptionRoutingKey(EquipmentFilter.any(), cls.id())]
 
-        for serial in [ControlRouterSerial.TRACK, ControlRouterSerial.TURNOUT, ControlRouterSerial.BLOCK]:
+        for serial in [CRT.TRACK, CRT.TURNOUT, CRT.BLOCK]:
             subscriptions.append(
                 SubscriptionRoutingKey(EquipmentFilter.construct(EquipmentType.CRT, None, serial),
                                        EquipmentFilter.any()))

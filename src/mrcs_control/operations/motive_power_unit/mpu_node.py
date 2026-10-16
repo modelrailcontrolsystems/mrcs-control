@@ -18,11 +18,10 @@ from mrcs_control.dcc.z21.command.command import Command, XCommand
 from mrcs_control.equipment.motive_power_unit.persistent_mpu_status import PersistentMPUStatus
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
-from mrcs_control.operations.control_router.control_router_identity import ControlRouterSerial
 from mrcs_control.operations.control_router.control_router_node import ControlRouterNode
 from mrcs_control.operations.motive_power_unit.mpu_node_identity import MPUNodeSerial
 from mrcs_core.data.json import JSONable
-from mrcs_core.equipment.equipment_enums import EquipmentType
+from mrcs_core.equipment.equipment_enums import CRT, EquipmentType
 from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
 from mrcs_core.equipment.motive_power_unit.mpu_configuration_report import MPUConfigurationReport
 from mrcs_core.equipment.motive_power_unit.mpu_decoder_report import MPUDecoderReport
@@ -49,7 +48,7 @@ class MPUNode(AsyncSubscriberNode):
     def subscription_routing_keys(cls) -> list[SubscriptionRoutingKey]:
         subscriptions = [SubscriptionRoutingKey(EquipmentFilter.any(), cls.id())]
 
-        for serial in [ControlRouterSerial.MPU]:
+        for serial in [CRT.MPU]:
             subscriptions.append(
                 SubscriptionRoutingKey(EquipmentFilter.construct(EquipmentType.CRT, None, serial),
                                        EquipmentFilter.any()))
