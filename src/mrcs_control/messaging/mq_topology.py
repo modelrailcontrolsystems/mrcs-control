@@ -25,8 +25,8 @@ https://www.rabbitmq.com/tutorials
 from enum import Enum, StrEnum, unique
 from uuid import uuid4
 
-from mrcs_core.data.equipment_identity import EquipmentIdentifier
 from mrcs_core.data.meta_enum import MetaEnum
+from mrcs_core.equipment.equipment_identity import EquipmentIdentifier
 
 
 # --------------------------------------------------------------------------------------------------------------------

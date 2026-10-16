@@ -37,8 +37,9 @@ from pika.exceptions import AMQPError
 
 from mrcs_control.cli.args.inventory_args import InventoryArgs
 from mrcs_control.cli.internal.cv_commander import CVCommander
-from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONify
+from mrcs_core.equipment.equipment_enums import CLU, EquipmentType
+from mrcs_core.equipment.equipment_identity import EquipmentIdentifier
 from mrcs_core.inventory.configuration_variable.cv_address import CVAddress
 from mrcs_core.inventory.inventory import Inventory
 from mrcs_core.inventory.inventory_conf import InventoryConf
@@ -60,7 +61,7 @@ if __name__ == '__main__':
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
 
-    this_id = EquipmentIdentifier(EquipmentType.TST, None, 4)  # TODO: enums for CLIs!
+    this_id = EquipmentIdentifier(EquipmentType.TST, None, CLU.INVENTORY_MANAGER)
 
     # ----------------------------------------------------------------------------------------------------------------
 

@@ -44,12 +44,13 @@ mrcs_control_layout -v -i4 -pr UP Alpha.1 Beta.1
 
 import sys
 
+from mrcs_core.equipment.equipment_enums import CLU, EquipmentType
 from pika.exceptions import AMQPError
 
 from mrcs_control.cli.args.layout_args import LayoutArgs
 from mrcs_control.cli.internal.turnout_configuration_finder import TurnoutConfigurationFinder
-from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType
 from mrcs_core.data.json import JSONify
+from mrcs_core.equipment.equipment_identity import EquipmentIdentifier
 from mrcs_core.layout.layout import Layout
 from mrcs_core.layout.layout_conf import LayoutConf
 from mrcs_core.sys.host import Host
@@ -71,7 +72,7 @@ if __name__ == '__main__':
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
 
-    this_id = EquipmentIdentifier(EquipmentType.TST, None, 2)
+    this_id = EquipmentIdentifier(EquipmentType.TST, None, CLU.LAYOUT_MANAGER)
 
     # ----------------------------------------------------------------------------------------------------------------
 

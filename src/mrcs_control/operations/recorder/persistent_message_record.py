@@ -20,7 +20,7 @@ from typing import Self
 
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.operations.recorder.message_persistence import MessagePersistence
-from mrcs_core.data.equipment_identity import EquipmentFilter, EquipmentIdentifier
+from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
 from mrcs_core.data.iso_datetime import ISODatetime
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, RoutingKey
 from mrcs_core.operations.recorder.message_record import MessageRecord

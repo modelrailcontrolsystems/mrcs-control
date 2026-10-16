@@ -16,7 +16,7 @@ from typing import Generic, TypeVar
 from mrcs_control.messaging.mq_async_client import MQAsyncClient, MQAsyncPublisher, MQAsyncSubscriber
 from mrcs_control.messaging.mq_client import MQManager
 from mrcs_control.messaging.mq_topology import MQTopology
-from mrcs_core.data.equipment_identity import EquipmentIdentifier
+from mrcs_core.equipment.equipment_identity import EquipmentIdentifier
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
 from mrcs_core.operations.node_topology import NodeTopology

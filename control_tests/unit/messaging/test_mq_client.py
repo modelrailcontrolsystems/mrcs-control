@@ -7,9 +7,11 @@ Created on 29 Aug 2026
 import unittest
 from unittest.mock import MagicMock
 
+from mrcs_core.equipment.equipment_enums import EquipmentType
+
 from mrcs_control.messaging.mq_client import MQManager, MQSubscriber
 from mrcs_control.messaging.mq_topology import MQMode, MQTopology
-from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType
+from mrcs_core.equipment.equipment_identity import EquipmentIdentifier
 
 
 # --------------------------------------------------------------------------------------------------------------------

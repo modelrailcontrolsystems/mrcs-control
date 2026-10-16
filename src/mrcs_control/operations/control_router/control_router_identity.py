@@ -9,11 +9,13 @@ The mapping should be kept in sync with the source code in Z21EquipmentReport.
 
 from enum import IntEnum, unique
 
-from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType
+from mrcs_core.equipment.equipment_enums import EquipmentType
+
 from mrcs_core.data.json import JSONable
 from mrcs_core.data.meta_enum import MetaEnum
 from mrcs_core.equipment.block.block_report import BlockOccupancyReport, BlockVoltageReport
 from mrcs_core.equipment.control_router.control_router_report import ControlRouterReport
+from mrcs_core.equipment.equipment_identity import EquipmentIdentifier
 from mrcs_core.equipment.motive_power_unit.mpu_configuration_report import MPUConfigurationReport
 from mrcs_core.equipment.motive_power_unit.mpu_decoder_report import MPUDecoderReport
 from mrcs_core.equipment.track.track_report import TrackReport

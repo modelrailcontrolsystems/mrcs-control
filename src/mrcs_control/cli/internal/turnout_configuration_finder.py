@@ -9,7 +9,7 @@ A one-shot turnout configuration finder
 from mrcs_control.cli.internal.topic_subscriber_node import TopicSubscriberNode
 from mrcs_control.operations.track.track_node import TrackNode
 from mrcs_control.operations.track.track_node_identity import TrackNodeCommand
-from mrcs_core.data.equipment_identity import EquipmentIdentifier
+from mrcs_core.equipment.equipment_identity import EquipmentIdentifier
 from mrcs_core.equipment.turnout.turnout_configuration import TurnoutConfiguration
 from mrcs_core.equipment.turnout.turnout_status import TurnoutStatus
 from mrcs_core.messaging.message import Message
