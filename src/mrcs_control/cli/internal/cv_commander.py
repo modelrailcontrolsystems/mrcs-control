@@ -79,7 +79,7 @@ class CVCommander(object):
         self.__node.run(initial_publication=self.__next_write_message())
 
 
-    def close(self):  # TODO: check all specialist nodes can close their messaging nodes
+    def close(self):
         self.node.close()
 
 

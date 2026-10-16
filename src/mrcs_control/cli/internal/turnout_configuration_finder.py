@@ -47,15 +47,21 @@ class TurnoutConfigurationFinder(object):
 
         # start subscriber...
         command_message = Message(publication_routing_key, TrackNodeCommand.FIND_ALL_TURNOUTS)
-        self.__node.run(initial_publication=command_message)
+        self.node.run(initial_publication=command_message)
 
         # subscriber has stopped...
         return TurnoutConfiguration.construct_from_turnouts(*self.turnouts)
 
 
+    def close(self):
+        self.node.close()
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
     def on_message(self, message):
         self.__turnouts = [TurnoutStatus.construct_from_jdict(jdict) for jdict in message.body]
-        self.__node.request_shutdown()
+        self.node.request_shutdown()
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -68,6 +74,11 @@ class TurnoutConfigurationFinder(object):
     @property
     def turnouts(self):
         return self.__turnouts
+
+
+    @property
+    def node(self):
+        return self.__node
 
 
     # ----------------------------------------------------------------------------------------------------------------
