@@ -44,6 +44,8 @@ mrcs_control_layout -v -i4 -pr UP Alpha.1 Beta.1
 
 import sys
 
+from pika.exceptions import AMQPError
+
 from mrcs_control.cli.args.layout_args import LayoutArgs
 from mrcs_control.cli.internal.turnout_configuration_finder import TurnoutConfigurationFinder
 from mrcs_core.data.equipment_identity import EquipmentIdentifier, EquipmentType
@@ -58,9 +60,8 @@ from mrcs_core.sys.logging import Logging
 
 if __name__ == '__main__':
 
-    layout = None
-    config = None
     path = None
+    finder = None
 
     # ----------------------------------------------------------------------------------------------------------------
 
@@ -144,44 +145,60 @@ if __name__ == '__main__':
         logger.error(exc)
         exit(1)
 
-    finder = TurnoutConfigurationFinder(this_id)
-    config = finder.find(args.mode.value)
+    try:
+        finder = TurnoutConfigurationFinder(this_id)
+        config = finder.find(args.mode.value)
 
-    if args.segment_route:
-        locations = layout.segment_locations
+        if args.segment_route:
+            locations = layout.segment_locations
 
-        if args.segment_route_start not in locations:
-            logger.error(f'The start segment {args.segment_route_start.dot_path} is not in the layout.')
-            exit(2)
+            if args.segment_route_start not in locations:
+                logger.error(f'The start segment {args.segment_route_start.dot_path} is not in the layout.')
+                exit(2)
 
-        if args.segment_route_end not in locations:
-            logger.error(f'The end segment {args.segment_route_end.dot_path} is not in the layout.')
-            exit(2)
+            if args.segment_route_end not in locations:
+                logger.error(f'The end segment {args.segment_route_end.dot_path} is not in the layout.')
+                exit(2)
 
-        try:
-            path = layout.segment_route(config, args.route_heading, args.segment_route_start, args.segment_route_end)
-        except ValueError as exc:
-            print(exc, file=sys.stderr)
-            exit(1)
+            try:
+                path = layout.segment_route(config, args.route_heading, args.segment_route_start,
+                                            args.segment_route_end)
+            except ValueError as exc:
+                print(exc, file=sys.stderr)
+                exit(1)
 
-    if args.platform_route:
-        locations = layout.platform_locations
+        if args.platform_route:
+            locations = layout.platform_locations
 
-        if args.platform_route_start not in locations:
-            logger.error(f'The start platform {args.platform_route_start.dot_path} is not in the layout.')
-            exit(2)
+            if args.platform_route_start not in locations:
+                logger.error(f'The start platform {args.platform_route_start.dot_path} is not in the layout.')
+                exit(2)
 
-        if args.platform_route_end not in locations:
-            logger.error(f'The end platform {args.platform_route_end.dot_path} is not in the layout.')
-            exit(2)
+            if args.platform_route_end not in locations:
+                logger.error(f'The end platform {args.platform_route_end.dot_path} is not in the layout.')
+                exit(2)
 
-        try:
-            path = layout.platform_route(config, args.route_heading, args.platform_route_start, args.platform_route_end)
-        except ValueError as exc:
-            print(exc, file=sys.stderr)
-            exit(1)
+            try:
+                path = layout.platform_route(config, args.route_heading, args.platform_route_start,
+                                             args.platform_route_end)
+            except ValueError as exc:
+                print(exc, file=sys.stderr)
+                exit(1)
 
-    if path is not None:
-        print(JSONify.dumps(path, indent=args.indent))
-        # noinspection unresolved-references
-        logger.info(f'total length: {path.total_length}')
+        if path is not None:
+            print(JSONify.dumps(path, indent=args.indent))
+            # noinspection unresolved-references
+            logger.info(f'total length: {path.total_length}')
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    except AMQPError as exc:
+        logger.error(exc)
+        exit(1)
+
+    except KeyboardInterrupt:
+        print(file=sys.stderr)
+
+    finally:
+        if finder is not None:
+            finder.close()
