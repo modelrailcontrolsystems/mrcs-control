@@ -1,0 +1,94 @@
+{
+  "label": "TESTINV001",
+  "description": "MRCS test inventory v1",
+  "mpus": [
+    {
+      "label": "DB59",
+      "addr": 5,
+      "operator": "DB Schenker",
+      "class": "59",
+      "number": "59201",
+      "manufacturer": "Revolution Trains",
+      "length": 145,
+      "cvs": [
+        {
+          "type": "NumericCV",
+          "addr": "SHORT_ADDRESS",
+          "value": 5
+        },
+        {
+          "type": "NumericCV",
+          "addr": "START_VOLTAGE",
+          "value": 3
+        },
+        {
+          "type": "NumericCV",
+          "addr": "ACCELERATION",
+          "value": 5
+        },
+        {
+          "type": "NumericCV",
+          "addr": "DECELERATION",
+          "value": 5
+        },
+        {
+          "type": "NumericCV",
+          "addr": "MAX_SPEED",
+          "value": 201
+        },
+        {
+          "type": "NumericCV",
+          "addr": "MID_SPEED",
+          "value": 88
+        },
+        {
+          "type": "NumericCV",
+          "addr": "MANUFACTURER_VERSION",
+          "value": 255
+        },
+        {
+          "type": "NumericCV",
+          "addr": "MANUFACTURER_ID",
+          "value": 151
+        },
+        {
+          "type": "NumericCV",
+          "addr": "MOTOR_PWM_FREQUENCY",
+          "value": 40
+        },
+        {
+          "type": "ConsistCV",
+          "addr": "CONSIST_ADDRESS",
+          "reverse": true,
+          "consist_address": 0
+        },
+        {
+          "type": "RailcomCV",
+          "addr": "RAILCOM",
+          "ch1_broadcast": true,
+          "ch2_broadcast": true,
+          "auto_ch1": false,
+          "enable_addr_3l": false,
+          "current_limit": false,
+          "railcom_login": true
+        },
+        {
+          "type": "ConfigurationCV",
+          "addr": "CONFIGURATION",
+          "reverse": false,
+          "speed_128": true,
+          "analog_enabled": false,
+          "railcom_enabled": false,
+          "speed_curve": false,
+          "long_address": false,
+          "accessory_decoder": false
+        },
+        {
+          "type": "NumericCV",
+          "addr": "SOUND_VOLUME",
+          "value": 150
+        }
+      ]
+    }
+  ]
+}

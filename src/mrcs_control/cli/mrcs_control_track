@@ -25,10 +25,9 @@ mrcs_control_track -v -d -p -r
 import sys
 
 from mrcs_control.cli.args.track_args import TrackArgs
-from mrcs_control.cli.inventory.block_inventory import BlockInventory
-from mrcs_control.cli.inventory.turnout_inventory import TurnoutInventory
 from mrcs_control.operations.track.track_node import TrackNode
 from mrcs_core.data.json import JSONify
+from mrcs_core.layout.layout_conf import LayoutConf
 from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging
 
@@ -68,9 +67,18 @@ if __name__ == '__main__':
                 logger.info(f'drained messages: {purged_count}')
 
         if args.populate:
-            blocks = BlockInventory.load(Host)
-            turnouts = TurnoutInventory.load(Host)
-            node.populate(blocks, turnouts)
+            try:
+                layout = LayoutConf.load_selected_layout(Host)
+            except Exception as exc:
+                logger.error(f'Error in layout component: {exc}.')
+                exit(1)
+
+            if layout is None:
+                logger.error(f'No layout is selected. Use mrcs_control_layout --set-selected-layout to set one.')
+                exit(1)
+
+            logger.info(f'layout: {layout.description}')
+            node.populate(layout.block_abstract(), layout.turnout_abstract())
 
         if args.list:
             if args.list == 'B':

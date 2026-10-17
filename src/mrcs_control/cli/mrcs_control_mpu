@@ -19,15 +19,16 @@ SYNOPSIS
 mrcs_control_mpu [-h] [-i INDENT] [-v] [--version] [-t] [-d] [-p] (-l | -r)
 
 EXAMPLES
+mrcs_control_mpu -v -i4 -p -l
 mrcs_control_mpu -v -d -r
 """
 
 import sys
 
 from mrcs_control.cli.args.mpu_args import MPUArgs
-from mrcs_control.cli.inventory.mpu_inventory import MPUInventory
 from mrcs_control.operations.motive_power_unit.mpu_node import MPUNode
 from mrcs_core.data.json import JSONify
+from mrcs_core.inventory.inventory_conf import InventoryConf
 from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging
 
@@ -67,8 +68,19 @@ if __name__ == '__main__':
                 logger.info(f'drained messages: {purged_count}')
 
         if args.populate:
-            mpus = MPUInventory.load(Host)
-            node.populate(mpus)
+            try:
+                inventory = InventoryConf.load_selected_inventory(Host)
+            except Exception as exc:
+                logger.error(f'Error in inventory component: {exc}.')
+                exit(1)
+
+            if inventory is None:
+                logger.error(
+                    f'No inventory is selected. Use mrcs_control_inventory --set-selected-inventory to set one.')
+                exit(1)
+
+            logger.info(f'inventory: {inventory.description}')
+            node.populate(inventory.mpu_abstract())
 
         if args.list:
             equipment = node.find_all_mpus()

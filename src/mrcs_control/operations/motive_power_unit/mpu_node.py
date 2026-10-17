@@ -12,7 +12,6 @@ mrcs_control_subscriber -v -s MPU.*.002
 from collections.abc import Callable
 from typing import List
 
-from mrcs_control.cli.inventory.mpu_inventory import MPUInventory
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.dcc.z21.command.command import Command, XCommand
 from mrcs_control.equipment.motive_power_unit.persistent_mpu_status import PersistentMPUStatus
@@ -26,6 +25,7 @@ from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIde
 from mrcs_core.equipment.motive_power_unit.mpu_configuration_report import MPUConfigurationReport
 from mrcs_core.equipment.motive_power_unit.mpu_decoder_report import MPUDecoderReport
 from mrcs_core.equipment.motive_power_unit.mpu_status import MPUStatus
+from mrcs_core.inventory.motive_power_unit.mpu_abstract import MPUAbstract
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
 from mrcs_core.operations.node_topology import NodeTopology
@@ -135,7 +135,7 @@ class MPUNode(AsyncSubscriberNode):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def populate(self, mpus: MPUInventory) -> None:
+    def populate(self, mpus: MPUAbstract) -> None:
         DbClient.set_client_db_mode(self.ops.db_mode)
         PersistentMPUStatus.recreate_tables()
 
