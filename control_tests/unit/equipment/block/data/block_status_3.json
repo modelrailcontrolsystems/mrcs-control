@@ -1,8 +1,0 @@
-{
-  "type": "BlockStatus",
-  "label": "BN01",
-  "addr": "5/6",
-  "heading": "UP",
-  "voltage": "OCCUPIED_WITH_VOLTAGE",
-  "occupants": []
-}

@@ -15,8 +15,6 @@ mrcs_control_subscriber -v -s TRK.*.2
 from collections.abc import Callable
 from typing import List
 
-from mrcs_control.cli.inventory.block_inventory import BlockInventory
-from mrcs_control.cli.inventory.turnout_inventory import TurnoutInventory
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.dcc.z21.command.command import Command
 from mrcs_control.equipment.block.persistent_block_status import PersistentBlockStatus
@@ -33,6 +31,8 @@ from mrcs_core.equipment.equipment_enums import CRT, EquipmentType
 from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
 from mrcs_core.equipment.track.track_report import TrackReport
 from mrcs_core.equipment.turnout.turnout_report import TurnoutReport
+from mrcs_core.layout.block.block_abstract import BlockAbstract
+from mrcs_core.layout.segment.turnout_abstract import TurnoutAbstract
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
 from mrcs_core.operations.node_topology import NodeTopology
@@ -179,7 +179,7 @@ class TrackNode(AsyncSubscriberNode):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def populate(self, blocks: BlockInventory, turnouts: TurnoutInventory) -> None:
+    def populate(self, blocks: BlockAbstract, turnouts: TurnoutAbstract) -> None:
         DbClient.set_client_db_mode(self.ops.db_mode)
         PersistentBlockStatus.recreate_tables()
         PersistentTurnoutStatus.recreate_tables()

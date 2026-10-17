@@ -1,0 +1,423 @@
+{
+  "label": "TESTLAY001",
+  "description": "MRCS test layout v1",
+  "blocks": [
+    {
+      "label": "BS01",
+      "addr": "5/8",
+      "operation": "REVERSIBLE",
+      "segments": [
+        {
+          "type": "TrackSegment",
+          "label": "SG01",
+          "length": 140,
+          "up-link": {
+            "type": "Fixed",
+            "next": "BS02.SG01"
+          },
+          "down-link": null
+        }
+      ]
+    },
+    {
+      "label": "BS02",
+      "addr": "5/4",
+      "operation": "REVERSIBLE",
+      "segments": [
+        {
+          "type": "TrackSegment",
+          "label": "SG01",
+          "length": 376,
+          "up-link": {
+            "type": "Fixed",
+            "next": "BS02.TE01"
+          },
+          "down-link": {
+            "type": "Fixed",
+            "next": "BS01.SG01"
+          }
+        },
+        {
+          "type": "TurnoutSegment",
+          "label": "TE01",
+          "addr": 3,
+          "p0-length": 195,
+          "p1-length": 186,
+          "up-link": {
+            "type": "Switched",
+            "p0-next": "BN04.TE02",
+            "p1-next": "BS03.SG01"
+          },
+          "down-link": {
+            "type": "Fixed",
+            "next": "BS02.SG01"
+          }
+        }
+      ]
+    },
+    {
+      "label": "BS03",
+      "addr": "5/1",
+      "operation": "UP_FAVOURED",
+      "segments": [
+        {
+          "type": "TrackSegment",
+          "label": "SG01",
+          "length": 186,
+          "up-link": {
+            "type": "Fixed",
+            "next": "BS04.SG01"
+          },
+          "down-link": {
+            "type": "Fixed",
+            "next": "BS02.TE01"
+          }
+        }
+      ]
+    },
+    {
+      "label": "BS04",
+      "addr": "5/7",
+      "operation": "UP_FAVOURED",
+      "segments": [
+        {
+          "type": "TrackSegment",
+          "label": "SG01",
+          "length": 500,
+          "up-link": {
+            "type": "Fixed",
+            "next": "BS05.SG01"
+          },
+          "down-link": {
+            "type": "Fixed",
+            "next": "BS03.SG01"
+          }
+        }
+      ]
+    },
+    {
+      "label": "BS05",
+      "addr": "6/2",
+      "operation": "UP_FAVOURED",
+      "segments": [
+        {
+          "type": "TrackSegment",
+          "label": "SG01",
+          "length": 186,
+          "up-link": {
+            "type": "Fixed",
+            "next": "BS06.TW01"
+          },
+          "down-link": {
+            "type": "Fixed",
+            "next": "BS04.SG01"
+          }
+        }
+      ]
+    },
+    {
+      "label": "BS06",
+      "addr": "6/5",
+      "operation": "UP_FAVOURED",
+      "segments": [
+        {
+          "type": "TurnoutSegment",
+          "label": "TW01",
+          "addr": 2,
+          "p0-length": 195,
+          "p1-length": 186,
+          "up-link": {
+            "type": "Fixed",
+            "next": "BS06.SG02"
+          },
+          "down-link": {
+            "type": "Switched",
+            "p0-next": "BN06.TW02",
+            "p1-next": "BS05.SG01"
+          }
+        },
+        {
+          "type": "TrackSegment",
+          "label": "SG02",
+          "length": 375,
+          "up-link": {
+            "type": "Fixed",
+            "next": "BS07.SG01"
+          },
+          "down-link": {
+            "type": "Fixed",
+            "next": "BS06.TW01"
+          }
+        }
+      ]
+    },
+    {
+      "label": "BS07",
+      "addr": "6/8",
+      "operation": "REVERSIBLE",
+      "segments": [
+        {
+          "type": "TrackSegment",
+          "label": "SG01",
+          "length": 145,
+          "up-link": null,
+          "down-link": {
+            "type": "Fixed",
+            "next": "BS06.SG02"
+          }
+        }
+      ]
+    },
+    {
+      "label": "BN01",
+      "addr": "5/5",
+      "operation": "REVERSIBLE",
+      "segments": [
+        {
+          "type": "TrackSegment",
+          "label": "SG01",
+          "length": 205,
+          "up-link": {
+            "type": "Fixed",
+            "next": "BN02.SG01"
+          },
+          "down-link": null
+        }
+      ]
+    },
+    {
+      "label": "BN02",
+      "addr": "5/2",
+      "operation": "REVERSIBLE",
+      "segments": [
+        {
+          "type": "TrackSegment",
+          "label": "SG01",
+          "length": 312,
+          "up-link": {
+            "type": "Fixed",
+            "next": "BN03.SG01"
+          },
+          "down-link": {
+            "type": "Fixed",
+            "next": "BN01.SG01"
+          }
+        }
+      ]
+    },
+    {
+      "label": "BN03",
+      "addr": "5/6",
+      "operation": "REVERSIBLE",
+      "segments": [
+        {
+          "type": "TrackSegment",
+          "label": "SG01",
+          "length": 187,
+          "up-link": {
+            "type": "Fixed",
+            "next": "BN04.TE02"
+          },
+          "down-link": {
+            "type": "Fixed",
+            "next": "BN02.SG01"
+          }
+        }
+      ]
+    },
+    {
+      "label": "BN04",
+      "addr": "5/3",
+      "operation": "REVERSIBLE",
+      "segments": [
+        {
+          "type": "TurnoutSegment",
+          "label": "TE02",
+          "addr": 1,
+          "p0-length": 195,
+          "p1-length": 186,
+          "up-link": {
+            "type": "Fixed",
+            "next": "BN04.SG02"
+          },
+          "down-link": {
+            "type": "Switched",
+            "p0-next": "BS02.TE01",
+            "p1-next": "BN03.SG01"
+          }
+        },
+        {
+          "type": "TrackSegment",
+          "label": "SG02",
+          "length": 61,
+          "up-link": {
+            "type": "Fixed",
+            "next": "BN05.SG01"
+          },
+          "down-link": {
+            "type": "Fixed",
+            "next": "BN04.TE02"
+          }
+        }
+      ]
+    },
+    {
+      "label": "BN05",
+      "addr": "6/7",
+      "operation": "DOWN_FAVOURED",
+      "segments": [
+        {
+          "type": "TrackSegment",
+          "label": "SG01",
+          "length": 374,
+          "up-link": {
+            "type": "Fixed",
+            "next": "BN06.SG01"
+          },
+          "down-link": {
+            "type": "Fixed",
+            "next": "BN04.SG02"
+          }
+        }
+      ]
+    },
+    {
+      "label": "BN06",
+      "addr": "6/3",
+      "operation": "DOWN_FAVOURED",
+      "segments": [
+        {
+          "type": "TrackSegment",
+          "label": "SG01",
+          "length": 63,
+          "up-link": {
+            "type": "Fixed",
+            "next": "BN06.TW02"
+          },
+          "down-link": {
+            "type": "Fixed",
+            "next": "BN05.SG01"
+          }
+        },
+        {
+          "type": "TurnoutSegment",
+          "label": "TW02",
+          "addr": 4,
+          "p0-length": 195,
+          "p1-length": 186,
+          "up-link": {
+            "type": "Switched",
+            "p0-next": "BS06.TW01",
+            "p1-next": "BN07.SG01"
+          },
+          "down-link": {
+            "type": "Fixed",
+            "next": "BN06.SG01"
+          }
+        }
+      ]
+    },
+    {
+      "label": "BN07",
+      "addr": "6/4",
+      "operation": "REVERSIBLE",
+      "segments": [
+        {
+          "type": "TrackSegment",
+          "label": "SG01",
+          "length": 185,
+          "up-link": {
+            "type": "Fixed",
+            "next": "BN08.SG01"
+          },
+          "down-link": {
+            "type": "Fixed",
+            "next": "BS06.TW01"
+          }
+        }
+      ]
+    },
+    {
+      "label": "BN08",
+      "addr": "6/1",
+      "operation": "REVERSIBLE",
+      "segments": [
+        {
+          "type": "TrackSegment",
+          "label": "SG01",
+          "length": 313,
+          "up-link": {
+            "type": "Fixed",
+            "next": "BN09.SG01"
+          },
+          "down-link": {
+            "type": "Fixed",
+            "next": "BN07.SG01"
+          }
+        }
+      ]
+    },
+    {
+      "label": "BN09",
+      "addr": "6/6",
+      "operation": "REVERSIBLE",
+      "segments": [
+        {
+          "type": "TrackSegment",
+          "label": "SG01",
+          "length": 208,
+          "up-link": null,
+          "down-link": {
+            "type": "Fixed",
+            "next": "BN08.SG01"
+          }
+        }
+      ]
+    }
+  ],
+  "stations": [
+    {
+      "label": "Alpha",
+      "platforms": [
+        {
+          "label": 1,
+          "alignment": "LEFT",
+          "origin": "BS01.SG01",
+          "offset": 55,
+          "length": 347
+        }
+      ]
+    },
+    {
+      "label": "Beta",
+      "platforms": [
+        {
+          "label": 1,
+          "alignment": "LEFT",
+          "origin": "BS04.SG01",
+          "offset": 0,
+          "length": 347
+        },
+        {
+          "label": 2,
+          "alignment": "RIGHT",
+          "origin": "BN05.SG01",
+          "offset": 0,
+          "length": 347
+        }
+      ]
+    },
+    {
+      "label": "Gamma",
+      "platforms": [
+        {
+          "label": 1,
+          "alignment": "LEFT",
+          "origin": "BS06.SG02",
+          "offset": 125,
+          "length": 347
+        }
+      ]
+    }
+  ]
+}

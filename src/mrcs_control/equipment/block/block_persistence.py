@@ -164,7 +164,7 @@ class BlockPersistence(PersistentObject, ABC):
             sql = f'REPLACE INTO {table} (label, address, heading, voltage) VALUES (?, ?, ?, ?)'
             client.execute(sql, data=item.as_db_insert())
 
-            # any existing occupants are deleted by cascade on REPLACE
+            # any existing occupants and turnouts for the block are deleted by cascade on REPLACE
 
             table = cls.occupant_table()
             for occupant in item.children():

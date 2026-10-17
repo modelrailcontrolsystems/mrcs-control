@@ -12,8 +12,6 @@ mrcs_control_subscriber -v -s TEL.*.2
 from collections.abc import Callable
 from typing import List
 
-from mrcs_control.cli.inventory.block_inventory import BlockInventory
-from mrcs_control.cli.inventory.turnout_inventory import TurnoutInventory
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.equipment.block.persistent_block_status import PersistentBlockStatus
 from mrcs_control.equipment.turnout.persistent_turnout_status import PersistentTurnoutStatus
@@ -27,6 +25,8 @@ from mrcs_core.equipment.block.block_status import BlockStatus
 from mrcs_core.equipment.equipment_enums import EquipmentType
 from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
 from mrcs_core.equipment.motive_power_unit.mpu_status import MPUStatus
+from mrcs_core.layout.block.block_abstract import BlockAbstract
+from mrcs_core.layout.segment.turnout_abstract import TurnoutAbstract
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
 from mrcs_core.operations.node_topology import NodeTopology
@@ -119,7 +119,7 @@ class TelemetryNode(AsyncSubscriberNode):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def populate(self, blocks: BlockInventory, turnouts: TurnoutInventory) -> None:
+    def populate(self, blocks: BlockAbstract, turnouts: TurnoutAbstract) -> None:
         DbClient.set_client_db_mode(self.ops.db_mode)
         # PersistentBlockStatus.recreate_tables()
         # PersistentTurnoutStatus.recreate_tables()
