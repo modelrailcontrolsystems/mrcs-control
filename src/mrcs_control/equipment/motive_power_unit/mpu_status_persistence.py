@@ -135,7 +135,7 @@ class MPUStatusPersistence(PersistentObject, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def insert(cls, item: PersistentObject) -> None:  # TODO: parameter should be MPUDesign
+    def insert(cls, item: PersistentObject) -> None:
         client = DbClient.instance(cls.db_name())
 
         try:
