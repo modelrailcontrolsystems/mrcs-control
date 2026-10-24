@@ -44,12 +44,12 @@ mrcs_control_layout -v -i4 -pr UP Alpha.1 Beta.1
 
 import sys
 
-from mrcs_core.equipment.equipment_enums import CLU, EquipmentType
 from pika.exceptions import AMQPError
 
 from mrcs_control.cli.args.layout_args import LayoutArgs
 from mrcs_control.cli.internal.turnout_configuration_finder import TurnoutConfigurationFinder
 from mrcs_core.data.json import JSONify
+from mrcs_core.equipment.equipment_enums import CLU, EquipmentType
 from mrcs_core.equipment.equipment_identity import EquipmentIdentifier
 from mrcs_core.layout.layout import Layout
 from mrcs_core.layout.layout_conf import LayoutConf
@@ -61,8 +61,8 @@ from mrcs_core.sys.logging import Logging
 
 if __name__ == '__main__':
 
-    path = None
     finder = None
+    route = None
 
     # ----------------------------------------------------------------------------------------------------------------
 
@@ -162,34 +162,32 @@ if __name__ == '__main__':
                 exit(2)
 
             try:
-                path = layout.segment_route(config, args.route_heading, args.segment_route_start,
-                                            args.segment_route_end)
+                route = layout.segment_route(args.segment_route_start, args.segment_route_end)
             except ValueError as exc:
                 print(exc, file=sys.stderr)
                 exit(1)
 
-        if args.platform_route:
-            locations = layout.platform_locations
+        # if args.platform_route:
+        #     locations = layout.platform_locations
+        #
+        #     if args.platform_route_start not in locations:
+        #         logger.error(f'The start platform {args.platform_route_start.dot_path} is not in the layout.')
+        #         exit(2)
+        #
+        #     if args.platform_route_end not in locations:
+        #         logger.error(f'The end platform {args.platform_route_end.dot_path} is not in the layout.')
+        #         exit(2)
+        #
+        #     try:
+        #         pass
+        #         # path = layout.platform_route(config, args.route_heading, args.platform_route_start,
+        #         #                              args.platform_route_end)
+        #     except ValueError as exc:
+        #         print(exc, file=sys.stderr)
+        #         exit(1)
 
-            if args.platform_route_start not in locations:
-                logger.error(f'The start platform {args.platform_route_start.dot_path} is not in the layout.')
-                exit(2)
-
-            if args.platform_route_end not in locations:
-                logger.error(f'The end platform {args.platform_route_end.dot_path} is not in the layout.')
-                exit(2)
-
-            try:
-                path = layout.platform_route(config, args.route_heading, args.platform_route_start,
-                                             args.platform_route_end)
-            except ValueError as exc:
-                print(exc, file=sys.stderr)
-                exit(1)
-
-        if path is not None:
-            print(JSONify.dumps(path, indent=args.indent))
-            # noinspection unresolved-references
-            logger.info(f'total length: {path.total_length}')
+        if route is not None:
+            print(JSONify.dumps(route, indent=args.indent))
 
     # ----------------------------------------------------------------------------------------------------------------
 
