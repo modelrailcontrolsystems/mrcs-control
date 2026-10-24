@@ -34,6 +34,18 @@ The following service supports the MRCS APIs:
 
 ---
 
+### Prolog
+
+The MRCS route planner is written in the open source [SWI-Prolog](https://www.swi-prolog.org/) language.
+
+The interpreter is started and stopped automatically. Only one interpreter may run
+in a process; this is managed by the MRCS software.
+
+SWI-Prolog is distributed under the
+[Simplified BSD license](https://github.com/SWI-Prolog/swipl-devel/blob/master/LICENSE).
+
+---
+
 ### RabbitMQ
 
 [The Homebrew RabbitMQ Formula](https://www.rabbitmq.com/docs/install-homebrew)
