@@ -14,9 +14,9 @@ from typing import Any, Self
 
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
+from mrcs_core.data.json import JSONify
 from mrcs_core.equipment.equipment_enums import CLU, EquipmentType
 from mrcs_core.equipment.equipment_identity import EquipmentIdentifier
-from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
 from mrcs_core.operations.node_topology import NodeTopology
@@ -115,7 +115,7 @@ class TopicSubscriberNode(AsyncSubscriberNode):
 
     def __str__(self, *args, **kwargs):
         on_message = self.on_message.__name__
-        routing_keys = '[' + ', '.join([str(key) for key in self.subscription_routing_keys()]) + ']'
+        routing_keys = '[' + ', '.join(map(str, self.subscription_routing_keys())) + ']'
 
         return (f'TopicSubscriberNode:{{routing_keys:{routing_keys}, on_message:{on_message}, '
                 f'initial_publication:{self.initial_publication}, ops:{self.ops}, mq_client:{self.mq_client}}}')

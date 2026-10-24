@@ -254,7 +254,7 @@ class ControlRouterNode(AsyncSubscriberNode):
 
     def __str__(self, *args, **kwargs):
         on_message = None if self.on_message.__name__ is not None else self.on_message.__name__
-        routing_keys = '[' + ', '.join([str(key) for key in self.subscription_routing_keys()]) + ']'
+        routing_keys = '[' + ', '.join(map(str, self.subscription_routing_keys())) + ']'
 
         return (f'ControlRouterNode:{{conf:{self.conf}, routing_keys:{routing_keys}, on_message:{on_message}, '
                 f'station:{self.station}, station_ready:{self.station_ready}, '
