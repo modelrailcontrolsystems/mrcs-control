@@ -48,6 +48,7 @@ from pika.exceptions import AMQPError
 
 from mrcs_control.cli.args.layout_args import LayoutArgs
 from mrcs_control.cli.internal.turnout_configuration_finder import TurnoutConfigurationFinder
+from mrcs_control.operations.route.route_planner import RoutePlanner
 from mrcs_core.data.json import JSONify
 from mrcs_core.equipment.equipment_enums import CLU, EquipmentType
 from mrcs_core.equipment.equipment_identity import EquipmentIdentifier
@@ -161,11 +162,10 @@ if __name__ == '__main__':
                 logger.error(f'The end segment {args.segment_route_end.dot_path} is not in the layout.')
                 exit(2)
 
-            try:
-                route = layout.segment_route(args.segment_route_start, args.segment_route_end)
-            except ValueError as exc:
-                print(exc, file=sys.stderr)
-                exit(1)
+            planner = RoutePlanner(layout.as_prolog_segments(), layout.as_prolog_links())
+            planner.initialise()
+
+            route = planner.route(args.segment_route_start, args.segment_route_end)
 
         # if args.platform_route:
         #     locations = layout.platform_locations
