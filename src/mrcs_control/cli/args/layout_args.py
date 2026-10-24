@@ -11,7 +11,6 @@ from mrcs_control.cli.args.layout_actions import LayoutBlockReportAction, Layout
 
 from mrcs_core.cli.args.multimode_args import MultimodeArgs
 from mrcs_core.data.dot import Dot
-from mrcs_core.equipment.block.block_enums import BlockHeading
 from mrcs_core.layout.platform.platform_location import PlatformLocation
 from mrcs_core.layout.segment.segment_location import SegmentLocation
 
@@ -42,13 +41,11 @@ class LayoutArgs(MultimodeArgs):
         group.add_argument('-sv', '--station-view', action=LayoutStationReportAction, type=str, nargs='?', const='*',
                            metavar='STN[.PLT]', help='print station(s) with platform(s)')
 
-        group.add_argument('-sr', '--segment-route', action=LayoutSegmentPathAction, nargs=3,
-                           metavar=('HEADING', 'BLK1.SEG1', 'BLK2.SEG2'),
-                           help='find path with HEADING: { UP | DN } from BLK1.SEG1 to BLK2.SEG2')
+        group.add_argument('-sr', '--segment-route', action=LayoutSegmentPathAction, nargs=2,
+                           metavar=('BLK1.SEG1', 'BLK2.SEG2'), help='find route from BLK1.SEG1 to BLK2.SEG2')
 
-        group.add_argument('-pr', '--platform-route', action=LayoutPlatformPathAction, nargs=3,
-                           metavar=('HEADING', 'STN1.PLT1', 'STN2.PLT2'),
-                           help='find path with HEADING: { UP | DN } from STN1.PLT1 to STN2.PLT2')
+        group.add_argument('-pr', '--platform-route', action=LayoutPlatformPathAction, nargs=2,
+                           metavar=('STN1.PLT1', 'STN2.PLT2'), help='find route from STN1.PLT1 to STN2.PLT2')
 
         self._args = self._parser.parse_args()
 
@@ -115,17 +112,6 @@ class LayoutArgs(MultimodeArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     @property
-    def route_heading(self):
-        if self._args.segment_route:
-            return BlockHeading.UP if self._args.segment_route[0] == 'UP' else BlockHeading.DOWN
-
-        if self._args.platform_route:
-            return BlockHeading.UP if self._args.platform_route[0] == 'UP' else BlockHeading.DOWN
-
-        return None
-
-
-    @property
     def segment_route(self):
         return self._args.segment_route
 
@@ -134,14 +120,14 @@ class LayoutArgs(MultimodeArgs):
     def segment_route_start(self):
         if self._args.segment_route is None:
             return None
-        return SegmentLocation.construct_from_dot_path(self._args.segment_route[1])
+        return SegmentLocation.construct_from_dot_path(self._args.segment_route[0])
 
 
     @property
     def segment_route_end(self):
         if self._args.segment_route is None:
             return None
-        return SegmentLocation.construct_from_dot_path(self._args.segment_route[2])
+        return SegmentLocation.construct_from_dot_path(self._args.segment_route[1])
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -155,14 +141,14 @@ class LayoutArgs(MultimodeArgs):
     def platform_route_start(self):
         if self._args.platform_route is None:
             return None
-        return PlatformLocation.construct_from_dot_path(self._args.platform_route[1])
+        return PlatformLocation.construct_from_dot_path(self._args.platform_route[0])
 
 
     @property
     def platform_route_end(self):
         if self._args.platform_route is None:
             return None
-        return PlatformLocation.construct_from_dot_path(self._args.platform_route[2])
+        return PlatformLocation.construct_from_dot_path(self._args.platform_route[1])
 
 
     # ----------------------------------------------------------------------------------------------------------------

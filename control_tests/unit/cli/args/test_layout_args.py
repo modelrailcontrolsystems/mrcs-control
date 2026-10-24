@@ -12,7 +12,6 @@ from unittest.mock import patch
 from mrcs_control.cli.args.layout_actions import LayoutBlockReportAction, LayoutPlatformPathAction, \
     LayoutSegmentPathAction, LayoutStationReportAction
 from mrcs_control.cli.args.layout_args import LayoutArgs
-from mrcs_core.equipment.block.block_enums import BlockHeading
 from mrcs_core.layout.platform.platform_location import PlatformLocation
 from mrcs_core.layout.segment.segment_location import SegmentLocation
 
@@ -32,7 +31,6 @@ class TestLayoutArgs(unittest.TestCase):
             self.assertFalse(args.station_view)
             self.assertIsNone(args.segment_route)
             self.assertIsNone(args.platform_route)
-            self.assertIsNone(args.route_heading)
 
 
     def test_set_selected_layout(self):
@@ -44,7 +42,6 @@ class TestLayoutArgs(unittest.TestCase):
             self.assertFalse(args.station_view)
             self.assertIsNone(args.segment_route)
             self.assertIsNone(args.platform_route)
-            self.assertIsNone(args.route_heading)
 
 
     def test_no_arguments(self):
@@ -176,14 +173,13 @@ class TestLayoutArgs(unittest.TestCase):
     # Segment path ---------------------------------------------------------------------------------------------------
 
     def test_segment_route_up(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'UP', 'B1.S1', 'B2.S2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'B1.S1', 'B2.S2']):
             args = LayoutArgs('test')
             self.assertFalse(args.list)
             self.assertIsNone(args.set_selected_layout)
             self.assertFalse(args.block_view)
             self.assertFalse(args.station_view)
-            self.assertEqual(('UP', 'B1.S1', 'B2.S2'), args.segment_route)
-            self.assertEqual(BlockHeading.UP, args.route_heading)
+            self.assertEqual(('B1.S1', 'B2.S2'), args.segment_route)
             self.assertEqual(SegmentLocation('B1', 'S1'), args.segment_route_start)
             self.assertEqual(SegmentLocation('B2', 'S2'), args.segment_route_end)
             self.assertIsNone(args.platform_route)
@@ -191,45 +187,30 @@ class TestLayoutArgs(unittest.TestCase):
             self.assertIsNone(args.platform_route_end)
 
 
-    def test_segment_route_down_lowercase(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'dn', 'B1.S1', 'B2.S2']):
-            args = LayoutArgs('test')
-            self.assertEqual(('DN', 'B1.S1', 'B2.S2'), args.segment_route)
-            self.assertEqual(BlockHeading.DOWN, args.route_heading)
-            self.assertEqual(SegmentLocation('B1', 'S1'), args.segment_route_start)
-            self.assertEqual(SegmentLocation('B2', 'S2'), args.segment_route_end)
-
-
-    def test_segment_route_invalid_heading(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'X', 'B1.S1', 'B2.S2']):
-            with self.assertRaises(SystemExit):
-                LayoutArgs('test')
-
-
     def test_segment_route_invalid_start(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'UP', 'B1', 'B2.S2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'B1', 'B2.S2']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
 
     def test_segment_route_invalid_end(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'UP', 'B1.S1', 'B2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'B1.S1', 'B2']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
 
     def test_segment_route_too_many_nodes(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'UP', 'B1.S1.X', 'B2.S2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'B1.S1.X', 'B2.S2']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'UP', 'B1.S1', 'B2.S2.X']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'B1.S1', 'B2.S2.X']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
 
     def test_segment_route_missing_argument(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'UP', 'B1.S1']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'B1.S1']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
@@ -237,14 +218,13 @@ class TestLayoutArgs(unittest.TestCase):
     # Platform path --------------------------------------------------------------------------------------------------
 
     def test_platform_route_up(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pr', 'UP', 'Station.1', 'Station.2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pr', 'Station.1', 'Station.2']):
             args = LayoutArgs('test')
             self.assertFalse(args.list)
             self.assertIsNone(args.set_selected_layout)
             self.assertFalse(args.block_view)
             self.assertFalse(args.station_view)
-            self.assertEqual(('UP', 'Station.1', 'Station.2'), args.platform_route)
-            self.assertEqual(BlockHeading.UP, args.route_heading)
+            self.assertEqual(('Station.1', 'Station.2'), args.platform_route)
             self.assertEqual(PlatformLocation('Station', 1), args.platform_route_start)
             self.assertEqual(PlatformLocation('Station', 2), args.platform_route_end)
             self.assertIsNone(args.segment_route)
@@ -253,44 +233,37 @@ class TestLayoutArgs(unittest.TestCase):
 
 
     def test_platform_route_down_lowercase(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pr', 'dn', 'Station.1', 'Station.2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pr', 'Station.1', 'Station.2']):
             args = LayoutArgs('test')
-            self.assertEqual(('DN', 'Station.1', 'Station.2'), args.platform_route)
-            self.assertEqual(BlockHeading.DOWN, args.route_heading)
+            self.assertEqual(('Station.1', 'Station.2'), args.platform_route)
             self.assertEqual(PlatformLocation('Station', 1), args.platform_route_start)
             self.assertEqual(PlatformLocation('Station', 2), args.platform_route_end)
 
 
-    def test_platform_route_invalid_heading(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pr', 'X', 'Station.1', 'Station.2']):
-            with self.assertRaises(SystemExit):
-                LayoutArgs('test')
-
-
     def test_platform_route_invalid_start(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pr', 'UP', 'Station', 'Station.2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pr', 'Station', 'Station.2']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
 
     def test_platform_route_invalid_end(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pr', 'UP', 'Station.1', 'Station']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pr', 'Station.1', 'Station']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
 
     def test_platform_route_too_many_nodes(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pr', 'UP', 'Station.1.X', 'Station.2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pr', 'Station.1.X', 'Station.2']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pr', 'UP', 'Station.1', 'Station.2.X']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pr', 'Station.1', 'Station.2.X']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
 
     def test_platform_route_missing_argument(self):
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pr', 'UP', 'Station.1']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-pr', 'Station.1']):
             with self.assertRaises(SystemExit):
                 LayoutArgs('test')
 
@@ -349,11 +322,11 @@ class TestLayoutArgs(unittest.TestCase):
 
     def test_str(self):
         self.maxDiff = None
-        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'UP', 'B1.S1', 'B2.S2']):
+        with patch.object(sys, 'argv', ['mrcs_control_layout', '-sr', 'B1.S1', 'B2.S2']):
             args = LayoutArgs('test')
             self.assertEqual("LayoutArgs:{list:False, set_selected_layout:None, block_abstract:False, "
                              "turnout_abstract:False, block_view:False, station_view:False, "
-                             "segment_route:('UP', 'B1.S1', 'B2.S2'), platform_route:None, "
+                             "segment_route:('B1.S1', 'B2.S2'), platform_route:None, "
                              "indent:None, verbose:False}", str(args))
 
 
