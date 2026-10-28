@@ -101,7 +101,9 @@ class MPUNode(AsyncSubscriberNode):
 
             elif body_type == MPUDecoderReport.type_name():
                 report = MPUDecoderReport.construct_from_jdict(message.body)
-                PersistentMPUStatus.update_from_decoder_report(report)
+                status = PersistentMPUStatus.update_from_decoder_report(report)
+
+                self.__publish_update_message(status)
 
             else:
                 self.logger.warning(f'upsupported message:{message}')
