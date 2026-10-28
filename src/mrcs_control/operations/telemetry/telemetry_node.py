@@ -24,6 +24,7 @@ from mrcs_core.data.json import JSONable
 from mrcs_core.equipment.block.block_status import BlockStatus
 from mrcs_core.equipment.equipment_enums import EquipmentType
 from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
+from mrcs_core.equipment.motive_power_unit.mpu_decoder_report import MPUDecoderReport
 from mrcs_core.equipment.motive_power_unit.mpu_status import MPUStatus
 from mrcs_core.layout.block.block_abstract import BlockAbstract
 from mrcs_core.layout.segment.turnout_abstract import TurnoutAbstract
@@ -96,6 +97,10 @@ class TelemetryNode(AsyncSubscriberNode):
 
             elif body_type == MPUStatus.type_name():
                 report = MPUStatus.construct_from_jdict(message.body)
+                self.logger.debug(report)
+
+            elif body_type == MPUDecoderReport.type_name():
+                report = MPUDecoderReport.construct_from_jdict(message.body)
                 self.logger.debug(report)
 
             else:
