@@ -44,6 +44,8 @@ class MQAsyncClient(ABC):
 
     __URL = f'amqp://{__HOST}:{__PORT}/'
 
+    __CLOSE_TIMEOUT = 5.0  # seconds
+
 
     # ----------------------------------------------------------------------------------------------------------------
 
@@ -51,6 +53,7 @@ class MQAsyncClient(ABC):
         self.__on_startup_complete = on_startup_complete
 
         self.__connection = None
+        self.__connection_closed: asyncio.Event | None = None
         self._channel = None
         self._is_connected = False
 
@@ -99,6 +102,21 @@ class MQAsyncClient(ABC):
             self.__connection = None
 
 
+    async def close_and_wait(self, timeout: float = __CLOSE_TIMEOUT):
+        # the event loop must keep running until pika has flushed its write buffer and the broker has closed
+        connection_closed = self.__connection_closed
+
+        if self.connection is None or connection_closed is None:
+            return
+
+        self.close()
+
+        try:
+            await asyncio.wait_for(connection_closed.wait(), timeout)
+        except asyncio.TimeoutError:
+            self.logger.warning(f'MQAsyncClient - close_and_wait: timed out after {timeout}s')
+
+
     # ----------------------------------------------------------------------------------------------------------------
 
     async def connection_is_available(self):
@@ -112,6 +130,7 @@ class MQAsyncClient(ABC):
         self.logger.debug(f'MQAsyncClient - on_connection_open:{connection}')
 
         self.__connection = connection
+        self.__connection_closed = asyncio.Event()
         self.__connection.channel(on_open_callback=self.on_channel_open)
 
 
@@ -120,8 +139,11 @@ class MQAsyncClient(ABC):
 
 
     def on_connection_closed(self, _unused_connection, reason):
-        self.logger.debug(f'MQAsyncClient - on_connection_closed{reason}')
+        self.logger.debug(f'MQAsyncClient - on_connection_closed:{reason}')
         self._channel = None
+
+        if self.__connection_closed is not None:
+            self.__connection_closed.set()
 
 
     def add_on_channel_close_callback(self):
@@ -133,7 +155,9 @@ class MQAsyncClient(ABC):
         self.logger.debug(f'MQAsyncClient - on_channel_closed:{reason}')
 
         self._channel = None
-        self.connection.close()
+
+        if self.connection is not None:  # None if close() has already been called
+            self.connection.close()
 
 
     # ----------------------------------------------------------------------------------------------------------------

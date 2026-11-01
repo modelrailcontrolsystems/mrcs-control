@@ -92,6 +92,9 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------------------
 
+    except KeyboardInterrupt:
+        pass
+
     finally:
         if args.run:
             print(file=sys.stderr)

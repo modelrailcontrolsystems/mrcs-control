@@ -54,6 +54,7 @@ class AsyncMessagingNode(Generic[AsyncClientT], ABC):
 
         self.__ops = ops
         self.__mq_client = mq_client
+        self.__interrupted = False
 
         self.__logger = Logging.getLogger()
 
@@ -86,25 +87,58 @@ class AsyncMessagingNode(Generic[AsyncClientT], ABC):
         pass
 
 
+    def run_async_loop(self):
+        self.__interrupted = False
+
+        asyncio.set_event_loop(self.async_loop)
+        self.install_signal_handlers()
+
+        try:
+            self.connect()
+            self.async_loop.run_forever()
+
+        finally:
+            # restore default SIGINT / SIGTERM behaviour once the loop is no longer running
+            self.remove_signal_handlers()
+            self.async_loop.close()
+            asyncio.set_event_loop(None)
+
+        if self.interrupted:
+            raise KeyboardInterrupt
+
+
     def install_signal_handlers(self):
         for sig in (signal.SIGINT, signal.SIGTERM):
             try:
-                self.async_loop.add_signal_handler(sig, self.request_shutdown)
+                self.async_loop.add_signal_handler(sig, self.handle_signal)
             except (NotImplementedError, RuntimeError):
                 # Signal handlers are unavailable outside the main thread or on
                 # platforms that do not support asyncio signal handlers.
                 pass
 
 
+    def remove_signal_handlers(self):
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            try:
+                self.async_loop.remove_signal_handler(sig)
+            except (NotImplementedError, RuntimeError):
+                pass
+
+
+    def handle_signal(self):
+        self.__interrupted = True
+        self.request_shutdown()
+
+
     def close(self) -> None:
-        self.logger.info('AsyncMessagingNode - close')
+        self.logger.debug('AsyncMessagingNode - close')
 
         if self.mq_client is not None:
             self.mq_client.close()
 
 
     def request_shutdown(self):
-        if self.async_loop.is_running():
+        if self.async_loop is not None and self.async_loop.is_running():
             self.async_loop.create_task(self.halt())
 
 
@@ -141,6 +175,11 @@ class AsyncMessagingNode(Generic[AsyncClientT], ABC):
     @mq_client.setter
     def mq_client(self, mq_client: AsyncClientT):
         self.__mq_client = mq_client
+
+
+    @property
+    def interrupted(self) -> bool:
+        return self.__interrupted
 
 
     @property
@@ -181,17 +220,14 @@ class AsyncPublisherNode(AsyncMessagingNode[MQAsyncPublisher], ABC):
         self.logger.debug('AsyncPublisherNode - run')
 
         self.__async_loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self.async_loop)
-        self.install_signal_handlers()
-        self.connect()
-        self.async_loop.run_forever()
+        self.run_async_loop()
 
 
     async def halt(self):
         self.logger.debug('AsyncPublisherNode - halt')
 
         await self.cancel_tasks()
-        self.mq_client.close()
+        await self.mq_client.close_and_wait()
         self.async_loop.stop()
 
 
@@ -268,16 +304,13 @@ class AsyncSubscriberNode(AsyncMessagingNode[MQAsyncSubscriber], ABC):
         self.logger.debug('AsyncSubscriberNode - run')
 
         self.__async_loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self.async_loop)
-        self.install_signal_handlers()
-        self.connect()
-        self.async_loop.run_forever()
+        self.run_async_loop()
 
 
     async def halt(self):
         self.logger.debug('AsyncSubscriberNode - halt')
         await self.cancel_tasks()
-        self.mq_client.close()
+        await self.mq_client.close_and_wait()
         self.async_loop.stop()
 
 
