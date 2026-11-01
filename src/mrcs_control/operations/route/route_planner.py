@@ -53,7 +53,7 @@ class RoutePlanner(object):
         self.__initialised = True
 
 
-    def route(self, start: SegmentLocation, end: SegmentLocation):
+    def route(self, start: SegmentLocation, end: SegmentLocation) -> list[Route]:
         if not self.initialised:
             raise RuntimeError('initialise before invoking route')
 
@@ -66,6 +66,13 @@ class RoutePlanner(object):
             query.close()
 
         return routes
+
+
+    def shortest_route(self, start: SegmentLocation, end: SegmentLocation) -> Route | None:
+        try:
+            return min(self.route(start, end))
+        except ValueError:
+            return None
 
 
     # ----------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,151 @@
+#!/usr/bin/env python3
+
+"""
+Created on 6 Sep 2026
+
+@author: Bruno Beloff (bbeloff@me.com)
+
+source repo: mrcs_control
+
+DESCRIPTION
+A service that runs MPU speed trials
+
+A --drain function is available - this drains the queue used by mrcs_control_track before any other functions
+are invoked. The function is useful if problematic messages have been published to the queue.
+
+SYNOPSIS
+usage: mrcs_control_speed_trial [-h] [-i INDENT] [-v] [--version] [-t] [-d] (-sr MPU BLOCK SPEED | -s MPU BLOCK |
+-c MPU BLOCK | -z MPU BLOCK)
+
+EXAMPLES
+mrcs_control_speed_trial -v -sr DB59 BS05 20
+"""
+
+import time
+
+from mrcs_control.cli.args.speed_trial_args import SpeedTrialArgs
+from mrcs_control.operations.route.route_planner import RoutePlanner
+from mrcs_control.operations.speed.speed_trial_runner import SpeedTrialRunner
+from mrcs_core.data.csv import CSV
+from mrcs_core.data.json import JSONify
+from mrcs_core.inventory.inventory_conf import InventoryConf
+from mrcs_core.layout.layout_conf import LayoutConf
+from mrcs_core.operations.speed.speed_trial import SpeedTrial
+from mrcs_core.sys.host import Host
+from mrcs_core.sys.logging import Logging
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+def run_single(run_speed: int):
+    if runner is None:
+        logger.error(f'Runner has not neen initialised.')
+        exit(1)
+
+    print('starting run 1')
+    runner.run(run_speed)
+    time.sleep(5.0)
+
+    print('starting run 2')
+    runner.run(run_speed)
+    runner.speed_trial.save(Host)
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+
+    runner = None
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    args = SpeedTrialArgs('a service that manages MPU speed trials')
+
+    Logging.config('mrcs_control_speed_trial', verbose=args.verbose)  # verbose=args.verbose / level=logging.DEBUG
+    logger = Logging.getLogger()
+    logger.info(f'args: {args}')
+    logger.info(f'mode: {args.mode.value}')
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    try:
+        layout = LayoutConf.load_selected_layout(Host)
+    except Exception as exc:
+        logger.error(f'Error in layout component: {exc}.')
+        exit(1)
+
+    if layout is None:
+        logger.error(f'No layout is selected. Use mrcs_control_layout --set-selected-layout to set one.')
+        exit(1)
+
+    logger.info(f'layout: {layout.description}')
+
+    planner = RoutePlanner(layout.as_prolog_segments(), layout.as_prolog_links())
+    planner.initialise()
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    try:
+        inventory = InventoryConf.load_selected_inventory(Host)
+    except Exception as exc:
+        logger.error(f'Error in inventory component: {exc}.')
+        exit(1)
+
+    if inventory is None:
+        logger.error(f'No inventory is selected. Use mrcs_control_inventory --set-selected-inventory to set one.')
+        exit(1)
+
+    logger.info(f'inventory: {inventory.description}')
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    mpu = inventory.mpu(args.mpu)
+    if mpu is None:
+        logger.error(f'The MPU {args.mpu} is not in the inventory.')
+        exit(2)
+
+    block = layout.block(args.block)
+    if block is None:
+        logger.error(f'The block {args.block} is not in the layout.')
+        exit(2)
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    if args.show:
+        speed_trial = SpeedTrial.load(Host, name=SpeedTrial.trial_name(args.mpu, args.block))
+        print(JSONify.dumps(speed_trial, indent=args.indent))
+        exit(0)
+
+    if args.csv:
+        speed_trial = SpeedTrial.load(Host, name=SpeedTrial.trial_name(args.mpu, args.block))
+        CSV.write(JSONify.as_jdict(speed_trial.runs))
+        exit(0)
+
+    if args.erase:
+        SpeedTrial.delete(Host, name=SpeedTrial.trial_name(args.mpu, args.block))
+        exit(0)
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    try:
+        speed_trial = SpeedTrial.load(Host, SpeedTrial.trial_name(mpu.label, block.label))
+        runner = SpeedTrialRunner(args.mode.value, layout, speed_trial, mpu, block)
+
+        if args.single_run:
+            run_single(args.speed)
+
+        if args.multi_run:
+            for speed in range(5, 130, 5):
+                run_single(speed)
+                time.sleep(5.0)
+
+        if args.verbose:
+            print(JSONify.dumps(runner.speed_trial, indent=args.indent))
+        exit(0)
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    finally:
+        if runner is not None:
+            runner.close()

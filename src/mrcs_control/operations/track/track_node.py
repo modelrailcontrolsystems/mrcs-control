@@ -135,6 +135,7 @@ class TrackNode(AsyncSubscriberNode):
 
             self.__publish_update_message(status)
 
+        # TODO: this is rubbish - at least use type_name()
         elif body_type == TrackReport.__name__:
             report = PersistentTrack.construct_from_jdict(message.body)
             report.save(Host)

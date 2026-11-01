@@ -97,6 +97,8 @@ class AsyncMessagingNode(Generic[AsyncClientT], ABC):
 
 
     def close(self) -> None:
+        self.logger.info('AsyncMessagingNode - close')
+
         if self.mq_client is not None:
             self.mq_client.close()
 

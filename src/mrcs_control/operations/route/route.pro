@@ -12,6 +12,9 @@ add_conf(Conf, ConfIn, [Conf | ConfIn]). % Dynamically add Conf if missing
 
 % ---------------------------------------------------------------------------------------------------------------------
 
+route(Start, Start, Length, unassigned, [Start], Conf, Conf) :-
+    segment(Start, Length).
+
 route(Start, End, Length, Dir, [Start, End], ConfIn, ConfOut) :-
     link(Start, End, LinkLength, Dir, ConfIn, ConfOut),
     segment(Start, StartLength), segment(End, EndLength),
