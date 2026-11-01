@@ -68,6 +68,7 @@ class TopicSubscriberNode(AsyncSubscriberNode):
     def __init__(self, ops: NodeTopology.ServiceConfiguration, queuing: MQTopology,
                  on_message: Callable[[Message], Any]):
         super().__init__(ops, queuing)
+
         self.__on_message = on_message
         self.__initial_publication: Message | None = None
 
