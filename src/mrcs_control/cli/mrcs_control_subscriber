@@ -97,6 +97,9 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------------------
 
+    except KeyboardInterrupt:
+        pass
+
     finally:
         if node is not None:
             node.close()

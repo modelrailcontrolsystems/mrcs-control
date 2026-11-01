@@ -26,6 +26,7 @@ from mrcs_core.operations.node_topology import NodeTopology
 from mrcs_core.operations.speed.speed_log import SpeedLog
 from mrcs_core.operations.speed.speed_run import SpeedRun
 from mrcs_core.operations.speed.speed_trial import SpeedTrial
+from mrcs_core.operations.speed.speed_trial_exception import SpeedTrialException
 from mrcs_core.sys.logging import Logging
 
 
@@ -51,7 +52,6 @@ class SpeedTrialRunner(object):
         self.__mpu = mpu
         self.__block = block
 
-        self.__set_speed = 0
         self.__latest_reported_speed = 0
         self.__speed_log = None
 
@@ -95,7 +95,7 @@ class SpeedTrialRunner(object):
 
         else:
             if block_status.label == self.block.label:
-                self.logger.info(f'trial start - set speed: {self.set_speed}')
+                self.logger.info('trial start')
                 self.__speed_log = SpeedLog.start(self.latest_reported_speed)
 
 
@@ -110,6 +110,8 @@ class SpeedTrialRunner(object):
         go_message = self.__mpu_message(self.publication_routing_key(), heading, set_speed)
         stop_message = self.__mpu_message(self.publication_routing_key(), heading, 0)
 
+        self.logger.info(f'running for speed {set_speed} heading {heading.name}')
+
         self.node.drain()
         self.node.run(initial_publication=go_message, final_publication=stop_message)
 
@@ -121,31 +123,35 @@ class SpeedTrialRunner(object):
     def __heading(self) -> BlockHeading:
         initial_block = self.__initial_block()
 
-        start_location = SegmentLocation(initial_block.label, initial_block.segments[0].label)
-        block_location = SegmentLocation(self.block.label, self.block.segments[0].label)
+        start = SegmentLocation(initial_block.label, initial_block.segments[0].label)
+        block = SegmentLocation(self.block.label, self.block.segments[0].label)
 
-        route = self.planner.shortest_route(start_location, block_location)
+        route = self.planner.shortest_route(start, block)
         if route is None:
-            raise RuntimeError(f'The heading {start_location.dot_path} - {block_location.dot_path} is not available.')
+            raise SpeedTrialException(f'The heading {start.dot_path} - {block.dot_path} is not available.')
 
         return route.direction
 
 
     def __trial_block_length(self) -> BlockHeading:
-        start_location = SegmentLocation(self.block.label, self.block.segments[0].label)
-        end_location = SegmentLocation(self.block.label, self.block.segments[-1].label)
+        start = SegmentLocation(self.block.label, self.block.segments[0].label)
+        end = SegmentLocation(self.block.label, self.block.segments[-1].label)
 
-        route = self.planner.shortest_route(start_location, end_location)
+        route = self.planner.shortest_route(start, end)
         if route is None:
-            raise RuntimeError(f'The length {start_location.dot_path} - {end_location.dot_path} is not available.')
+            raise SpeedTrialException(f'The length {start.dot_path} - {end.dot_path} is not available.')
 
         return route.length
 
 
     def __initial_block(self) -> Block:
         initial_block_status = BlockStatus.containing_block(self.node.find_all_blocks(), self.mpu.address)
+
         if initial_block_status is None:
-            raise RuntimeError(f'The MPU {self.mpu.label} cannot be found on the layout.')
+            raise SpeedTrialException(f'The MPU {self.mpu.label} cannot be found on the layout.')
+
+        if initial_block_status.label == self.block.label:
+            raise SpeedTrialException(f'The MPU is currently in the trial block - move it out before starting the run.')
 
         return self.layout.block(initial_block_status.label)
 
@@ -166,7 +172,8 @@ class SpeedTrialRunner(object):
     # ----------------------------------------------------------------------------------------------------------------
 
     def close(self):
-        self.logger.info('SpeedTrialRunner - close')
+        self.logger.debug('SpeedTrialRunner - close')
+
         self.node.request_shutdown()
         self.node.close()
 
@@ -184,11 +191,6 @@ class SpeedTrialRunner(object):
 
 
     # ----------------------------------------------------------------------------------------------------------------
-
-
-    @property
-    def set_speed(self):
-        return self.__set_speed
 
 
     @property

@@ -10,15 +10,26 @@ source repo: mrcs_control
 DESCRIPTION
 A service that runs MPU speed trials
 
-A --drain function is available - this drains the queue used by mrcs_control_track before any other functions
-are invoked. The function is useful if problematic messages have been published to the queue.
+The goal of the speed trial is to quantify the relationship between the speed value set on the MPU and the actual
+speed of the MPU (in metres per second) after acceleration to speed is complete. The trials should be conducted
+over a block that is straight, level and has sufficient distance up and down for acceleration and deceleration
+to take place. The output is a SpeedTrial JSON file that can be used to determine the set speed -> actual speed
+relationship, which is assumed to be a first-order linear function.
+
+The --single-run mode can be used to check the configuration of the system. The test is run in both directions;
+the MPU heading is determined automatically. The initial position of the MPU must be sufficiently far from
+the start of the test block so that acceleration is complete by the time the block is entered.
+
+Actual results are gained from the --multi-run mode, which excercises the MPU over the set speed range 5 to 125.
 
 SYNOPSIS
-usage: mrcs_control_speed_trial [-h] [-i INDENT] [-v] [--version] [-t] [-d] (-sr MPU BLOCK SPEED | -s MPU BLOCK |
--c MPU BLOCK | -z MPU BLOCK)
+mrcs_control_speed_trial [-h] [-i INDENT] [-v] [--version] [-t] [-d] (-sr MPU BLOCK SPEED | -mr MPU BLOCK |
+-s MPU BLOCK | -c MPU BLOCK | -z MPU BLOCK)
 
 EXAMPLES
-mrcs_control_speed_trial -v -sr DB59 BS05 20
+mrcs_control_speed_trial -v -sr DB59 BS04 20
+mrcs_control_speed_trial -i4 -v -mr DB59 BS04
+mrcs_control_speed_trial -z DB59 BS04
 """
 
 import time
@@ -31,6 +42,7 @@ from mrcs_core.data.json import JSONify
 from mrcs_core.inventory.inventory_conf import InventoryConf
 from mrcs_core.layout.layout_conf import LayoutConf
 from mrcs_core.operations.speed.speed_trial import SpeedTrial
+from mrcs_core.operations.speed.speed_trial_exception import SpeedTrialException
 from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging
 
@@ -42,12 +54,14 @@ def run_single(run_speed: int):
         logger.error(f'Runner has not neen initialised.')
         exit(1)
 
-    print('starting run 1')
-    runner.run(run_speed)
-    time.sleep(5.0)
+    wait_for_stopped = (run_speed / 20) + 3
 
-    print('starting run 2')
     runner.run(run_speed)
+    time.sleep(wait_for_stopped)
+
+    runner.run(run_speed)
+    time.sleep(wait_for_stopped)
+
     runner.speed_trial.save(Host)
 
 
@@ -137,7 +151,6 @@ if __name__ == '__main__':
         if args.multi_run:
             for speed in range(5, 130, 5):
                 run_single(speed)
-                time.sleep(5.0)
 
         if args.verbose:
             print(JSONify.dumps(runner.speed_trial, indent=args.indent))
@@ -145,6 +158,13 @@ if __name__ == '__main__':
 
 
     # ----------------------------------------------------------------------------------------------------------------
+
+    except SpeedTrialException as exc:
+        logger.error(exc)
+        exit(1)
+
+    except KeyboardInterrupt:
+        pass
 
     finally:
         if runner is not None:

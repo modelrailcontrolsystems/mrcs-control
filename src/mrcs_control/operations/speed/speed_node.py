@@ -77,7 +77,7 @@ class SpeedNode(AsyncSubscriberNode):
 
 
     async def publish_message(self, message):
-        self.logger.debug('publish_message')
+        self.logger.debug(f'publish_message:{message}')
 
         if message is not None:
             await self.publish(message)
@@ -111,6 +111,7 @@ class SpeedNode(AsyncSubscriberNode):
 
     async def halt(self):
         self.logger.debug('SpeedNode - halt')
+
         await self.publish_message(self.final_publication)  # must complete before super().halt() cancels tasks
         await super().halt()
 

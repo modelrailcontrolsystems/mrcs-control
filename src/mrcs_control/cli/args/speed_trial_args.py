@@ -118,6 +118,6 @@ class SpeedTrialArgs(SubscriberControlArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):  #
-        return (f'SpeedTrialArgs:{{test:{self.test}, drain:{self.drain}, single_run:{self._args.single_run}, '
+        return (f'SpeedTrialArgs:{{single_run:{self._args.single_run}, multi_run:{self._args.multi_run}, '
                 f'show:{self._args.show}, csv:{self._args.csv}, erase:{self._args.erase}, '
                 f'verbose:{self.verbose}}}')
