@@ -35,14 +35,12 @@ mrcs_control_speed_trial -z DB59 BS04
 import time
 
 from mrcs_control.cli.args.speed_trial_args import SpeedTrialArgs
-from mrcs_control.operations.route.route_planner import RoutePlanner
 from mrcs_control.operations.speed.speed_trial_runner import SpeedTrialRunner
 from mrcs_core.data.csv import CSV
 from mrcs_core.data.json import JSONify
 from mrcs_core.inventory.inventory_conf import InventoryConf
 from mrcs_core.layout.layout_conf import LayoutConf
 from mrcs_core.operations.speed.speed_trial import SpeedTrial
-from mrcs_core.operations.speed.speed_trial_exception import SpeedTrialException
 from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging
 
@@ -54,13 +52,10 @@ def run_single(run_speed: int):
         logger.error(f'Runner has not neen initialised.')
         exit(1)
 
-    wait_for_stopped = (run_speed / 20) + 3
+    runner.run(run_speed)
+    time.sleep(1.0)
 
     runner.run(run_speed)
-    time.sleep(wait_for_stopped)
-
-    runner.run(run_speed)
-    time.sleep(wait_for_stopped)
 
     runner.speed_trial.save(Host)
 
@@ -93,9 +88,6 @@ if __name__ == '__main__':
         exit(1)
 
     logger.info(f'layout: {layout.description}')
-
-    planner = RoutePlanner(layout.as_prolog_segments(), layout.as_prolog_links())
-    planner.initialise()
 
     # ----------------------------------------------------------------------------------------------------------------
 
@@ -149,7 +141,7 @@ if __name__ == '__main__':
             run_single(args.speed)
 
         if args.multi_run:
-            for speed in range(5, 130, 5):
+            for speed in range(30, 130, 5):
                 run_single(speed)
 
         if args.verbose:
@@ -159,10 +151,10 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    except SpeedTrialException as exc:
-        logger.error(exc)
-        exit(1)
-
+    # except SpeedTrialException as exc:
+    #     logger.error(exc)
+    #     exit(1)
+    #
     except KeyboardInterrupt:
         pass
 
