@@ -119,7 +119,7 @@ class SpeedTrialRunner(object):
         self.node.run(initial_publication=go_message, final_publication=stop_message)
 
         if self.state.is_STOPPED():
-            run = SpeedRun.construct(length, heading, set_speed, self.state.speed_log)
+            run = SpeedRun.construct(self.mpu.scale, length, heading, set_speed, self.state.speed_log)
             self.speed_trial.add_run(run)
 
 

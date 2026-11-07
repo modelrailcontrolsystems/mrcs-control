@@ -1,6 +1,7 @@
 {
   "label": "TST001",
   "description": "Test layout 001",
+  "gauge": "N",
   "blocks": [
     {
       "label": "B01",
