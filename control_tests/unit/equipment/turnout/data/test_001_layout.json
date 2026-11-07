@@ -1,6 +1,7 @@
 {
   "label": "TESTLAY001",
   "description": "MRCS test layout v1",
+  "gauge": "N",
   "blocks": [
     {
       "label": "BS01",

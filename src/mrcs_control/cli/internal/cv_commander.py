@@ -6,14 +6,14 @@ Created on 11 Oct 2026
 Commands CV reads and writes
 """
 
+import time
 from enum import StrEnum
-
-from mrcs_core.equipment.equipment_enums import EquipmentType
 
 from mrcs_control.cli.internal.topic_subscriber_node import TopicSubscriberNode
 from mrcs_control.dcc.z21.command.command import XCommand
 from mrcs_control.operations.control_router.control_router_node import ControlRouterNode
 from mrcs_core.equipment.conviguration_variable.cv_report import CVReport
+from mrcs_core.equipment.equipment_enums import EquipmentType
 from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
 from mrcs_core.equipment.track.track_enums import TrackMode
 from mrcs_core.equipment.track.track_report import TrackReport
@@ -71,6 +71,7 @@ class CVCommander(object):
         self.__cv_queue = list(CVAddress.items())
         self.__cvs = []
 
+        # TODO: the final_publication should be power to normal
         self.__node.run(initial_publication=self.__next_read_message())
 
 
@@ -101,10 +102,14 @@ class CVCommander(object):
         try:
             cv_report = CVReport.construct_from_jdict(message.body)
             cv = CVBuilder.construct_from_report(cv_report)
-            self.__logger.info(cv)
+            self.logger.info(cv)
 
             self.cvs.append(cv)
         except TypeError:
+            return
+
+        except Exception as exc:
+            self.logger.warning(exc)
             return
 
         try:
@@ -112,6 +117,7 @@ class CVCommander(object):
         except IndexError:
             message = self.__power_message()
 
+        time.sleep(1.0)
         self.node.async_loop.create_task(self.node.publish(message))
 
 
@@ -180,6 +186,11 @@ class CVCommander(object):
     @property
     def node(self):
         return self.__node
+
+
+    @property
+    def logger(self):
+        return self.__logger
 
 
     # ----------------------------------------------------------------------------------------------------------------
