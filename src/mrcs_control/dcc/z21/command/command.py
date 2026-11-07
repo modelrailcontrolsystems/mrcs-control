@@ -133,8 +133,8 @@ class Command(JSONable):
 
         jdict['type'] = self.type_name()
 
-        jdict['header'] = self.header.name
-        jdict['argv'] = self.argv
+        jdict['header'] = self.header
+        jdict['argv'] = [int(arg) for arg in self.argv]
 
         return jdict
 
@@ -256,8 +256,8 @@ class XCommand(Command):
 
         jdict['type'] = self.type_name()
 
-        jdict['x_header'] = self.x_header.name
-        jdict['argv'] = self.argv
+        jdict['x_header'] = self.x_header
+        jdict['argv'] = [int(arg) for arg in self.argv]
 
         return jdict
 

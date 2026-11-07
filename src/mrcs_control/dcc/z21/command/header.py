@@ -21,12 +21,13 @@ https://gitlab.com/z21-fpm/z21_python
 
 from enum import IntEnum
 
-from mrcs_core.data.meta_enum import MetaEnum
+from mrcs_core.data.json import JSONable
+from mrcs_core.data.meta_enum import ABCMetaEnum
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class Header(IntEnum, metaclass=MetaEnum):
+class Header(JSONable, IntEnum, metaclass=ABCMetaEnum):
     """
     An enumeration of all the LAN header values
     """
@@ -88,13 +89,21 @@ class Header(IntEnum, metaclass=MetaEnum):
             return cls.LAN_UNKNOWN
 
 
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def as_json(self, **kwargs):
+        return self.name
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
     def __str__(self, *args, **kwargs):
         return f'{self.name}{{0x{self.value:02x}}}'
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class XHeader(IntEnum, metaclass=MetaEnum):
+class XHeader(JSONable, IntEnum, metaclass=ABCMetaEnum):
     """
     An enumeration of all the XLAN header values
     """
@@ -134,6 +143,12 @@ class XHeader(IntEnum, metaclass=MetaEnum):
             return cls(int_value)
         except ValueError:
             return cls.LAN_X_UNKNOWN
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def as_json(self, **kwargs):
+        return self.name
 
 
     # ----------------------------------------------------------------------------------------------------------------

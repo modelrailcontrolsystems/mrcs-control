@@ -85,6 +85,8 @@ class MQAsyncClient(ABC):
 
         self.logger.debug(f'MQAsyncClient - close:{self.__URL}')
 
+        self._is_connected = False
+
         try:
             self.channel.close()
         except (AttributeError, ChannelWrongStateError):
