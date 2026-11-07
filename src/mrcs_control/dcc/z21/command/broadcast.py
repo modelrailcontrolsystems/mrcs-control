@@ -15,13 +15,14 @@ https://gitlab.com/z21-fpm/z21_python
 
 from enum import IntEnum, unique
 
-from mrcs_core.data.meta_enum import MetaEnum
+from mrcs_core.data.json import JSONable
+from mrcs_core.data.meta_enum import ABCMetaEnum
 
 
 # --------------------------------------------------------------------------------------------------------------------
 
 @unique
-class Broadcast(IntEnum, metaclass=MetaEnum):
+class Broadcast(JSONable, IntEnum, metaclass=ABCMetaEnum):
     """
     An enumeration of all the broadcast flags
     """
@@ -41,6 +42,12 @@ class Broadcast(IntEnum, metaclass=MetaEnum):
     CAN_DETECTOR = 0x00080000
     CAN_BOOSTER_SYSTEM_STATE = 0x00020000
     FAST_CLOCK_DATA = 0x00000010
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    def as_json(self, **kwargs):
+        return self.name
 
 
     # ----------------------------------------------------------------------------------------------------------------

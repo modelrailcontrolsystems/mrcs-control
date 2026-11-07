@@ -67,7 +67,7 @@ class TestEquipmentReportBuilder(unittest.TestCase):
 
         self.assertIsInstance(report, MPUConfigurationReport)
         self.assertEqual('MPUConfigurationReport:{mpu_address:4, functions:-+------------------------------, '
-                         'is_busy:True, stepping:STEPS_128, speed_setting:53, reverse:False, '
+                         'is_busy:True, stepping:STEPS_128{4}, speed_setting:53, reverse:False, '
                          'double_traction:False, smart_search:False}', str(report))
 
 
