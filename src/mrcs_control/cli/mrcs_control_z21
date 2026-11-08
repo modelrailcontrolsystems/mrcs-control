@@ -24,7 +24,7 @@ configuration.
 
 SYNOPSIS
 mrcs_control_z21 [-h] [-i INDENT] [-v] [--version] [-m] [-rs | -tp {0,1} | -cd | -st ADDR POS | -gd ADDR | -gm ADDR |
--sm ADDR DIR SPEED | -gc ADDR]
+-sm ADDR DIR SPEED | -rc ADDR | -wc ADDR VALUE]
 
 EXAMPLES
 mrcs_control_z21 -v -m

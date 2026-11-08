@@ -39,10 +39,10 @@ class CommandGroup(CommonArgs, ABC):
                            help='get mpu at ADDR')
         group.add_argument('-sm', '--set-mpu-drive', action=MPUDriveAction, nargs=3, metavar=('ADDR', 'DIR', 'SPEED'),
                            help='set mpu ADDR { FWD | REV } SPEED')
-        group.add_argument('-gc', '--get-cv', action='store', type=Valid.natural_number, metavar=('ADDR',),
-                           help='get CV at ADDR')
-        group.add_argument('-sc', '--set-cv', action=CVAction, nargs=2, metavar=('ADDR', 'VALUE'),
-                           help='set CV at ADDR to VALUE')
+        group.add_argument('-rc', '--read-cv', action='store', type=Valid.natural_number, metavar=('ADDR',),
+                           help='read CV at ADDR')
+        group.add_argument('-wc', '--write-cv', action=CVAction, nargs=2, metavar=('ADDR', 'VALUE'),
+                           help='write CV at ADDR to VALUE')
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -51,7 +51,7 @@ class CommandGroup(CommonArgs, ABC):
     def has_command(self):
         return (self.router_state or self.track_power is not None or self.set_turnout is not None or
                 self.can_detectors or self.get_decoder is not None or self.get_mpu is not None or
-                self.set_mpu_drive is not None or self.get_cv is not None or self.set_cv is not None)
+                self.set_mpu_drive is not None or self.read_cv is not None or self.write_cv is not None)
 
 
     @property
@@ -80,11 +80,11 @@ class CommandGroup(CommonArgs, ABC):
             direction = MPUDirection.FORWARD if self.set_mpu_drive[1] == 'FWD' else MPUDirection.REVERSE
             return XCommand.lan_x_set_mpu_drive(self.set_mpu_drive[0], direction, self.set_mpu_drive[2])
 
-        if self.get_cv is not None:
-            return XCommand.lan_x_get_cv(self.get_cv)
+        if self.read_cv is not None:
+            return XCommand.lan_x_get_cv(self.read_cv)
 
-        if self.set_cv is not None:
-            return XCommand.lan_x_set_cv(self.set_cv[0], self.set_cv[1])
+        if self.write_cv is not None:
+            return XCommand.lan_x_set_cv(self.write_cv[0], self.write_cv[1])
 
         return None
 
@@ -132,10 +132,10 @@ class CommandGroup(CommonArgs, ABC):
 
 
     @property
-    def get_cv(self):
-        return self._args.get_cv
+    def read_cv(self):
+        return self._args.read_cv
 
 
     @property
-    def set_cv(self):
-        return self._args.set_cv
+    def write_cv(self):
+        return self._args.write_cv

@@ -21,7 +21,7 @@ To update the CVs on the MPU, edit the inventory file, then run mrcs_control_inv
 Make sure that the correct MPU is on the programming track.
 
 SYNOPSIS
-usage: mrcs_control_inventory [-h] [-i INDENT] [-v] [--version] [-t] [-d] (-l | -si INVENTORY | -ma | -mv [MPU] |
+mrcs_control_inventory [-h] [-i INDENT] [-v] [--version] [-t] [-d] (-l | -si INVENTORY | -ma | -mv [MPU] |
 -lc | -rc MPU | -wc MPU)
 
 EXAMPLES
@@ -144,7 +144,7 @@ if __name__ == '__main__':
                 logger.error(f'The MPU {args.write_cvs} could not be found.')
                 exit(2)
 
-            commander.write(*mpu.cvs)
+            commander.write(mpu.decoder(), *mpu.cvs)
 
     # ----------------------------------------------------------------------------------------------------------------
 

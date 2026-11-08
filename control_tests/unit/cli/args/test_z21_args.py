@@ -50,21 +50,25 @@ class TestZ21Args(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 Z21Args('test')
 
+
     def test_set_mpu_drive_zero_addr(self):
         with patch.object(sys, 'argv', ['mrcs_control_z21', '-sm', '0', 'FWD', '100']):
             with self.assertRaises(SystemExit):
                 Z21Args('test')
+
 
     def test_set_mpu_drive_negative_addr(self):
         with patch.object(sys, 'argv', ['mrcs_control_z21', '-sm', '-1', 'FWD', '100']):
             with self.assertRaises(SystemExit):
                 Z21Args('test')
 
+
     def test_set_turnout(self):
         with patch.object(sys, 'argv', ['mrcs_control_z21', '-st', '1', '0']):
             args = Z21Args('test')
             self.assertEqual((1, 0), args.set_turnout)
             self.assertTrue(args.has_command)
+
 
     def test_set_turnout_invalid_addr(self):
         with patch.object(sys, 'argv', ['mrcs_control_z21', '-st', '0', '0']):
@@ -79,11 +83,13 @@ class TestZ21Args(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 Z21Args('test')
 
+
     def test_get_decoder(self):
         with patch.object(sys, 'argv', ['mrcs_control_z21', '-gd', '5']):
             args = Z21Args('test')
             self.assertEqual(5, args.get_decoder)
             self.assertTrue(args.has_command)
+
 
     def test_get_decoder_invalid_addr(self):
         with patch.object(sys, 'argv', ['mrcs_control_z21', '-gd', '0']):
@@ -98,11 +104,13 @@ class TestZ21Args(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 Z21Args('test')
 
+
     def test_get_mpu(self):
         with patch.object(sys, 'argv', ['mrcs_control_z21', '-gm', '3']):
             args = Z21Args('test')
             self.assertEqual(3, args.get_mpu)
             self.assertTrue(args.has_command)
+
 
     def test_get_mpu_invalid_addr(self):
         with patch.object(sys, 'argv', ['mrcs_control_z21', '-gm', '0']):
@@ -117,22 +125,24 @@ class TestZ21Args(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 Z21Args('test')
 
-    def test_get_cv(self):
-        with patch.object(sys, 'argv', ['mrcs_control_z21', '-gc', '29']):
+
+    def test_read_cv(self):
+        with patch.object(sys, 'argv', ['mrcs_control_z21', '-rc', '29']):
             args = Z21Args('test')
-            self.assertEqual(29, args.get_cv)
+            self.assertEqual(29, args.read_cv)
             self.assertTrue(args.has_command)
 
-    def test_get_cv_invalid_addr(self):
-        with patch.object(sys, 'argv', ['mrcs_control_z21', '-gc', '0']):
+
+    def test_read_cv_invalid_addr(self):
+        with patch.object(sys, 'argv', ['mrcs_control_z21', '-rc', '0']):
             with self.assertRaises(SystemExit):
                 Z21Args('test')
 
-        with patch.object(sys, 'argv', ['mrcs_control_z21', '-gc', '-10']):
+        with patch.object(sys, 'argv', ['mrcs_control_z21', '-rc', '-10']):
             with self.assertRaises(SystemExit):
                 Z21Args('test')
 
-        with patch.object(sys, 'argv', ['mrcs_control_z21', '-gc', 'foo']):
+        with patch.object(sys, 'argv', ['mrcs_control_z21', '-rc', 'foo']):
             with self.assertRaises(SystemExit):
                 Z21Args('test')
 

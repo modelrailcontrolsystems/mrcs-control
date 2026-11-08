@@ -29,5 +29,5 @@ class CommandArgs(CommandGroup, SubscriberControlArgs):
         return (f'CommandArgs:{{test:{self.test}, drain:{self.drain}, '
                 f'monitor:{self.monitor}, router_state:{self.router_state}, track_power:{self.track_power}, '
                 f'can_detectors:{self.can_detectors}, set_turnout:{self.set_turnout}, get_decoder:{self.get_decoder}, '
-                f'get_mpu:{self.get_mpu}, set_mpu_drive:{self.set_mpu_drive}, get_cv:{self.get_cv}, '
-                f'indent:{self.indent}, verbose:{self.verbose}}}')
+                f'get_mpu:{self.get_mpu}, set_mpu_drive:{self.set_mpu_drive}, read_cv:{self.read_cv}, '
+                f'write_cv:{self.write_cv}, indent:{self.indent}, verbose:{self.verbose}}}')

@@ -21,7 +21,7 @@ are invoked. The function is useful if problematic messages have been published 
 
 SYNOPSIS
 mrcs_control_command [-h] [-i INDENT] [-v] [--version] [-t] [-d] [-m] [-rs | -tp {0,1} | -cd | -st ADDR POS |
--gd ADDR | -gm ADDR | -sm ADDR DIR SPEED | -gc ADDR]
+-gd ADDR | -gm ADDR | -sm ADDR DIR SPEED | -rc ADDR | -wc ADDR VALUE]
 
 EXAMPLES
 mrcs_control_command -v -i4 -gc 1
