@@ -82,7 +82,6 @@ class SpeedTrialRunner(object):
         elif self.state.is_STOPPING() and mpu_status.speed == 0:
             self.state.go_STOPPED()
             self.node.request_shutdown()
-            time.sleep(1.0)
 
 
     async def __on_block_message(self, block_status: BlockStatus):
@@ -124,9 +123,9 @@ class SpeedTrialRunner(object):
 
 
     def __heading(self) -> BlockHeading:
-        initial_block = self.__initial_block()
+        current_block = self.__current_block()
 
-        start = SegmentLocation(initial_block.label, initial_block.segments[0].label)
+        start = SegmentLocation(current_block.label, current_block.segments[0].label)
         trial_block = SegmentLocation(self.trial_block.label, self.trial_block.segments[0].label)
 
         route = self.planner.shortest_route(start, trial_block)
@@ -147,20 +146,21 @@ class SpeedTrialRunner(object):
         return route.length
 
 
-    def __initial_block(self) -> Block:
-        initial_block_status = BlockStatus.containing_block(self.node.find_all_blocks(), self.mpu.address)
+    def __current_block(self) -> Block:
+        current_status = BlockStatus.containing_block(self.node.find_all_blocks(), self.mpu.address)
 
-        if initial_block_status is None:
+        if current_status is None:
             raise SpeedTrialException(f'The MPU {self.mpu.label} cannot be found on the layout.')
 
-        if initial_block_status.label == self.trial_block.label:
+        if current_status.label == self.trial_block.label:
             raise SpeedTrialException(f'The MPU is currently in the trial block - move it out before starting the run.')
 
-        return self.layout.block(initial_block_status.label)
+        return self.layout.block(current_status.label)
 
 
     def __mpu_message(self, publication_routing_key: PublicationRoutingKey, heading: BlockHeading, speed: int):
-        direction = MPUDirection.FORWARD if heading == BlockHeading.UP else MPUDirection.REVERSE  # TODO: fix direction
+        direction = MPUDirection.FORWARD if heading == BlockHeading.UP else MPUDirection.REVERSE
+        # TODO: fix direction using occupancy
         drive_command = XCommand.lan_x_set_mpu_drive(self.mpu.address, direction, speed)
 
         return Message(publication_routing_key, drive_command)

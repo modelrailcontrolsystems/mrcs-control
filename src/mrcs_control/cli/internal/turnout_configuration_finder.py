@@ -4,6 +4,8 @@ Created on 26 Sep 2026
 @author: Bruno Beloff (bbeloff@me.com)
 
 A one-shot turnout configuration finder
+
+This class is currently not in use, but may be used in the future for more sophisticated route planning.
 """
 
 from mrcs_control.cli.internal.topic_subscriber_node import TopicSubscriberNode
