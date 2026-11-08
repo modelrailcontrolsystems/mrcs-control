@@ -52,21 +52,25 @@ class TestCommandArgs(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 CommandArgs('test')
 
+
     def test_set_mpu_drive_zero_addr(self):
         with patch.object(sys, 'argv', ['mrcs_control_command', '-sm', '0', 'FWD', '100']):
             with self.assertRaises(SystemExit):
                 CommandArgs('test')
+
 
     def test_set_mpu_drive_negative_addr(self):
         with patch.object(sys, 'argv', ['mrcs_control_command', '-sm', '-1', 'FWD', '100']):
             with self.assertRaises(SystemExit):
                 CommandArgs('test')
 
+
     def test_set_turnout(self):
         with patch.object(sys, 'argv', ['mrcs_control_command', '-st', '1', '0']):
             args = CommandArgs('test')
             self.assertEqual((1, 0), args.set_turnout)
             self.assertTrue(args.has_command)
+
 
     def test_set_turnout_invalid_addr(self):
         with patch.object(sys, 'argv', ['mrcs_control_command', '-st', '0', '0']):
@@ -81,11 +85,13 @@ class TestCommandArgs(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 CommandArgs('test')
 
+
     def test_get_decoder(self):
         with patch.object(sys, 'argv', ['mrcs_control_command', '-gd', '5']):
             args = CommandArgs('test')
             self.assertEqual(5, args.get_decoder)
             self.assertTrue(args.has_command)
+
 
     def test_get_decoder_invalid_addr(self):
         with patch.object(sys, 'argv', ['mrcs_control_command', '-gd', '0']):
@@ -100,11 +106,13 @@ class TestCommandArgs(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 CommandArgs('test')
 
+
     def test_get_mpu(self):
         with patch.object(sys, 'argv', ['mrcs_control_command', '-gm', '3']):
             args = CommandArgs('test')
             self.assertEqual(3, args.get_mpu)
             self.assertTrue(args.has_command)
+
 
     def test_get_mpu_invalid_addr(self):
         with patch.object(sys, 'argv', ['mrcs_control_command', '-gm', '0']):
@@ -119,24 +127,27 @@ class TestCommandArgs(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 CommandArgs('test')
 
-    def test_get_cv(self):
-        with patch.object(sys, 'argv', ['mrcs_control_command', '-gc', '29']):
+
+    def test_read_cv(self):
+        with patch.object(sys, 'argv', ['mrcs_control_command', '-rc', '29']):
             args = CommandArgs('test')
-            self.assertEqual(29, args.get_cv)
+            self.assertEqual(29, args.read_cv)
             self.assertTrue(args.has_command)
 
-    def test_get_cv_invalid_addr(self):
-        with patch.object(sys, 'argv', ['mrcs_control_command', '-gc', '0']):
+
+    def test_read_cv_invalid_addr(self):
+        with patch.object(sys, 'argv', ['mrcs_control_command', '-rc', '0']):
             with self.assertRaises(SystemExit):
                 CommandArgs('test')
 
-        with patch.object(sys, 'argv', ['mrcs_control_command', '-gc', '-10']):
+        with patch.object(sys, 'argv', ['mrcs_control_command', '-rc', '-10']):
             with self.assertRaises(SystemExit):
                 CommandArgs('test')
 
-        with patch.object(sys, 'argv', ['mrcs_control_command', '-gc', 'foo']):
+        with patch.object(sys, 'argv', ['mrcs_control_command', '-rc', 'foo']):
             with self.assertRaises(SystemExit):
                 CommandArgs('test')
+
 
     def test_turnout_action_none_values(self):
         action = TurnoutAction(option_strings=['-st', '--set-turnout'], dest='set_turnout')

@@ -18,12 +18,15 @@ from mrcs_core.equipment.track.track_enums import TrackMode
 from mrcs_core.inventory.configuration_variable.cv import CV
 from mrcs_core.inventory.configuration_variable.cv_address import CVAddress
 from mrcs_core.inventory.configuration_variable.cv_builder import CVBuilder
+from mrcs_core.inventory.motive_power_unit.manufacturer import Manufacturer
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
 from mrcs_core.operations.node_topology import NodeTopology
 from mrcs_core.sys.logging import Logging
 
 
+# TODO: create a State object for this, like SpeedTrialRunner / SpeedTrialState
+# TODO: move to contol/operations/configuration_variable/cv_programmer
 # --------------------------------------------------------------------------------------------------------------------
 
 class Mode(StrEnum):
@@ -56,6 +59,7 @@ class CVCommander(object):
         self.__node = TopicSubscriberNode.construct_node(ops, self.on_message)
 
         self.__mode = Mode.STANDBY
+        self.__decoder = None
         self.__cv_queue = []
         self.__cvs = []
 
@@ -71,7 +75,8 @@ class CVCommander(object):
         self.__node.run(initial_publication=self.__next_read_message(), final_publication=self.__power_on_message())
 
 
-    def write(self, *cvs: CV):
+    def write(self, decoder: Manufacturer | None, *cvs: CV):
+        self.__decoder = decoder
         self.__cv_queue = list(cvs)
         self.__cvs = []
 
@@ -117,7 +122,7 @@ class CVCommander(object):
         self.__mode = Mode.WRITE
         while True:
             cv = self.cv_queue.pop(0)  # may raise IndexError
-            if cv.is_writeable():
+            if cv.is_writeable(self.decoder):
                 break
 
         return Message(self.publication_routing_key, XCommand.lan_x_set_cv(cv.cv_address.value, cv.value))
@@ -147,6 +152,11 @@ class CVCommander(object):
     @property
     def mode(self):
         return self.__mode
+
+
+    @property
+    def decoder(self):
+        return self.__decoder
 
 
     @property

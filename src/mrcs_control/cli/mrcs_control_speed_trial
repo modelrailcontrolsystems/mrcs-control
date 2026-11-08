@@ -138,7 +138,7 @@ if __name__ == '__main__':
             run_single(args.speed)
 
         if args.multi_run:
-            for speed in range(30, 130, 5):
+            for speed in range(10, 130, 5):  # 30, 130, 5
                 run_single(speed)
 
         if args.verbose:
