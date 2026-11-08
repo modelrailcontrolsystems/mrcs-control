@@ -109,7 +109,7 @@ class SpeedNode(AsyncSubscriberNode):
         super().run(*args, **kwargs)
 
 
-    async def halt(self):
+    async def halt(self) -> None:
         self.logger.debug('SpeedNode - halt')
 
         await self.publish_message(self.final_publication)  # must complete before super().halt() cancels tasks

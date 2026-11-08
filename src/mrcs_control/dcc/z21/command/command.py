@@ -152,6 +152,11 @@ class Command(JSONable):
 
 
     @property
+    def x_header(self):
+        return None
+
+
+    @property
     def argv(self):
         return self._argv
 

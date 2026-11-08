@@ -36,16 +36,19 @@ mrcs_control_z21
 
 import sys
 
-from mrcs_core.equipment.equipment_enums import CLU, EquipmentType
 from pika.exceptions import AMQPError
 
 from mrcs_control.cli.args.command_args import CommandArgs
 from mrcs_control.cli.internal.topic_subscriber_node import TopicSubscriberNode
+from mrcs_control.dcc.z21.command.command import XCommand
+from mrcs_control.dcc.z21.command.header import XHeader
 from mrcs_control.operations.control_router.control_router_node import ControlRouterNode
 from mrcs_core.data.json import JSONify
+from mrcs_core.equipment.equipment_enums import CLU, EquipmentType
 from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
 from mrcs_core.equipment.equipment_report import EquipmentReport
 from mrcs_core.equipment.error.invalid_request_report import InvalidRequestReport
+from mrcs_core.equipment.track.track_enums import TrackMode
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
 from mrcs_core.sys.logging import Logging
@@ -67,6 +70,13 @@ def on_message(message):
 
     if not args.monitor and isinstance(report, args.command.report_type) or isinstance(report, InvalidRequestReport):
         exit(0)
+
+
+def power_message():
+    if args.command and args.command.x_header in [XHeader.LAN_X_CV_READ, XHeader.LAN_X_CV_WRITE]:
+        return Message(publication_routing_key, XCommand.lan_x_set_track_power(TrackMode.COMMAND_POWER_ON))
+
+    return None
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -102,8 +112,15 @@ if __name__ == '__main__':
         if args.drain:
             node.drain()
 
-        command_message = Message(publication_routing_key, args.command) if args.has_command else None
-        node.run(initial_publication=command_message)
+        if args.has_command:
+            command_message = Message(publication_routing_key, args.command)
+            final_message = power_message()
+        else:
+            command_message = None
+            final_message = None
+
+        node.run(initial_publication=command_message, final_publication=final_message)
+
 
     # ----------------------------------------------------------------------------------------------------------------
 

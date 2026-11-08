@@ -47,7 +47,6 @@ import sys
 from pika.exceptions import AMQPError
 
 from mrcs_control.cli.args.layout_args import LayoutArgs
-from mrcs_control.cli.internal.turnout_configuration_finder import TurnoutConfigurationFinder
 from mrcs_control.operations.route.route_planner import RoutePlanner
 from mrcs_core.data.json import JSONify
 from mrcs_core.equipment.equipment_enums import CLU, EquipmentType
@@ -148,9 +147,6 @@ if __name__ == '__main__':
         exit(1)
 
     try:
-        finder = TurnoutConfigurationFinder(this_id)  # TODO: this might not be neded here any more
-        config = finder.find(args.mode.value)
-
         if args.segment_route:
             locations = layout.segment_locations
 
@@ -197,7 +193,3 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt:
         print(file=sys.stderr)
-
-    finally:
-        if finder is not None:
-            finder.close()

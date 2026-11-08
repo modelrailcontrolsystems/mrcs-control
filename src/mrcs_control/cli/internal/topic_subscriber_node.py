@@ -71,21 +71,21 @@ class TopicSubscriberNode(AsyncSubscriberNode):
 
         self.__on_message = on_message
         self.__initial_publication: Message | None = None
+        self.__final_publication: Message | None = None
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def handle_startup(self):
-        self.async_loop.create_task(self.publish_message())
+        self.async_loop.create_task(self.publish_message(self.initial_publication))
         self.logger.info('ready')
 
 
-    async def publish_message(self):
-        self.logger.debug('publish_message')
+    async def publish_message(self, message):
+        self.logger.debug(f'publish_message:{message}')
 
-        message = self.initial_publication
         if message is not None:
-            self.async_loop.create_task(self.publish(message))
+            await self.publish(message)
 
 
     def handle_message(self, message: Message):
@@ -95,9 +95,18 @@ class TopicSubscriberNode(AsyncSubscriberNode):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def run(self, initial_publication=None, *args, **kwargs) -> None:
+    def run(self, initial_publication=None, final_publication=None, *args, **kwargs) -> None:
         self.__initial_publication = initial_publication
+        self.__final_publication = final_publication
+
         super().run(*args, **kwargs)
+
+
+    async def halt(self) -> None:
+        self.logger.debug('TopicSubscriberNode - halt')
+
+        await self.publish_message(self.final_publication)  # must complete before super().halt() cancels tasks
+        await super().halt()
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -110,6 +119,11 @@ class TopicSubscriberNode(AsyncSubscriberNode):
     @property
     def initial_publication(self):
         return self.__initial_publication
+
+
+    @property
+    def final_publication(self):
+        return self.__final_publication
 
 
     # ----------------------------------------------------------------------------------------------------------------

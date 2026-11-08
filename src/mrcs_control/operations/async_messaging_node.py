@@ -98,14 +98,14 @@ class AsyncMessagingNode(Generic[AsyncClientT], ABC):
             self.async_loop.run_forever()
 
         finally:
-            # if the loop was left without halt() - e.g. exit() in a message handler - close the connection
-            # while the loop can still run
+            # if the loop was left without halt() - e.g. exit() in a message handler - halt while the loop can
+            # still run, so that any final publication is sent and the connection is closed
             if self.mq_client.connection is not None:
                 try:
-                    self.async_loop.run_until_complete(self.mq_client.close_and_wait())
+                    self.async_loop.run_until_complete(self.halt())
                 except Exception as exc:
                     # do not mask the exception that ended the loop
-                    self.logger.warning(f'run_async_loop - close:{type(exc).__name__}:{exc}')
+                    self.logger.warning(f'run_async_loop - halt:{type(exc).__name__}:{exc}')
 
             # restore default SIGINT / SIGTERM behaviour once the loop is no longer running
             self.remove_signal_handlers()
@@ -316,7 +316,7 @@ class AsyncSubscriberNode(AsyncMessagingNode[MQAsyncSubscriber], ABC):
         self.run_async_loop()
 
 
-    async def halt(self):
+    async def halt(self) -> None:
         self.logger.debug('AsyncSubscriberNode - halt')
         await self.cancel_tasks()
         await self.mq_client.close_and_wait()
