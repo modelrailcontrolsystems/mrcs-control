@@ -36,7 +36,7 @@ import sys
 from pika.exceptions import AMQPError
 
 from mrcs_control.cli.args.inventory_args import InventoryArgs
-from mrcs_control.cli.internal.cv_commander import CVCommander
+from mrcs_control.operations.configuration_variable.cv_programmer import CVProgrammer
 from mrcs_core.data.json import JSONify
 from mrcs_core.equipment.equipment_enums import CLU, EquipmentType
 from mrcs_core.equipment.equipment_identity import EquipmentIdentifier
@@ -51,7 +51,7 @@ from mrcs_core.sys.logging import Logging
 
 if __name__ == '__main__':
 
-    commander = None
+    programmer = None
 
     # ----------------------------------------------------------------------------------------------------------------
 
@@ -125,7 +125,7 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
-        commander = CVCommander(args.mode.value, this_id)
+        programmer = CVProgrammer(args.mode.value, this_id)
 
         if args.read_cvs:
             mpu = inventory.mpu(args.read_cvs)
@@ -133,8 +133,8 @@ if __name__ == '__main__':
                 logger.error(f'The MPU {args.read_cvs} could not be found.')
                 exit(2)
 
-            commander.read_all()
-            inventory.mpu(args.read_cvs).set_cvs(*commander.cvs)
+            programmer.read_all()
+            inventory.mpu(args.read_cvs).set_cvs(*programmer.cvs)
             inventory.save(Host)
             exit(0)
 
@@ -144,7 +144,7 @@ if __name__ == '__main__':
                 logger.error(f'The MPU {args.write_cvs} could not be found.')
                 exit(2)
 
-            commander.write(mpu.decoder(), *mpu.cvs)
+            programmer.write(mpu.decoder(), *mpu.cvs)
 
     # ----------------------------------------------------------------------------------------------------------------
 
@@ -156,5 +156,5 @@ if __name__ == '__main__':
         print(file=sys.stderr)
 
     finally:
-        if commander is not None:
-            commander.close()
+        if programmer is not None:
+            programmer.close()
