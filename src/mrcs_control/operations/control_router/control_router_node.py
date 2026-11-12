@@ -28,6 +28,7 @@ from mrcs_control.equipment.control_router.persistent_control_router import Pers
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
 from mrcs_control.operations.control_router.control_router_identity import ControlRouterIdentity
+from mrcs_control.operations.control_router.control_router_state import ControlRouterState
 from mrcs_core.data.json import JSONable
 from mrcs_core.equipment.control_router.control_router_conf import ControlRouterConf
 from mrcs_core.equipment.control_router.control_router_report import ControlRouterReport
@@ -46,7 +47,7 @@ class ControlRouterNode(AsyncSubscriberNode):
     an interface between a Z21 control router and the messaging system
     """
 
-    __KEEP_ALIVE_INTERVAL = 30.0  # seconds
+    __KEEP_ALIVE_INTERVAL = 10.0  # seconds
     __RETRY_INTERVAL = 5.0  # seconds
 
 
@@ -63,7 +64,7 @@ class ControlRouterNode(AsyncSubscriberNode):
 
 
     @classmethod
-    def state(cls) -> ControlRouterReport:
+    def equipment(cls) -> ControlRouterReport:
         return PersistentControlRouter.load(Host)
 
 
@@ -76,30 +77,38 @@ class ControlRouterNode(AsyncSubscriberNode):
         self.__conf = conf
         self.__on_message = on_message
 
-        self.__station = None
+        self.__state = ControlRouterState()
         self.__monitor_task = None
-        self.__station_ready = False
-        self.__station_ready_event = asyncio.Event()
+        self.__monitor_exception: BaseException | None = None
 
 
     # ----------------------------------------------------------------------------------------------------------------
     # messaging handlers...
 
     def handle_startup(self):
-        if self.__monitor_task is None:
-            self.__monitor_task = self.async_loop.create_task(self.monitor())
+        self.logger.debug('ControlRouterNode - handle_startup')
 
-        self.logger.info('ready')
+        if self.monitor_task is None:
+            self.__monitor_task = self.async_loop.create_task(self.monitor())
+            self.__monitor_task.add_done_callback(self.__on_monitor_done)
+
+
+    def __on_monitor_done(self, task: asyncio.Task):
+        if task.cancelled() or task.exception() is None:
+            return
+
+        self.__monitor_exception = task.exception()
+        self.request_shutdown()
 
 
     async def handle_message(self, message: Message):
         self.logger.debug('ControlRouterNode - handle_message')
 
-        await self.__wait_until_station_ready()
+        await self.state.wait_until_router_is_available()
 
         try:
             command = Command.construct_from_jdict(message.body)
-            await self.station.send_command(command)
+            await self.state.router.send_command(command)
         except Exception as exc:
             self.logger.warning(f'handle_message:{type(exc).__name__}:{exc} on:{message}')
 
@@ -111,9 +120,8 @@ class ControlRouterNode(AsyncSubscriberNode):
         self.logger.debug('ControlRouterNode - run')
         super().run(*args, **kwargs)
 
-
-    async def __wait_until_station_ready(self):
-        await self.__station_ready_event.wait()
+        if self.monitor_exception is not None:
+            raise self.monitor_exception
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -133,8 +141,10 @@ class ControlRouterNode(AsyncSubscriberNode):
 
 
     def on_connection_lost(self):
-        self.station_ready = False
-        self.logger.debug('ControlRouterNode - on_connection_lost')
+        if self.state.is_READY():
+            self.logger.warn('connection lost')
+
+        self.state.go_UNAVAILABLE()
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -145,34 +155,34 @@ class ControlRouterNode(AsyncSubscriberNode):
         while True:
             try:
                 async with Station(self.conf, self.on_dataset, self.on_connection_lost) as station:
-                    self.__station = station
-                    await self.station.connect()
-                    await self.station.send_command(Command.lan_set_broadcast_flags(self.conf.subscription))
-                    await self.station.get_system_state()
-                    self.station_ready = True
+                    await station.connect()
+                    await station.send_command(Command.lan_set_broadcast_flags(self.conf.subscription))
+                    await station.get_system_state()
 
-                    while True:
+                    self.state.go_READY(station)
+                    self.logger.info('ready')
+
+                    while self.state.is_READY():
                         await asyncio.sleep(self.__KEEP_ALIVE_INTERVAL)
-                        await self.station.get_system_state()
-
-            except ConnectionError as exc:
-                self.logger.warning(f'connection error: {exc}')
-                self.station_ready = False
-                await asyncio.sleep(self.__RETRY_INTERVAL)
+                        await station.get_system_state()
 
             except asyncio.CancelledError:
-                self.logger.warning('monitor cancelled')
+                self.logger.error('monitor cancelled')
+                raise
+
+            except RuntimeError as exc:
+                self.logger.error(f'monitor: {exc}')
                 raise
 
             except Exception as exc:
-                self.station_ready = False
-                self.logger.warning(f'monitor exception: {type(exc).__name__}: {exc}')
+                self.logger.debug(f'monitor: {type(exc).__name__}: {exc}')
                 await asyncio.sleep(self.__RETRY_INTERVAL)
 
             finally:
-                self.station_ready = False
-                self.__station = None
+                self.state.go_STANDBY()
 
+
+    # ----------------------------------------------------------------------------------------------------------------
 
     async def halt(self) -> None:
         self.logger.debug('ControlRouterNode - halt')
@@ -182,20 +192,15 @@ class ControlRouterNode(AsyncSubscriberNode):
 
 
     async def shutdown(self) -> None:
-        self.logger.debug('shutdown')
+        self.logger.debug('ControlRouterNode - shutdown')
 
-        task = self.__monitor_task
+        task = self.monitor_task
         if task is not None and not task.done() and task is not asyncio.current_task():
             task.cancel()
             try:
                 await task
             except asyncio.CancelledError:
                 pass
-
-        if task is not None and task.done() and not task.cancelled():
-            exception = task.exception()
-            if exception is not None:
-                raise exception
 
 
     def close(self) -> None:
@@ -227,27 +232,18 @@ class ControlRouterNode(AsyncSubscriberNode):
 
 
     @property
-    def station(self):
-        return self.__station
+    def state(self):
+        return self.__state
 
 
     @property
-    def station_ready(self):
-        return self.__station_ready
+    def monitor_task(self):
+        return self.__monitor_task
 
 
-    @station_ready.setter
-    def station_ready(self, ready: bool):
-        if ready == self.__station_ready:
-            return
-
-        self.__station_ready = ready
-        self.logger.debug(f'station_ready:{self.station_ready}')
-
-        if ready:
-            self.__station_ready_event.set()
-        else:
-            self.__station_ready_event.clear()
+    @property
+    def monitor_exception(self):
+        return self.__monitor_exception
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -257,5 +253,4 @@ class ControlRouterNode(AsyncSubscriberNode):
         routing_keys = '[' + ', '.join(map(str, self.subscription_routing_keys())) + ']'
 
         return (f'ControlRouterNode:{{conf:{self.conf}, routing_keys:{routing_keys}, on_message:{on_message}, '
-                f'station:{self.station}, station_ready:{self.station_ready}, '
-                f'ops:{self.ops}, mq_client:{self.mq_client}}}')
+                f'state:{self.state}, ops:{self.ops}, mq_client:{self.mq_client}}}')

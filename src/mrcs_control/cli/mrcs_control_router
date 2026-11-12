@@ -41,8 +41,6 @@ mrcs_control_z21
 mrcs_control_z21_conf
 """
 
-import sys
-
 from mrcs_control.cli.args.router_args import RouterArgs
 from mrcs_control.operations.control_router.control_router_node import ControlRouterNode
 from mrcs_core.data.json import JSONify
@@ -88,7 +86,7 @@ if __name__ == '__main__':
             router.drain()
 
         if args.state:
-            equipment = ControlRouterNode.state()
+            equipment = ControlRouterNode.equipment()
             print(JSONify.dumps(equipment, indent=args.indent))
 
         if args.run:
@@ -98,9 +96,11 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------------------------------------------------
 
     except KeyboardInterrupt:
-        print(file=sys.stderr)
+        pass
+
+    except RuntimeError:
+        exit(1)
 
     finally:
         if router is not None:
-            # noinspection unresolved-references
             router.close()
