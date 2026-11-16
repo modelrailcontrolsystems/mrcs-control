@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+
+"""
+Created on 31 Aug 2026
+
+@author: Bruno Beloff (bbeloff@me.com)
+
+source repo: mrcs_control
+
+DESCRIPTION
+A service that manages alert messages.
+
+The service begins by publishing the unresolved alerts from its database table.
+
+A --drain function is available - this drains the queue used by mrcs_control_alert before any other functions
+are invoked. The function is useful if problematic messages have been published to the queue.
+
+SYNOPSIS
+mrcs_control_alert [-h] [-i INDENT] [-v] [--version] [-t] [-d] [-c] (-lu | -la N | -r)
+
+EXAMPLES
+mrcs_control_alert -v -i4 -la 10
+mrcs_control_alert -v -c -d -r
+"""
+
+import logging
+import sys
+
+from mrcs_control.cli.args.alert_args import AlertArgs
+from mrcs_control.operations.alert.alert_node import AlertNode
+from mrcs_core.data.json import JSONify
+from mrcs_core.sys.logging import Logging
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+def control_alert_on_message(message):
+    print(JSONify.dumps(message, indent=args.indent))
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+
+    node = None
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    args = AlertArgs('a service that manages alert messages')
+
+    Logging.config('mrcs_control_alert', level=logging.DEBUG)  # verbose=args.verbose / level=logging.DEBUG
+    logger = Logging.getLogger()
+    logger.info(f'args: {args}')
+    logger.info(f'mode: {args.mode.value}')
+
+    message_handler = control_alert_on_message if args.verbose else None
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    try:
+        node = AlertNode(args.mode.value, on_message=message_handler)
+        logger.info(node)
+
+        if args.drain:
+            purged_count = node.drain()
+            if purged_count is not None:
+                logger.info(f'drained message count: {purged_count}')
+
+        if args.clear:
+            node.clear()
+
+        if args.list_unresolved:
+            alerts = node.list_unresolved()
+            print(JSONify.dumps(alerts, indent=args.indent))
+
+        if args.list_all is not None:
+            alerts = node.list_all(args.list_all)
+            print(JSONify.dumps(alerts, indent=args.indent))
+
+        if args.run:
+            node.run()
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    except KeyboardInterrupt:
+        pass
+
+    finally:
+        if args.run:
+            print(file=sys.stderr)
+
+        if node is not None:
+            node.close()

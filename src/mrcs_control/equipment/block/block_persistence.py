@@ -12,6 +12,7 @@ from typing import List, Self
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.db.db_name import DbName
+from mrcs_core.equipment.block.block_address import BlockAddress
 from mrcs_core.equipment.block.block_id import BlockID
 from mrcs_core.equipment.block.block_report import BlockOccupancyReport, BlockVoltageReport
 
@@ -138,6 +139,28 @@ class BlockPersistence(PersistentObject, ABC):
 
 
     @classmethod
+    def find_by_address(cls, address: BlockAddress) -> Self | None:
+        client = DbClient.instance(cls.db_name())
+
+        table = cls.block_table()
+        sql = f'SELECT label, address, heading, voltage FROM {table} WHERE address = ?'
+        client.execute(sql, data=(address.shortform,))
+        block_row = client.fetchone()
+
+        if not block_row:
+            return None
+
+        label = block_row[0]
+
+        table = cls.occupant_table()
+        sql = f'SELECT mpu_address, face FROM {table} WHERE block_label = ?'
+        client.execute(sql, data=(label,))
+        occupant_rows = client.fetchall()
+
+        return cls.construct_from_db(block_row, *occupant_rows)
+
+
+    @classmethod
     def exists(cls, label: str) -> bool:
         client = DbClient.instance(cls.db_name())
 
@@ -228,6 +251,8 @@ class BlockPersistence(PersistentObject, ABC):
                 raise KeyError(f'no BlockStatus with address {report.address.shortform}')
 
             label = row[0]
+
+            # TODO: get existing rows, to preserve invalid status
 
             # delete within the transaction, so that existing occupants are restored on rollback
             sql = f'DELETE FROM {occupant_table} WHERE block_label = ?'

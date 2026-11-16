@@ -20,8 +20,8 @@ from typing import Self
 
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.operations.recorder.message_persistence import MessagePersistence
-from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
 from mrcs_core.data.iso_datetime import ISODatetime
+from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, RoutingKey
 from mrcs_core.operations.recorder.message_record import MessageRecord
 
@@ -35,8 +35,16 @@ class PersistentMessageRecord(MessageRecord, MessagePersistence, PersistentObjec
 
 
     @classmethod
+    def type_name(cls) -> str:
+        return MessageRecord.type_name()  # Persistent classes are for internal use only - advertise the base class
+
+
+    @classmethod
     def construct_from_db(cls, row, *child_rows) -> Self:
         uid_field, rec_field, origin_field, source_field, target_field, body_field = row
+
+        uid = int(uid_field)
+        rec = ISODatetime.construct_from_db_field(rec_field)
 
         source = EquipmentIdentifier.construct_from_jdict(source_field)
         target = EquipmentFilter.construct_from_jdict(target_field)
@@ -44,7 +52,7 @@ class PersistentMessageRecord(MessageRecord, MessagePersistence, PersistentObjec
 
         body = json.loads(body_field)
 
-        return cls(int(uid_field), ISODatetime.construct_from_db_field(rec_field), routing_key, body, origin_field)
+        return cls(uid, rec, routing_key, body, origin_field)
 
 
     # ----------------------------------------------------------------------------------------------------------------

@@ -34,6 +34,11 @@ class PersistentCronjob(Cronjob, CronjobPersistence, PersistentObject):
 
 
     @classmethod
+    def type_name(cls) -> str:
+        return Cronjob.type_name()  # Persistent classes are for internal use only - advertise the base class
+
+
+    @classmethod
     def construct_from_message(cls, message: Message) -> PersistentCronjob:
         cronjob = Cronjob.construct_from_jdict(message.body)
         target = message.routing_key.source if cronjob.target is None else cronjob.target
