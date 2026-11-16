@@ -33,6 +33,11 @@ class PersistentUser(User, UserPersistence, PersistentObject):
 
 
     @classmethod
+    def type_name(cls) -> str:
+        return User.type_name()  # Persistent classes are for internal use only - advertise the base class
+
+
+    @classmethod
     def construct_from_db(cls, row, *child_rows) -> Self:
         uid, email, role, must_set_password, given_name, family_name, created, latest_login = row
 

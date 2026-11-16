@@ -30,8 +30,8 @@ class PersistentTurnoutStatus(TurnoutStatus, TurnoutStatusPersistence, Persisten
 
 
     @classmethod
-    def type_name(cls):
-        return TurnoutStatus.type_name()  # Persistent classes are for internal use - advertise the base class
+    def type_name(cls) -> str:
+        return TurnoutStatus.type_name()  # Persistent classes are for internal use only - advertise the base class
 
 
     @classmethod

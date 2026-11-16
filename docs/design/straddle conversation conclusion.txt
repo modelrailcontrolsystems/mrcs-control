@@ -1,0 +1,14 @@
+The file: mrcs-control/docs/design/block_straddle_phantom_occupancy.md
+•
+Part 1 is a summary of the agreed design: constraints, the three layers, the data structures, the per-batch steps, worked cases, alerts, the link with realtime position, and your next steps.
+•
+Part 2 is the conversation itself. Your messages are verbatim and my answers are condensed. Where an answer just repeated the design, it points to Part 1. Where I later changed my mind (the original "gap" wording, dropping speed, and the explicit straddle table), the text says so.
+For a PDF, pandoc block_straddle_phantom_occupancy.md -o block_straddle_phantom_occupancy.pdf works if you have pandoc and a LaTeX engine installed. I didn't run it.
+The memory: block-straddle-reconciler-design records the key decisions, why the work is paused, and what to check when you come back. It's listed in MEMORY.md, so every new session in this project sees it.
+Picking the conversation up again
+•
+The reliable way: start a new session in this project and say something like "Let's resume the block straddle / phantom occupancy design. Read mrcs-control/docs/design/block_straddle_phantom_occupancy.md. The realtime position system and alerting are now built." The memory gives me the context and the document gives me the detail.
+•
+Reopening this exact session: claude --resume in the project directory shows a list of past sessions, and claude --continue reopens the most recent one. Session transcripts are deleted after a retention period (30 days by default, set by cleanupPeriodDays in settings), so don't rely on this for a long pause. The document and memory don't expire.
+When we resume, I'll start by looking at the APIs and message topics your position and alert systems ended up with, and wire them in as the tie-breaker and as the reconciler's alert output.
+One addition I've written into both: the two systems now depend on each other, which could let errors feed back on themselves. To prevent that, the position system should only use unambiguous boundary crossings as checkpoints: a confirmed straddle being established or cleared. The detection system should only consult position where the detectors themselves are ambiguous. Your development rule of one MPU per block keeps every crossing unambiguous, so it won't come up until we join the two systems.

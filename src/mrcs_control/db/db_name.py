@@ -17,6 +17,7 @@ class DbName(StrEnum):
     """
 
     Admin = 'Admin'  # users
+    Alert = 'Alert'  # alerts
     Cron = 'Cron'  # cron and crontab
     MessageLog = 'MessageLog'  # message recorder
     MPU = 'MPU'  # motive power units

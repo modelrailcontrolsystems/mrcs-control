@@ -1,0 +1,29 @@
+
+I want to discuss a software design problem on the subject of block detection and the inhibiting or removal of "phantom" block occupancy reports from the Roco 10808 detector. 
+
+No code should be written at the moment.
+
+The situation: an MPU called MPU5 may straddle two blocks, let's call the blocks BS04 and BS05. This is OK. In this situation, the block detectors for BH and C each report occupancy by MPU5. MPU5 will have two rows in the block-occupants_v1 table. This is done in src/mrcs_control/operations/track/track_node.py
+
+The problem: MPU5 has now electrically connected B and C. Thus when MPU MPU3 moves from block BS03 into block BS04, the detectors report that it has entered both BS04 and BS05. The trace looks like this:
+
+mrcs_control_track: *** time since last report:3.963122844696045
+mrcs_control_track: *** report:BlockOccupancyReport:{block_id:BlockID:{address:BlockAddress:{detector:5, channel:7}, reporter_id:0xdb78}, occupant_group:1, occupants:[BlockOccupant:{mpu_address:3, face:FACE_FORWARD}, BlockOccupant:{mpu_address:5, face:FACE_FORWARD}]}
+mrcs_control_track: *** existing_status:BlockStatus:{label:BS04, address:BlockAddress:{detector:5, channel:7}, heading:UNASSIGNED, voltage:OCCUPIED_WITH_VOLTAGE, occupants:[BlockOccupant:{mpu_address:5, face:FACE_FORWARD}]}
+mrcs_control_track: -
+mrcs_control_track: *** time since last report:0.0038428306579589844
+mrcs_control_track: *** report:BlockOccupancyReport:{block_id:BlockID:{address:BlockAddress:{detector:6, channel:2}, reporter_id:0xd489}, occupant_group:1, occupants:[BlockOccupant:{mpu_address:3, face:FACE_FORWARD}, BlockOccupant:{mpu_address:5, face:FACE_FORWARD}]}
+mrcs_control_track: *** existing_status:BlockStatus:{label:BS05, address:BlockAddress:{detector:6, channel:2}, heading:UNASSIGNED, voltage:OCCUPIED_WITH_VOLTAGE, occupants:[BlockOccupant:{mpu_address:5, face:FACE_FORWARD}]}
+mrcs_control_track: -
+
+The order in which the detectors raise their reports cannot be guaranteed.
+
+We could handle this case because we can check the adjacency of blocks on the layout. For example, BS04 is adjacent to BS03 but BS05 is not. Thus, a report of MPU3 moving from BS03 to BS05 is invalid, and could be marked as such. The time between reports is useful here - multiple detector reports are always less than 0.01 seconds apart, so could be bundled and processed together. The time it takes for an MPU to travel across a block will always be greater than 0.5 seconds.
+
+Unfortunately, there are two other cases that have to be considered:
+
+1. When the TrackNode service starts up, it needs to read all detectors to make sure that the database table is up to date. At this point, the MPUs are typically not moving. We may have to rely on an is_invalid field in the table which would be persisted on the all-block startup case.
+
+2. An MPU may be lifted off the track and set down again in a block that also contains a straddling MPU. Again, there is no movement on the MPU, but this time there is also no record of its occupancy. It may be that this case is insoluble and should result in an alert to the user, requesting that they do not place an MPU on a block with a straddling MPU on it.
+
+What is the shape of the best solution to these problems?

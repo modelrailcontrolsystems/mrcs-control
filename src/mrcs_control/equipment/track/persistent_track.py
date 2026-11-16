@@ -27,8 +27,8 @@ class PersistentTrack(TrackReport, PersistentJSONable):
 
 
     @classmethod
-    def type_name(cls):
-        return TrackReport.type_name()  # Persistent classes are for internal use - advertise the base class
+    def type_name(cls) -> str:
+        return TrackReport.type_name()  # Persistent classes are for internal use only - advertise the base class
 
 
     # ----------------------------------------------------------------------------------------------------------------

@@ -29,6 +29,11 @@ class PersistentMessage(Message, MessagePersistence, PersistentObject):
 
 
     @classmethod
+    def type_name(cls) -> str:
+        return Message.type_name()  # Persistent classes are for internal use only - advertise the base class
+
+
+    @classmethod
     def narrow(cls, message: Message) -> Self:
         return cls(message.routing_key, message.body, message.origin)
 

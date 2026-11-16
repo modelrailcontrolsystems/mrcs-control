@@ -28,8 +28,8 @@ class PersistentBlockOccupant(BlockOccupant, BlockPersistence, PersistentObject)
 
 
     @classmethod
-    def type_name(cls):
-        return BlockOccupant.type_name()  # Persistent classes are for internal use - advertise the base class
+    def type_name(cls) -> str:
+        return BlockOccupant.type_name()  # Persistent classes are for internal use only - advertise the base class
 
 
     @classmethod
