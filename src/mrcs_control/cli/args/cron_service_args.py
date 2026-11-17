@@ -1,5 +1,5 @@
 """
-Created on 1 Jan 2026
+Created on 2 Jan 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
@@ -11,17 +11,19 @@ from mrcs_control.cli.args.subscriber_control_args import SubscriberControlArgs
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class CrontabArgs(SubscriberControlArgs):
+class CronServiceArgs(SubscriberControlArgs):
     """unix command line handler"""
 
 
     def __init__(self, description):
         super().__init__(description)
 
-        group = self._parser.add_mutually_exclusive_group(required=True)
-        group.add_argument('-c', '--clean', action='store_true', help='discard existing schedule')
+        self._parser.add_argument('-c', '--clean', action='store_true', help='discard existing schedule')
+
+        group = self._parser.add_mutually_exclusive_group(required=False)
         group.add_argument('-l', '--list', action='store_true', help='list outstanding cron jobs')
-        group.add_argument('-s', '--subscribe', action='store_true', help='subscribe to schedule requests')
+        group.add_argument('-r', '--run', action='store_true', help='run the cron')
+        group.add_argument('-s', '--run-save', action='store_true', help='run the cron with model-time save on')
 
         self._args = self._parser.parse_args()
 
@@ -39,12 +41,22 @@ class CrontabArgs(SubscriberControlArgs):
 
 
     @property
-    def subscribe(self):
-        return self._args.subscribe
+    def save_model_time(self):
+        return self.run_save
+
+
+    @property
+    def run(self):
+        return self._args.run
+
+
+    @property
+    def run_save(self):
+        return self._args.run_save
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'CrontabArgs:{{test:{self.test}, drain:{self.drain}, clean:{self.clean}, list:{self.list}, '
-                f'subscribe:{self.subscribe}, indent:{self.indent}, verbose:{self.verbose}}}')
+        return (f'CronServiceArgs:{{test:{self.test}, drain:{self.drain}, clean:{self.clean}, list:{self.list}, '
+                f'run:{self.run}, run_save:{self.run_save}, indent:{self.indent}, verbose:{self.verbose}}}')

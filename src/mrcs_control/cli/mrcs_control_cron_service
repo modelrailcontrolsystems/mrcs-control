@@ -10,28 +10,28 @@ source repo: mrcs_control
 DESCRIPTION
 A service to raise cron events according to model time
 
-A --drain function is available - this drains the queue used by mrcs_control_cron before any other functions
+A --drain function is available - this drains the queue used by mrcs_control_cron_service before any other functions
 are invoked. The function is useful if problematic messages have been published to the queue.
 
-Note that in --run mode, the utility runs forever.
+Note that in --run mode, the utility runs until it receives a SIGINT.
 
 SYNOPSIS
-mrcs_control_cron [-h] [-i INDENT] [-v] [--version] [-t] [-d] [-c] [-l | -r | -s]
+mrcs_control_cron_service [-h] [-i INDENT] [-v] [--version] [-t] [-d] [-c] [-l | -r | -s]
 
 EXAMPLES
-mrcs_control_cron --verbose --test --run-save
+mrcs_control_cron_service --verbose --test --run-save
 
 FILES
 ~/MRCS/conf/model_time.json
 
 SEE ALSO
-mrcs_clock_manager
-mrcs_crontab
+mrcs_control_clock_service
+mrcs_control_crontab_service
 """
 
 import sys
 
-from mrcs_control.cli.args.cron_args import CronArgs
+from mrcs_control.cli.args.cron_service_args import CronServiceArgs
 from mrcs_control.operations.time.cron_node import CronNode
 from mrcs_core.data.json import JSONify
 from mrcs_core.sys.logging import Logging
@@ -45,9 +45,9 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    args = CronArgs('a service to raise cron events according to model time')
+    args = CronServiceArgs('a service to raise cron events according to model time')
 
-    Logging.config('mrcs_control_cron', verbose=args.verbose)
+    Logging.config('mrcs_control_cron_service', verbose=args.verbose)
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')

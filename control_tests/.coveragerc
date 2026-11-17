@@ -1,3 +1,4 @@
 [run]
 source =
     ../src/mrcs_control
+    ../../mrcs-core/src/mrcs_core

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Created on 31 Aug 2026
+Created on 15 Nov 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
@@ -12,21 +12,29 @@ A service that manages alert messages.
 
 The service begins by publishing the unresolved alerts from its database table.
 
-A --drain function is available - this drains the queue used by mrcs_control_alert before any other functions
+A --drain function is available - this drains the queue used by mrcs_control_alert_service before any other functions
 are invoked. The function is useful if problematic messages have been published to the queue.
 
+Note that in --run mode, the utility runs until it receives a SIGINT.
+
 SYNOPSIS
-mrcs_control_alert [-h] [-i INDENT] [-v] [--version] [-t] [-d] [-c] (-lu | -la N | -r)
+mrcs_control_alert_service [-h] [-i INDENT] [-v] [--version] [-t] [-d] [-c] (-lu | -la N | -r)
 
 EXAMPLES
-mrcs_control_alert -v -i4 -la 10
-mrcs_control_alert -v -c -d -r
+mrcs_control_alert_service -v -i4 -la 10
+mrcs_control_alert_service -v -c -d -r
+
+TEST WITH
+mrcs_control_publisher -v -r ALR.*.1 -m '{"type": "Alert", "id": null, "severity": "HIGH", "impact": "GLOBAL", \
+"subject": "TRACK", "text": "short happened", "raised": "2026-11-15T08:43:56.970+00:00", "resolved": null}'
+
+mrcs_control_subscriber -v -s ALR.*.002
 """
 
 import logging
 import sys
 
-from mrcs_control.cli.args.alert_args import AlertArgs
+from mrcs_control.cli.args.alert_service_args import AlertServiceArgs
 from mrcs_control.operations.alert.alert_node import AlertNode
 from mrcs_core.data.json import JSONify
 from mrcs_core.sys.logging import Logging
@@ -46,9 +54,9 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    args = AlertArgs('a service that manages alert messages')
+    args = AlertServiceArgs('a service that manages alert messages')
 
-    Logging.config('mrcs_control_alert', level=logging.DEBUG)  # verbose=args.verbose / level=logging.DEBUG
+    Logging.config('mrcs_control_alert_service', level=logging.DEBUG)  # verbose=args.verbose / level=logging.DEBUG
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')

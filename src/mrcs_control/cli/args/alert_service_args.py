@@ -1,5 +1,5 @@
 """
-Created on 31 Aug 2026
+Created on 15 Nov 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
@@ -11,7 +11,7 @@ from mrcs_control.cli.args.subscriber_control_args import SubscriberControlArgs
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class AlertArgs(SubscriberControlArgs):
+class AlertServiceArgs(SubscriberControlArgs):
     """unix command line handler"""
 
 
@@ -53,6 +53,6 @@ class AlertArgs(SubscriberControlArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):  #
-        return (f'AlertArgs:{{test:{self.test}, clear:{self.clear}, drain:{self.drain}, '
+        return (f'AlertServiceArgs:{{test:{self.test}, clear:{self.clear}, drain:{self.drain}, '
                 f'list_unresolved:{self.list_unresolved}, list_all:{self.list_all}, run:{self.run}, '
                 f'indent:{self.indent}, verbose:{self.verbose}}}')

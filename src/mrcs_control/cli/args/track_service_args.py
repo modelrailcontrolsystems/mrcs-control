@@ -11,7 +11,7 @@ from mrcs_control.cli.args.subscriber_control_args import SubscriberControlArgs
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class TrackArgs(SubscriberControlArgs):
+class TrackServiceArgs(SubscriberControlArgs):
     """unix command line handler"""
 
 
@@ -48,5 +48,5 @@ class TrackArgs(SubscriberControlArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'TrackArgs:{{test:{self.test}, populate:{self.populate}, drain:{self.drain}, list:{self.list}, '
+        return (f'TrackServiceArgs:{{test:{self.test}, populate:{self.populate}, drain:{self.drain}, list:{self.list}, '
                 f'run:{self.run}, indent:{self.indent}, verbose:{self.verbose}}}')

@@ -1,5 +1,5 @@
 """
-Created on 31 Jul 2026
+Created on 17 Nov 2025
 
 @author: Bruno Beloff (bbeloff@me.com)
 
@@ -11,35 +11,42 @@ from mrcs_control.cli.args.subscriber_control_args import SubscriberControlArgs
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class RouterArgs(SubscriberControlArgs):
+class RecorderServiceArgs(SubscriberControlArgs):
     """unix command line handler"""
 
 
     def __init__(self, description):
         super().__init__(description)
 
+        self._parser.add_argument('-c', '--clean', action='store_true', help='discard existing messages')
+
         group = self._parser.add_mutually_exclusive_group(required=True)
-        group.add_argument('-s', '--state', action='store_true', help='report the control router state')
-        group.add_argument('-r', '--run', action='store_true', help='run the cron')
+        group.add_argument('-r', '--report', action='store', type=int, help='report latest N messages')
+        group.add_argument('-s', '--subscribe', action='store_true', help='subscribe to messages')
 
         self._args = self._parser.parse_args()
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
+    @property
+    def clean(self):
+        return self._args.clean
+
 
     @property
-    def state(self):
-        return self._args.state
+    def report(self):
+        return self._args.report
 
 
     @property
-    def run(self):
-        return self._args.run
+    def subscribe(self):
+        return self._args.subscribe
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'RouterArgs:{{test:{self.test}, drain:{self.drain}, state:{self.state}, run:{self.run}, '
-                f'indent:{self.indent}, verbose:{self.verbose}}}')
+        return (
+            f'RecorderServiceArgs:{{test:{self.test}, drain:{self.drain}, clean:{self.clean}, report:{self.report}, '
+            f'subscribe:{self.subscribe}, indent:{self.indent}, verbose:{self.verbose}}}')

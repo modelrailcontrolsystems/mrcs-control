@@ -1,32 +1,38 @@
 #!/usr/bin/env python3
 
 """
-Created on 17 Nov 2025
+Created on 1 Jan 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
 source repo: mrcs_control
 
 DESCRIPTION
-A service to record all inter-process messages.
+A service to record cron event schedules according to model time
 
-A --drain function is available - this drains the queue used by mrcs_control_recorder before any other functions
+A --drain function is available - this drains the queue used by mrcs_control_crontab_service before any other functions
 are invoked. The function is useful if problematic messages have been published to the queue.
 
-Note that the recorder components follow system time, not model time.
-Note that in --subscribe mode, the utility runs forever.
+Note that in --subscribe mode, the utility runs until it receives a SIGINT.
+
+Test with:
+cli/mrcs_publisher -vti4 -t CRN -n 3 -m '{"event_id": "abc", "on": "2026-01-03T06:00:00.000"}'
 
 SYNOPSIS
-mrcs_recorder [-h] [-i INDENT] [-v] [--version] [-t] [-d] [-c] (-r REPORT | -s)
+mrcs_control_crontab_service [-h] [-i INDENT] [-v] [--version] [-t] [-d] (-c | -l | -s)
 
 EXAMPLES
-mrcs_recorder --verbose --test --clean --subscribe
+mrcs_control_crontab_service --verbose --subscribe --test
+
+SEE ALSO
+mrcs_control_clock_service
+mrcs_control_cron_service
 """
 
 import sys
 
-from mrcs_control.cli.args.recorder_args import RecorderArgs
-from mrcs_control.operations.recorder.message_recorder_node import MessageRecorderNode
+from mrcs_control.cli.args.crontab_service_args import CrontabServiceArgs
+from mrcs_control.operations.time.crontab_node import CrontabNode
 from mrcs_core.data.json import JSONify
 from mrcs_core.sys.logging import Logging
 
@@ -39,9 +45,9 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    args = RecorderArgs('a service to record all inter-process messages')
+    args = CrontabServiceArgs('a service to record cron event schedules according to model time')
 
-    Logging.config('mrcs_recorder', verbose=args.verbose)
+    Logging.config('mrcs_control_crontab_service', verbose=args.verbose)
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')
@@ -49,7 +55,7 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
-        node = MessageRecorderNode(args.mode.value)
+        node = CrontabNode(args.mode.value)
         logger.info(f'node: {node}')
 
         if args.drain:
@@ -57,15 +63,17 @@ if __name__ == '__main__':
 
         if args.clean:
             node.clean()
+            exit(0)
 
-        if args.report is not None:
-            records = list(node.find_latest(args.report))
-            print(JSONify.dumps(records, indent=args.indent))
-
-            logger.info(f'found {len(records)} items.')
+        if args.list:
+            jobs = list(node.find_all())
+            print(JSONify.dumps(jobs, indent=args.indent))
+            logger.info(f'found {len(jobs)} items.')
+            exit(0)
 
         if args.subscribe:
             node.subscribe()
+            exit(0)
 
 
     # ----------------------------------------------------------------------------------------------------------------
