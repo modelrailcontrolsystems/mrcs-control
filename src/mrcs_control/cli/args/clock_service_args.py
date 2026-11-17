@@ -11,8 +11,9 @@ from mrcs_control.cli.args.subscriber_control_args import SubscriberControlArgs
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class ClockManagerArgs(SubscriberControlArgs):
+class ClockServiceArgs(SubscriberControlArgs):
     """unix command line handler"""
+
 
     def __init__(self, description):
         super().__init__(description)
@@ -45,5 +46,5 @@ class ClockManagerArgs(SubscriberControlArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        return (f'ClockManagerArgs:{{test:{self.test}, drain:{self.drain}, conf:{self.conf}, now:{self.now}, '
+        return (f'ClockServiceArgs:{{test:{self.test}, drain:{self.drain}, conf:{self.conf}, now:{self.now}, '
                 f'subscribe:{self.subscribe}, indent:{self.indent}, verbose:{self.verbose}}}')

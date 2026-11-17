@@ -93,6 +93,7 @@ class AlertNode(AsyncSubscriberNode):
 
 
     def __handle_resolution_command(self, body):
+        # TODO: handle resolution commands
         return
 
 
@@ -125,6 +126,10 @@ class AlertNode(AsyncSubscriberNode):
 
         message = Message(self.broadcast_routing_key(), alert)
         self.async_loop.create_task(self.publish(message))
+
+
+    def __publish_resolution_message(self, alert: Alert):
+        pass
 
 
     # ----------------------------------------------------------------------------------------------------------------

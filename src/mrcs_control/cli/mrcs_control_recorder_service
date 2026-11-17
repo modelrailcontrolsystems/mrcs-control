@@ -1,41 +1,33 @@
 #!/usr/bin/env python3
 
 """
-Created on 17 Jan 2026
+Created on 17 Nov 2025
 
 @author: Bruno Beloff (bbeloff@me.com)
 
 source repo: mrcs_control
 
 DESCRIPTION
-A service to manage the model time clock configuration
+A service to record all inter-process messages.
 
-A --drain function is available - this drains the queue used by mrcs_control_clock_manager before any other functions
+A --drain function is available - this drains the queue used by mrcs_control_recorder before any other functions
 are invoked. The function is useful if problematic messages have been published to the queue.
 
-Note that in --run mode, the utility runs forever.
+Note that the recorder components follow system time, not model time.
+Note that in --subscribe mode, the utility runs until it receives a SIGINT.
 
 SYNOPSIS
-mrcs_control_clock_manager [-h] [-i INDENT] [-v] [--version] [-t] [-d] (-c | -n | -s)
+mrcs_control_recorder_service [-h] [-i INDENT] [-v] [--version] [-t] [-d] [-c] (-r REPORT | -s)
 
 EXAMPLES
-mrcs_control_clock_manager --verbose --subscribe --test
-
-FILES
-~/MRCS/conf/clock_conf.json
-
-SEE ALSO
-mrcs_cron
-mrcs_crontab
+mrcs_control_recorder_service --verbose --test --clean --subscribe
 """
 
 import sys
 
-from mrcs_control.cli.args.clock_manager_args import ClockManagerArgs
-from mrcs_control.operations.time.clock_manager_node import ClockManagerNode
+from mrcs_control.cli.args.recorder_service_args import RecorderServiceArgs
+from mrcs_control.operations.recorder.message_recorder_node import MessageRecorderNode
 from mrcs_core.data.json import JSONify
-from mrcs_core.operations.time.clock import Clock
-from mrcs_core.sys.host import Host
 from mrcs_core.sys.logging import Logging
 
 
@@ -47,9 +39,9 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    args = ClockManagerArgs('a service to manage the model time clock configuration')
+    args = RecorderServiceArgs('a service to record all inter-process messages')
 
-    Logging.config('mrcs_control_clock_manager', verbose=args.verbose)
+    Logging.config('mrcs_control_recorder_service', verbose=args.verbose)
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')
@@ -57,21 +49,20 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
-        node = ClockManagerNode(args.mode.value)
+        node = MessageRecorderNode(args.mode.value)
         logger.info(f'node: {node}')
 
         if args.drain:
             node.drain()
 
-        if args.conf:
-            conf = Clock.load(Host)
-            print(JSONify.dumps(conf))
-            exit(0)
+        if args.clean:
+            node.clean()
 
-        if args.now:
-            conf = Clock.load(Host)
-            print(JSONify.dumps(conf.now()))
-            exit(0)
+        if args.report is not None:
+            records = list(node.find_latest(args.report))
+            print(JSONify.dumps(records, indent=args.indent))
+
+            logger.info(f'found {len(records)} items.')
 
         if args.subscribe:
             node.subscribe()

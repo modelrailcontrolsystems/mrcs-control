@@ -1,5 +1,5 @@
 """
-Created on 17 Nov 2025
+Created on 31 Aug 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
@@ -11,17 +11,18 @@ from mrcs_control.cli.args.subscriber_control_args import SubscriberControlArgs
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class RecorderArgs(SubscriberControlArgs):
+class MPUServiceArgs(SubscriberControlArgs):
     """unix command line handler"""
+
 
     def __init__(self, description):
         super().__init__(description)
 
-        self._parser.add_argument('-c', '--clean', action='store_true', help='discard existing messages')
+        self._parser.add_argument('-p', '--populate', action='store_true', help='populate database')
 
         group = self._parser.add_mutually_exclusive_group(required=True)
-        group.add_argument('-r', '--report', action='store', type=int, help='report latest N messages')
-        group.add_argument('-s', '--subscribe', action='store_true', help='subscribe to messages')
+        group.add_argument('-l', '--list', action='store_true', help='list MPU status')
+        group.add_argument('-r', '--run', action='store_true', help='run the monitor')
 
         self._args = self._parser.parse_args()
 
@@ -29,22 +30,22 @@ class RecorderArgs(SubscriberControlArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     @property
-    def clean(self):
-        return self._args.clean
+    def populate(self):
+        return self._args.populate
 
 
     @property
-    def report(self):
-        return self._args.report
+    def list(self):
+        return self._args.list
 
 
     @property
-    def subscribe(self):
-        return self._args.subscribe
+    def run(self):
+        return self._args.run
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __str__(self, *args, **kwargs):
-        return (f'RecorderArgs:{{test:{self.test}, drain:{self.drain}, clean:{self.clean}, report:{self.report}, '
-                f'subscribe:{self.subscribe}, indent:{self.indent}, verbose:{self.verbose}}}')
+    def __str__(self, *args, **kwargs):  #
+        return (f'MPUServiceArgs:{{test:{self.test}, populate:{self.populate}, drain:{self.drain}, list:{self.list}, '
+                f'run:{self.run}, indent:{self.indent}, verbose:{self.verbose}}}')
