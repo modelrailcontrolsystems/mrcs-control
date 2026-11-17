@@ -20,17 +20,17 @@ Before running services, optionally clear the messaging queues (in case of incor
 
 The following backend services should be running continuously:
 
-* `mrcs_control_clock_manager --verbose --subscribe &`
-* `mrcs_control_cron --verbose --clean --run-save &`
-* `mrcs_control_crontab --verbose --subscribe &`
-* `mrcs_control_mpu --verbose --drain --run &`
-* `mrcs_control_recorder --verbose --drain --clean --subscribe &`
-* `mrcs_control_router --verbose --run &`
-* `mrcs_control_track --verbose --drain --run &`
+* `mrcs_control_clock_service --verbose --subscribe &`
+* `mrcs_control_cron_service --verbose --clean --run-save &`
+* `mrcs_control_crontab_service --verbose --subscribe &`
+* `mrcs_control_mpu_service --verbose --drain --run &`
+* `mrcs_control_recorder_service --verbose --drain --clean --subscribe &`
+* `mrcs_control_router_service --verbose --run &`
+* `mrcs_control_track_service --verbose --drain --run &`
 
 The following service supports the MRCS APIs:
 
-* `mrcs_api_uvicorn --verbose --reload &`
+* `mrcs_api_uvicorn_service --verbose --reload &`
 
 ---
 
