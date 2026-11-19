@@ -54,7 +54,7 @@ class ControlRouterNode(AsyncSubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def id(cls):
+    def id(cls) -> EquipmentIdentifier:
         return EquipmentIdentifier(EquipmentType.CRT, None, CRT.ROUTER)
 
 
@@ -133,10 +133,10 @@ class ControlRouterNode(AsyncSubscriberNode):
         if isinstance(report, ControlRouterReport):
             PersistentControlRouter.narrow(report).save(Host)
 
-        source = ControlRouterIdentity.get(report)
-        routing_key = PublicationRoutingKey(source, EquipmentFilter.any())
+        broadcast_id = ControlRouterIdentity.broadcast_id(report)
+        broadcast_routing_key = PublicationRoutingKey(broadcast_id, EquipmentFilter.any())
 
-        outgoing = Message(routing_key, report)
+        outgoing = Message(broadcast_routing_key, report)
         self.async_loop.create_task(self.mq_client.publish(outgoing))
 
 

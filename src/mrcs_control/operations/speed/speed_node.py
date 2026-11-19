@@ -16,9 +16,9 @@ from mrcs_control.db.db_client import DbClient
 from mrcs_control.equipment.block.persistent_block_status import PersistentBlockStatus
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
-from mrcs_control.operations.motive_power_unit.mpu_node_identity import MPUNodeSerial
+from mrcs_control.operations.motive_power_unit.mpu_node import MPUNode
 from mrcs_control.operations.speed.speed_node_identity import SpeedNodeSerial
-from mrcs_control.operations.track.track_node_identity import TrackNodeSerial
+from mrcs_control.operations.track.track_node import TrackNode
 from mrcs_core.data.json import JSONable, JSONify
 from mrcs_core.equipment.equipment_enums import EquipmentType
 from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
@@ -36,16 +36,21 @@ class SpeedNode(AsyncSubscriberNode):
 
 
     @classmethod
-    def id(cls):
+    def id(cls) -> EquipmentIdentifier:
         return EquipmentIdentifier(EquipmentType.SPD, None, SpeedNodeSerial.NODE)
+
+
+    @classmethod
+    def broadcast_id(cls) -> EquipmentIdentifier:
+        return EquipmentIdentifier(EquipmentType.SPD, None, SpeedNodeSerial.SPEED_REPORT)
 
 
     @classmethod
     def subscription_routing_keys(cls) -> list[SubscriptionRoutingKey]:
         subscriptions = [SubscriptionRoutingKey(EquipmentFilter.any(), cls.id())]
 
-        mpu_source = EquipmentFilter.construct(EquipmentType.MPU, None, MPUNodeSerial.MPU_STATUS)
-        track_source = EquipmentFilter.construct(EquipmentType.TRK, None, TrackNodeSerial.BLOCK_STATUS)
+        mpu_source = MPUNode.broadcast_id()
+        track_source = TrackNode.broadcast_id()
 
         for source in [mpu_source, track_source]:
             subscriptions.append(SubscriptionRoutingKey(source, EquipmentFilter.any()))
@@ -54,9 +59,8 @@ class SpeedNode(AsyncSubscriberNode):
 
 
     @classmethod
-    def aspect_routing_key(cls):
-        source = EquipmentIdentifier(EquipmentType.SPD, None, SpeedNodeSerial.SPEED_REPORT)
-        return PublicationRoutingKey(source, EquipmentFilter.any())
+    def broadcast_routing_key(cls):
+        return PublicationRoutingKey(cls.broadcast_id(), EquipmentFilter.any())
 
 
     # ----------------------------------------------------------------------------------------------------------------

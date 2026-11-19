@@ -85,6 +85,7 @@ class PersistenceManager(ABC):
         pass
 
 
+# TODO: is there a generics solution here?
 # --------------------------------------------------------------------------------------------------------------------
 
 class PersistentObject(PersistenceManager, ABC):

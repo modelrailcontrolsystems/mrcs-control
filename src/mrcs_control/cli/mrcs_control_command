@@ -94,7 +94,7 @@ if __name__ == '__main__':
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')
 
-    this_id = EquipmentIdentifier(EquipmentType.TST, None, CLU.COMMANDER)
+    this_id = EquipmentIdentifier(EquipmentType.CLU, None, CLU.COMMANDER)
     publication_routing_key = PublicationRoutingKey(this_id, ControlRouterNode.id())
 
     control_router_filter = EquipmentFilter(EquipmentType.CRT, None, None)

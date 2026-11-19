@@ -30,7 +30,7 @@ class MessageRecorderNode(SubscriberNode):
 
 
     @classmethod
-    def id(cls):
+    def id(cls) -> EquipmentIdentifier:
         return EquipmentIdentifier(EquipmentType.REC, None, 1)
 
 

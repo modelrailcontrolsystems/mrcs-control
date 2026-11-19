@@ -5,13 +5,15 @@ Created on 12 Aug 2026
 
 A service that manages track equipment
 
-Note that - because BlockVoltageReport and BlockOccupancyReport messages are received at different times, the
+Notes:
+* Because BlockVoltageReport and BlockOccupancyReport messages are received at different times, the
 voltage reported in the published BlockStatus message may be incorrect. BlockStatus occupancy is the source of truth.
 
 Test with:
 mrcs_control_subscriber -v -s TRK.*.2
 """
 
+import time
 from collections.abc import Callable
 from typing import List
 
@@ -53,13 +55,17 @@ class TrackNode(AsyncSubscriberNode):
 
 
     @classmethod
+    def broadcast_id(cls) -> EquipmentIdentifier:
+        return EquipmentIdentifier(EquipmentType.TRK, None, TrackNodeSerial.BLOCK_STATUS)
+
+
+    @classmethod
     def subscription_routing_keys(cls) -> list[SubscriptionRoutingKey]:
         subscriptions = [SubscriptionRoutingKey(EquipmentFilter.any(), cls.id())]
 
         for serial in [CRT.TRACK, CRT.TURNOUT, CRT.BLOCK]:
-            subscriptions.append(
-                SubscriptionRoutingKey(EquipmentFilter.construct(EquipmentType.CRT, None, serial),
-                                       EquipmentFilter.any()))
+            router_filter = EquipmentFilter.construct(EquipmentType.CRT, None, serial)
+            subscriptions.append(SubscriptionRoutingKey(router_filter, EquipmentFilter.any()))
 
         return subscriptions
 
@@ -70,9 +76,8 @@ class TrackNode(AsyncSubscriberNode):
 
 
     @classmethod
-    def status_routing_key(cls):
-        source = EquipmentIdentifier(EquipmentType.TRK, None, TrackNodeSerial.BLOCK_STATUS)
-        return PublicationRoutingKey(source, EquipmentFilter.any())
+    def broadcast_routing_key(cls):
+        return PublicationRoutingKey(cls.broadcast_id(), EquipmentFilter.any())
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -88,6 +93,7 @@ class TrackNode(AsyncSubscriberNode):
         super().__init__(ops, MQTopology.SINGLE_PROCESS)
 
         self.__on_message = on_message
+        self.__message_received_timestamp = time.time()
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -126,25 +132,33 @@ class TrackNode(AsyncSubscriberNode):
 
         body_type = message.body.get('type')
 
-        # TODO: keep a count / timing of occupancy reports for each block -
-        # TODO: subsequent reports within a time period are handled differently
-
-        if body_type == BlockOccupancyReport.__name__:
+        if body_type == BlockOccupancyReport.type_name():
             report = BlockOccupancyReport.construct_from_jdict(message.body)
-            status = PersistentBlockStatus.update_from_block_occupancy_report(report)
 
+            if report.is_empty_tail:
+                return  # TODO: > 1 groups add to the occupancy, they don't replace it
+
+            period = time.time() - self.__message_received_timestamp
+            self.logger.error(f'*** time since last report:{period}')
+            self.__message_received_timestamp = time.time()
+
+            self.logger.error(f'*** report:{report}')
+            existing_status = PersistentBlockStatus.find_by_address(report.address)
+            self.logger.error(f'*** existing_status:{existing_status}')
+            self.logger.error('-')
+
+            status = PersistentBlockStatus.update_from_block_occupancy_report(report)
             self.__publish_update_message(status)
 
-        # TODO: this is rubbish - at least use type_name()
-        elif body_type == TrackReport.__name__:
+        elif body_type == TrackReport.type_name():
             report = PersistentTrack.construct_from_jdict(message.body)
             report.save(Host)
 
-        elif body_type == BlockVoltageReport.__name__:
+        elif body_type == BlockVoltageReport.type_name():
             report = BlockVoltageReport.construct_from_jdict(message.body)
             PersistentBlockStatus.update_from_voltage(report)
 
-        elif body_type == TurnoutReport.__name__:
+        elif body_type == TurnoutReport.type_name():
             report = TurnoutReport.construct_from_jdict(message.body)
             PersistentTurnoutStatus.update_from_turnout_report(report)
 
@@ -167,7 +181,7 @@ class TrackNode(AsyncSubscriberNode):
     def __publish_update_message(self, status: BlockStatus):
         self.logger.debug('publish_update_message')
 
-        message = Message(self.status_routing_key(), status)
+        message = Message(self.broadcast_routing_key(), status)
         self.async_loop.create_task(self.publish(message))
 
 
@@ -223,7 +237,7 @@ class TrackNode(AsyncSubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        on_message = self.on_message.__name__
+        on_message = self.on_message.__name__ if self.on_message else None
         routing_keys = '[' + ', '.join(map(str, self.subscription_routing_keys())) + ']'
 
         return (f'TrackNode:{{routing_keys:{routing_keys}, on_message:{on_message}, '

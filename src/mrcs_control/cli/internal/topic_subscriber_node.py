@@ -33,7 +33,7 @@ class TopicSubscriberNode(AsyncSubscriberNode):
 
 
     @classmethod
-    def id(cls):
+    def id(cls) -> EquipmentIdentifier:
         return cls.__id
 
 

@@ -19,9 +19,9 @@ from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
 from mrcs_control.operations.time.clock_manager_node import ClockManagerNode
 from mrcs_control.operations.time.persistent_cronjob import PersistentCronjob
 from mrcs_control.sys.interval_timer import AsyncIntervalTimer
+from mrcs_core.data.json import JSONify
 from mrcs_core.equipment.equipment_enums import CLK, EquipmentType
 from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
-from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
 from mrcs_core.operations.node_topology import NodeTopology
@@ -43,7 +43,7 @@ class CronNode(AsyncSubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def id(cls):
+    def id(cls) -> EquipmentIdentifier:
         return EquipmentIdentifier(EquipmentType.CLK, None, CLK.CRON)
 
 
