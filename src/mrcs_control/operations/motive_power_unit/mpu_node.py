@@ -40,20 +40,26 @@ class MPUNode(AsyncSubscriberNode):
 
 
     @classmethod
-    def id(cls):
+    def id(cls) -> EquipmentIdentifier:
         return EquipmentIdentifier(EquipmentType.MPU, None, MPUNodeSerial.NODE)
 
 
     @classmethod
+    def broadcast_id(cls) -> EquipmentIdentifier:
+        return EquipmentIdentifier(EquipmentType.MPU, None, MPUNodeSerial.MPU_STATUS)
+
+
+    @classmethod
+    def router_filter(cls):
+        return EquipmentFilter(EquipmentType.CRT, None, CRT.MPU)
+
+
+    @classmethod
     def subscription_routing_keys(cls) -> list[SubscriptionRoutingKey]:
-        subscriptions = [SubscriptionRoutingKey(EquipmentFilter.any(), cls.id())]
-
-        for serial in [CRT.MPU]:
-            subscriptions.append(
-                SubscriptionRoutingKey(EquipmentFilter.construct(EquipmentType.CRT, None, serial),
-                                       EquipmentFilter.any()))
-
-        return subscriptions
+        return [
+            SubscriptionRoutingKey(EquipmentFilter.any(), cls.id()),
+            SubscriptionRoutingKey(cls.router_filter(), EquipmentFilter.any())
+        ]
 
 
     @classmethod
@@ -62,9 +68,8 @@ class MPUNode(AsyncSubscriberNode):
 
 
     @classmethod
-    def status_routing_key(cls):
-        source = EquipmentIdentifier(EquipmentType.MPU, None, MPUNodeSerial.MPU_STATUS)
-        return PublicationRoutingKey(source, EquipmentFilter.any())
+    def broadcast_routing_key(cls):
+        return PublicationRoutingKey(cls.broadcast_id(), EquipmentFilter.any())
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -131,7 +136,7 @@ class MPUNode(AsyncSubscriberNode):
     def __publish_update_message(self, status: MPUStatus):
         self.logger.debug('publish_update_message')
 
-        message = Message(self.status_routing_key(), status)
+        message = Message(self.broadcast_routing_key(), status)
         self.async_loop.create_task(self.publish(message))
 
 

@@ -17,9 +17,9 @@ from mrcs_control.equipment.block.persistent_block_status import PersistentBlock
 from mrcs_control.equipment.turnout.persistent_turnout_status import PersistentTurnoutStatus
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
-from mrcs_control.operations.motive_power_unit.mpu_node_identity import MPUNodeSerial
+from mrcs_control.operations.motive_power_unit.mpu_node import MPUNode
 from mrcs_control.operations.telemetry.telementry_node_identity import TelemetryNodeSerial
-from mrcs_control.operations.track.track_node_identity import TrackNodeSerial
+from mrcs_control.operations.track.track_node import TrackNode
 from mrcs_core.data.json import JSONable
 from mrcs_core.equipment.block.block_status import BlockStatus
 from mrcs_core.equipment.equipment_enums import EquipmentType
@@ -43,16 +43,21 @@ class TelemetryNode(AsyncSubscriberNode):
 
 
     @classmethod
-    def id(cls):
+    def id(cls) -> EquipmentIdentifier:
         return EquipmentIdentifier(EquipmentType.TEL, None, TelemetryNodeSerial.NODE)
+
+
+    @classmethod
+    def broadcast_id(cls) -> EquipmentIdentifier:
+        return EquipmentIdentifier(EquipmentType.TEL, None, TelemetryNodeSerial.MPU_ASPECT)
 
 
     @classmethod
     def subscription_routing_keys(cls) -> list[SubscriptionRoutingKey]:
         subscriptions = [SubscriptionRoutingKey(EquipmentFilter.any(), cls.id())]
 
-        mpu_source = EquipmentFilter.construct(EquipmentType.MPU, None, MPUNodeSerial.MPU_STATUS)
-        track_source = EquipmentFilter.construct(EquipmentType.TRK, None, TrackNodeSerial.BLOCK_STATUS)
+        mpu_source = MPUNode.broadcast_id()
+        track_source = TrackNode.broadcast_id()
 
         for source in [mpu_source, track_source]:
             subscriptions.append(SubscriptionRoutingKey(source, EquipmentFilter.any()))
@@ -61,9 +66,8 @@ class TelemetryNode(AsyncSubscriberNode):
 
 
     @classmethod
-    def aspect_routing_key(cls):
-        source = EquipmentIdentifier(EquipmentType.TEL, None, TelemetryNodeSerial.MPU_ASPECT)
-        return PublicationRoutingKey(source, EquipmentFilter.any())
+    def broadcast_routing_key(cls):
+        return PublicationRoutingKey(cls.broadcast_id(), EquipmentFilter.any())
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -118,7 +122,7 @@ class TelemetryNode(AsyncSubscriberNode):
     def __publish_update_message(self, aspect: BlockStatus):
         self.logger.debug('publish_update_message')
 
-        message = Message(self.aspect_routing_key(), aspect)
+        message = Message(self.broadcast_routing_key(), aspect)
         self.async_loop.create_task(self.publish(message))
 
 

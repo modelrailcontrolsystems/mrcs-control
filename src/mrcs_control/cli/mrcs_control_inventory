@@ -61,7 +61,7 @@ if __name__ == '__main__':
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
 
-    this_id = EquipmentIdentifier(EquipmentType.TST, None, CLU.INVENTORY_MANAGER)
+    this_id = EquipmentIdentifier(EquipmentType.CLU, None, CLU.INVENTORY_MANAGER)
 
     # ----------------------------------------------------------------------------------------------------------------
 

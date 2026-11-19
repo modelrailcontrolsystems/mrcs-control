@@ -36,13 +36,21 @@ class AlertNode(AsyncSubscriberNode):
     """
 
 
+    # TODO: a good pattern for ids - re-examine the other nodes
+
+
     @classmethod
-    def id(cls):
+    def id(cls) -> EquipmentIdentifier:
         return EquipmentIdentifier(EquipmentType.ALR, None, AlertNodeSerial.NODE)
 
 
     @classmethod
-    def resolution_id(cls):
+    def broadcast_id(cls) -> EquipmentIdentifier:
+        return EquipmentIdentifier(EquipmentType.ALR, None, AlertNodeSerial.UNRESOLVED)
+
+
+    @classmethod
+    def resolution_id(cls) -> EquipmentIdentifier:
         return EquipmentIdentifier(EquipmentType.ALR, None, AlertNodeSerial.RESOLUTION)
 
 
@@ -56,8 +64,7 @@ class AlertNode(AsyncSubscriberNode):
 
     @classmethod
     def broadcast_routing_key(cls):
-        source = EquipmentIdentifier(EquipmentType.ALR, None, AlertNodeSerial.UNRESOLVED)
-        return PublicationRoutingKey(source, EquipmentFilter.any())
+        return PublicationRoutingKey(cls.broadcast_id(), EquipmentFilter.any())
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -102,10 +109,10 @@ class AlertNode(AsyncSubscriberNode):
 
         if body_type == Alert.type_name():
             alert = PersistentAlert.construct_from_jdict(body)
-            alert.save()
+            id = alert.save()
 
             if not alert.is_resolved:
-                self.__publish_unresolved_message(alert)
+                self.__publish_unresolved_message(PersistentAlert.find_by_id(id))
 
             return
 

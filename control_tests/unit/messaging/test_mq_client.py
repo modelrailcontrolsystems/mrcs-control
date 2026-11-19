@@ -7,11 +7,9 @@ Created on 29 Aug 2026
 import unittest
 from unittest.mock import MagicMock
 
-from mrcs_core.equipment.equipment_enums import EquipmentType
-
 from mrcs_control.messaging.mq_client import MQManager, MQSubscriber
 from mrcs_control.messaging.mq_topology import MQMode, MQTopology
-from mrcs_core.equipment.equipment_identity import EquipmentIdentifier
+from mrcs_control.operations.track.track_node import TrackNode
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -90,7 +88,7 @@ class TestMQClient(unittest.TestCase):
         subscriber = MQSubscriber(
             MQMode.TEST,
             MQTopology.QueueConfiguration(False, True, False),
-            EquipmentIdentifier(EquipmentType.TRK, None, 1),
+            TrackNode.id(),
             lambda msg: None
         )
         with self.assertRaises(RuntimeError):
@@ -101,7 +99,7 @@ class TestMQClient(unittest.TestCase):
         subscriber = MQSubscriber(
             MQMode.TEST,
             MQTopology.QueueConfiguration(False, True, False),
-            EquipmentIdentifier(EquipmentType.TRK, None, 1),
+            TrackNode.id(),
             lambda msg: None
         )
         mock_channel = MagicMock()

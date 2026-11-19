@@ -12,13 +12,12 @@ mrcs_publisher -vti4 -t CRN -n 3 -m '{"event_id": "abc", "on": "1930-01-02T06:25
 
 from typing import List
 
-from mrcs_core.equipment.equipment_enums import CLK, EquipmentType
-
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.messaging_node import SubscriberNode
 from mrcs_control.operations.time.persistent_cronjob import PersistentCronjob
 from mrcs_core.data.json import JSONify
+from mrcs_core.equipment.equipment_enums import CLK, EquipmentType
 from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import SubscriptionRoutingKey
@@ -34,7 +33,7 @@ class CrontabNode(SubscriberNode):
 
 
     @classmethod
-    def id(cls):
+    def id(cls) -> EquipmentIdentifier:
         return EquipmentIdentifier(EquipmentType.CLK, None, CLK.CRONTAB)
 
 

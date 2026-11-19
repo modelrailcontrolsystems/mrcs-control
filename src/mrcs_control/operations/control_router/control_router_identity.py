@@ -29,7 +29,7 @@ class ControlRouterIdentity(IntEnum, metaclass=MetaEnum):
     a mapping of Z21 reports to control router messaging source serial numbers
     """
 
-    __MAPPING: dict[type[JSONable], EquipmentIdentifier] = {
+    __BROADCAST_IDS: dict[type[JSONable], EquipmentIdentifier] = {
         ControlRouterReport: EquipmentIdentifier(EquipmentType.CRT, None, CRT.SYSTEM),
         BlockOccupancyReport: EquipmentIdentifier(EquipmentType.CRT, None, CRT.BLOCK),
         BlockVoltageReport: EquipmentIdentifier(EquipmentType.CRT, None, CRT.BLOCK),
@@ -41,8 +41,8 @@ class ControlRouterIdentity(IntEnum, metaclass=MetaEnum):
 
 
     @classmethod
-    def get(cls, report: JSONable) -> EquipmentIdentifier:
+    def broadcast_id(cls, report: JSONable) -> EquipmentIdentifier:
         try:
-            return cls.__MAPPING[type(report)]
+            return cls.__BROADCAST_IDS[type(report)]
         except KeyError:
-            return EquipmentIdentifier(EquipmentType.CRT, None, CRT.UNCLASSIFIED)
+            return EquipmentIdentifier(EquipmentType.CRT, None, CRT.UNCLASSIFIED)  # TODO: raise exception?

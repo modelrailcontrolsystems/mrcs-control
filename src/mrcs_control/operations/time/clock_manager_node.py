@@ -10,9 +10,9 @@ the change is broadcasted.
 
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.messaging_node import SubscriberNode
+from mrcs_core.data.json import JSONify
 from mrcs_core.equipment.equipment_enums import CLK, EquipmentType
 from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
-from mrcs_core.data.json import JSONify
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
 from mrcs_core.operations.node_topology import NodeTopology
@@ -29,18 +29,18 @@ class ClockManagerNode(SubscriberNode):
 
 
     @classmethod
-    def id(cls):
+    def id(cls) -> EquipmentIdentifier:
         return EquipmentIdentifier(EquipmentType.CLK, None, CLK.CLOCK_MANAGER)
-
-
-    @classmethod
-    def publication_routing_key(cls):
-        return PublicationRoutingKey(cls.id(), EquipmentFilter.any())
 
 
     @classmethod
     def subscription_routing_keys(cls) -> list[SubscriptionRoutingKey]:
         return [SubscriptionRoutingKey(EquipmentFilter.any(), cls.id())]
+
+
+    @classmethod
+    def broadcast_routing_key(cls):
+        return PublicationRoutingKey(cls.id(), EquipmentFilter.any())
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -65,7 +65,7 @@ class ClockManagerNode(SubscriberNode):
 
         clock.save(Host)
 
-        outgoing = Message(self.publication_routing_key(), message.body, origin=message.origin)
+        outgoing = Message(self.broadcast_routing_key(), message.body, origin=message.origin)
         self.mq_client.publish(outgoing)
 
 
