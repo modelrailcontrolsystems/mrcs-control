@@ -90,7 +90,7 @@ class TopicSubscriberNode(AsyncSubscriberNode):
 
     def handle_message(self, message: Message):
         self.logger.debug(f'handle_message: {JSONify.as_jdict(message)}')
-        self.on_message(message)
+        return self.on_message(message)  # may be a coroutine - awaited by MQAsyncSubscriber
 
 
     # ----------------------------------------------------------------------------------------------------------------
