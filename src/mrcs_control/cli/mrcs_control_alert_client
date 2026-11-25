@@ -1,0 +1,162 @@
+#!/usr/bin/env python3
+
+"""
+Created on 18 Nov 2026
+
+@author: Bruno Beloff (bbeloff@me.com)
+
+source repo: mrcs_control
+
+DESCRIPTION
+A tool for monitoring and managing alerts.
+
+The tool has two modes:
+* Interrogating and updating the alerts database - it is possible to list, resolve and delete alerts
+* Monitoring alerts in real time - the interactive mode requires the user to mark alerts as resolved, as they occur
+
+Note that in --monitor and --monitor-interactive modes the utility runs until it receives a SIGINT.
+
+SYNOPSIS
+mrcs_control_alert_client [-h] [-i INDENT] [-v] [--version] [-t] (-r ID | -ra | -l N | -lu | -dr | -m | -mi)
+
+EXAMPLES
+mrcs_control_alert_client -v -i4 -ra
+mrcs_control_alert_client -v -i4 -l 10
+mrcs_control_alert_client -v -i4 -mi
+
+TEST WITH
+mrcs_control_publisher -v -r ALR.*.1 -m '{"type": "Alert", "id": null, "severity": "HIGH", "impact": "GLOBAL", \
+"subject": "TRACK", "text": "short happened", "raised": "2026-11-15T08:43:56.970+00:00", "resolved": null}'
+
+SEE ALSO
+mrcs_control_alert_service
+"""
+
+import asyncio
+import sys
+
+from pika.exceptions import AMQPError
+
+from mrcs_control.cli.args.alert_client_args import AlertClientArgs
+from mrcs_control.cli.internal.topic_subscriber_node import TopicSubscriberNode
+from mrcs_control.operations.alert.alert_node import AlertNode
+from mrcs_control.operations.alert.alert_node_identity import AlertNodeSerial
+from mrcs_core.data.json import JSONify
+from mrcs_core.equipment.alert.alert import Alert
+from mrcs_core.equipment.equipment_enums import CLU, EquipmentType
+from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
+from mrcs_core.messaging.message import Message
+from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
+from mrcs_core.operations.alert.alert_command import AlertCommand
+from mrcs_core.operations.alert.alert_response import AlertResponse
+from mrcs_core.sys.logging import Logging
+from mrcs_core.sys.stdio import StdIO
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+async def on_message(message: Message):
+    if message.routing_key.source.serial_number == AlertNodeSerial.UNRESOLVED:
+        await __on_alert_message(message)
+        return
+
+    if message.routing_key.source.serial_number == AlertNodeSerial.COMMAND:
+        __on_response_message(message)
+        return
+
+    logger.warning(f'unsupported source:{message.routing_key.source}')
+    exit(1)
+
+
+async def __on_alert_message(message: Message):
+    if not (args.monitor or args.monitor_interactive):
+        return
+
+    print(JSONify.dumps(message.body, indent=args.indent))
+
+    if not args.monitor_interactive:
+        return
+
+    async with prompt_lock:
+        confirmed = await asyncio.to_thread(StdIO.confirm, 'resolved?')
+
+        if node and confirmed:
+            alert = Alert.construct_from_jdict(message.body)
+            resolve_message = Message(publication_routing_key, AlertCommand.construct_RESOLVE(alert.id))
+            pending_interactions.add(resolve_message.origin)
+            await node.publish_message(resolve_message)
+
+
+def __on_response_message(message: Message):
+    if message.origin not in pending_interactions:
+        return
+
+    pending_interactions.discard(message.origin)
+
+    response = AlertResponse.construct_from_jdict(message.body)
+
+    if response.is_NACK():
+        logger.warning(response.error)
+
+    if response.payload is not None:
+        print(JSONify.dumps(response.payload, indent=args.indent))
+
+    if not (args.monitor or args.monitor_interactive):
+        exit(0)
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+
+    node = None
+
+    prompt_lock = asyncio.Lock()
+    pending_interactions: set[str] = set()
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    args = AlertClientArgs('a tool for monitoring and managing alerts')
+
+    Logging.config('mrcs_control_alert_client', verbose=args.verbose)  # verbose=args.verbose / level=logging.DEBUG
+    logger = Logging.getLogger()
+    logger.info(f'args: {args}')
+    logger.info(f'mode: {args.mode.value}')
+
+    this_id = EquipmentIdentifier(EquipmentType.CLU, None, CLU.ALERT)
+    publication_routing_key = PublicationRoutingKey(this_id, AlertNode.command_id())
+
+    subscriptions = [
+        SubscriptionRoutingKey(AlertNode.broadcast_id(), EquipmentFilter.any()),
+        SubscriptionRoutingKey(AlertNode.command_id(), EquipmentFilter.any()),
+    ]
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    try:
+        TopicSubscriberNode.set_id(this_id)
+        TopicSubscriberNode.set_subscription_routing_keys(*subscriptions)
+
+        node = TopicSubscriberNode.construct_node(args.mode.value, on_message)
+
+        if args.has_command:
+            command_message = Message(publication_routing_key, args.command)
+            pending_interactions.add(command_message.origin)
+        else:
+            command_message = None
+
+        node.run(initial_publication=command_message)
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+
+    except AMQPError as exc:
+        logger.error(exc)
+        exit(1)
+
+    except KeyboardInterrupt:
+        print(file=sys.stderr)
+
+    finally:
+        if node is not None:
+            node.close()

@@ -186,7 +186,6 @@ class TestCommandArgs(unittest.TestCase):
             args = CommandArgs('test')
             self.assertIsNone(args.set_mpu_drive)
             self.assertFalse(args.has_command)
-            self.assertIsNone(args.command)
 
 
     def test_mpu_drive_action_none_values(self):

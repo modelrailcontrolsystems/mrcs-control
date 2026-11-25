@@ -13,18 +13,20 @@ mrcs_control_subscriber -v -s ALR.*.002
 """
 
 from collections.abc import Callable
+from typing import Any
 
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.equipment.alert.persistent_alert import PersistentAlert
 from mrcs_control.messaging.mq_topology import MQTopology
+from mrcs_control.operations.alert.alert_message_handler import AlertMessageHandler
 from mrcs_control.operations.alert.alert_node_identity import AlertNodeSerial
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
-from mrcs_core.data.json import JSONable
 from mrcs_core.equipment.alert.alert import Alert
 from mrcs_core.equipment.equipment_enums import EquipmentType
 from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
+from mrcs_core.operations.alert.alert_response import AlertResponse
 from mrcs_core.operations.node_topology import NodeTopology
 
 
@@ -34,9 +36,6 @@ class AlertNode(AsyncSubscriberNode):
     """
     a service that manages alert messages
     """
-
-
-    # TODO: a good pattern for ids - re-examine the other nodes
 
 
     @classmethod
@@ -50,15 +49,15 @@ class AlertNode(AsyncSubscriberNode):
 
 
     @classmethod
-    def resolution_id(cls) -> EquipmentIdentifier:
-        return EquipmentIdentifier(EquipmentType.ALR, None, AlertNodeSerial.RESOLUTION)
+    def command_id(cls) -> EquipmentIdentifier:
+        return EquipmentIdentifier(EquipmentType.ALR, None, AlertNodeSerial.COMMAND)
 
 
     @classmethod
     def subscription_routing_keys(cls) -> list[SubscriptionRoutingKey]:
         return [
             SubscriptionRoutingKey(EquipmentFilter.any(), cls.id()),
-            SubscriptionRoutingKey(EquipmentFilter.any(), cls.resolution_id())
+            SubscriptionRoutingKey(EquipmentFilter.any(), cls.command_id())
         ]
 
 
@@ -67,9 +66,15 @@ class AlertNode(AsyncSubscriberNode):
         return PublicationRoutingKey(cls.broadcast_id(), EquipmentFilter.any())
 
 
+    @classmethod
+    def command_routing_key(cls):
+        return PublicationRoutingKey(cls.command_id(), EquipmentFilter.any())
+
+
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, ops: NodeTopology.ServiceConfiguration, on_message: Callable[JSONable] | None = None):
+    def __init__(self, ops: NodeTopology.ServiceConfiguration,
+                 on_message: Callable[[Message], Any] | None = None):
         super().__init__(ops, MQTopology.SINGLE_PROCESS)
 
         self.__on_message = on_message
@@ -86,37 +91,20 @@ class AlertNode(AsyncSubscriberNode):
         self.logger.debug(f'handle_message:{message.routing_key}')
 
         try:
-            if message.routing_key.target == self.resolution_id():
-                self.__handle_resolution_command(message.body)
-                return
+            if message.routing_key.target == self.command_id():
+                response = AlertMessageHandler.handle_command(message.body)
+                self.__publish_response_message(message.origin, response)
 
-            if message.routing_key.target == self.id():
-                self.__handle_unprocessed_message(message.body)
-                if self.on_message:
-                    self.on_message(message)
+            elif message.routing_key.target == self.id():
+                alert = AlertMessageHandler.handle_alert(message)
+                self.__publish_unresolved_message(alert)
+
+            if self.on_message is not None:
+                # noinspection calling-non-callable
+                self.on_message(message)
 
         except Exception as exc:
             self.logger.warning(f'handle_message:{type(exc).__name__}:{exc} on:{message}')
-
-
-    def __handle_resolution_command(self, body):
-        # TODO: handle resolution commands
-        return
-
-
-    def __handle_unprocessed_message(self, body):
-        body_type = body.get('type')
-
-        if body_type == Alert.type_name():
-            alert = PersistentAlert.construct_from_jdict(body)
-            id = alert.save()
-
-            if not alert.is_resolved:
-                self.__publish_unresolved_message(PersistentAlert.find_by_id(id))
-
-            return
-
-        self.logger.warning(f'upsupported message type:{body_type}')
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -135,8 +123,11 @@ class AlertNode(AsyncSubscriberNode):
         self.async_loop.create_task(self.publish(message))
 
 
-    def __publish_resolution_message(self, alert: Alert):
-        pass
+    def __publish_response_message(self, origin: str, response: AlertResponse):
+        self.logger.debug('publish_response_message')
+
+        message = Message(self.command_routing_key(), response, origin=origin)
+        self.async_loop.create_task(self.publish(message))
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -149,11 +140,6 @@ class AlertNode(AsyncSubscriberNode):
     def list_unresolved(self) -> list[Alert]:
         DbClient.set_client_db_mode(self.ops.db_mode)
         return list(PersistentAlert.find_unresolved())
-
-
-    def list_all(self, limit: int) -> list[Alert]:
-        DbClient.set_client_db_mode(self.ops.db_mode)
-        return list(PersistentAlert.find_latest(limit))
 
 
     def run(self, *args, **kwargs) -> None:
@@ -169,7 +155,7 @@ class AlertNode(AsyncSubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     @property
-    def on_message(self):
+    def on_message(self) -> Callable[[Message], Any] | None:
         return self.__on_message
 
 

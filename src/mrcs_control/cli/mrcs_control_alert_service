@@ -18,10 +18,10 @@ are invoked. The function is useful if problematic messages have been published 
 Note that in --run mode, the utility runs until it receives a SIGINT.
 
 SYNOPSIS
-mrcs_control_alert_service [-h] [-i INDENT] [-v] [--version] [-t] [-d] [-c] (-lu | -la N | -r)
+mrcs_control_alert_service [-h] [-i INDENT] [-v] [--version] [-t] [-d] [-c] (-lu | -r)
 
 EXAMPLES
-mrcs_control_alert_service -v -i4 -la 10
+mrcs_control_alert_service -v -i4 -lu
 mrcs_control_alert_service -v -c -d -r
 
 TEST WITH
@@ -29,9 +29,11 @@ mrcs_control_publisher -v -r ALR.*.1 -m '{"type": "Alert", "id": null, "severity
 "subject": "TRACK", "text": "short happened", "raised": "2026-11-15T08:43:56.970+00:00", "resolved": null}'
 
 mrcs_control_subscriber -v -s ALR.*.002
+
+SEE ALSO
+mrcs_control_alert_client
 """
 
-import logging
 import sys
 
 from mrcs_control.cli.args.alert_service_args import AlertServiceArgs
@@ -56,7 +58,7 @@ if __name__ == '__main__':
 
     args = AlertServiceArgs('a service that manages alert messages')
 
-    Logging.config('mrcs_control_alert_service', level=logging.DEBUG)  # verbose=args.verbose / level=logging.DEBUG
+    Logging.config('mrcs_control_alert_service', verbose=args.verbose)  # verbose=args.verbose / level=logging.DEBUG
     logger = Logging.getLogger()
     logger.info(f'args: {args}')
     logger.info(f'mode: {args.mode.value}')
@@ -67,7 +69,6 @@ if __name__ == '__main__':
 
     try:
         node = AlertNode(args.mode.value, on_message=message_handler)
-        logger.info(node)
 
         if args.drain:
             purged_count = node.drain()
@@ -79,10 +80,6 @@ if __name__ == '__main__':
 
         if args.list_unresolved:
             alerts = node.list_unresolved()
-            print(JSONify.dumps(alerts, indent=args.indent))
-
-        if args.list_all is not None:
-            alerts = node.list_all(args.list_all)
             print(JSONify.dumps(alerts, indent=args.indent))
 
         if args.run:

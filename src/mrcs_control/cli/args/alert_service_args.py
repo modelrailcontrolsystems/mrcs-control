@@ -22,7 +22,6 @@ class AlertServiceArgs(SubscriberControlArgs):
 
         group = self._parser.add_mutually_exclusive_group(required=True)
         group.add_argument('-lu', '--list-unresolved', action='store_true', help='list unresolved alerts')
-        group.add_argument('-la', '--list-all', action='store', type=int, metavar='N', help='list latest N alerts')
         group.add_argument('-r', '--run', action='store_true', help='run the monitor')
 
         self._args = self._parser.parse_args()
@@ -41,11 +40,6 @@ class AlertServiceArgs(SubscriberControlArgs):
 
 
     @property
-    def list_all(self):
-        return self._args.list_all
-
-
-    @property
     def run(self):
         return self._args.run
 
@@ -54,5 +48,5 @@ class AlertServiceArgs(SubscriberControlArgs):
 
     def __str__(self, *args, **kwargs):  #
         return (f'AlertServiceArgs:{{test:{self.test}, clear:{self.clear}, drain:{self.drain}, '
-                f'list_unresolved:{self.list_unresolved}, list_all:{self.list_all}, run:{self.run}, '
+                f'list_unresolved:{self.list_unresolved}, run:{self.run}, '
                 f'indent:{self.indent}, verbose:{self.verbose}}}')

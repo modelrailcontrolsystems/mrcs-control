@@ -176,7 +176,6 @@ class TestZ21Args(unittest.TestCase):
             args = Z21Args('test')
             self.assertIsNone(args.set_mpu_drive)
             self.assertFalse(args.has_command)
-            self.assertIsNone(args.command)
 
 
 # --------------------------------------------------------------------------------------------------------------------

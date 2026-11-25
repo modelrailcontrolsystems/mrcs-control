@@ -182,3 +182,21 @@ class AlertPersistence(PersistentObject, ABC):
         except Exception as exc:
             client.txROLLBACK(exc)
             raise
+
+
+    @classmethod
+    def delete_resolved(cls) -> None:
+        client = DbClient.instance(cls.db_name())
+        table = cls.table()
+
+        try:
+            client.txIMMEDIATE()
+
+            sql = f'DELETE FROM {table} WHERE resolved_at IS NOT NULL'
+            client.execute(sql)
+
+            client.txCOMMIT()
+
+        except Exception as exc:
+            client.txROLLBACK(exc)
+            raise

@@ -21,7 +21,7 @@ class AlertNodeSerial(IntEnum, metaclass=MetaEnum):
 
     NODE = 1  # listen for unprocessed alert messages
     UNRESOLVED = 2  # broadcast unresolved messages
-    RESOLUTION = 3  # listen for / respond to resolution commands
+    COMMAND = 3  # listen for / respond to commands
 
 
     # ----------------------------------------------------------------------------------------------------------------

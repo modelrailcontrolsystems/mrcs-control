@@ -11,6 +11,7 @@ The AsyncMessagingNode class provides asyncio loop utilities to support concrete
 import asyncio
 import signal
 from abc import ABC, abstractmethod
+from collections.abc import Awaitable
 from typing import Generic, TypeVar
 
 from mrcs_control.messaging.mq_async_client import MQAsyncClient, MQAsyncPublisher, MQAsyncSubscriber
@@ -274,7 +275,7 @@ class AsyncSubscriberNode(AsyncMessagingNode[MQAsyncSubscriber], ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @abstractmethod
-    def handle_message(self, message: Message) -> None:
+    def handle_message(self, message: Message) -> Awaitable[None] | None:
         pass
 
 
