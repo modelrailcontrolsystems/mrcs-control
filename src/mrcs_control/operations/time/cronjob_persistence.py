@@ -10,7 +10,7 @@ https://stackoverflow.com/questions/2701877/sqlite-table-constraint-unique-on-mu
 """
 
 from abc import ABC
-from typing import List, Self
+from typing import Self
 
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.db.db_client import DbClient
@@ -87,7 +87,7 @@ class CronjobPersistence(PersistentObject, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def find_all(cls) -> List[Self]:
+    def find_all(cls) -> list[Self]:
         client = DbClient.instance(cls.db_name())
         table = cls.table()
 

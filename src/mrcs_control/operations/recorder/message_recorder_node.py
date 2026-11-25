@@ -6,8 +6,6 @@ Created on 16 Nov 2025
 A universal message logger
 """
 
-from typing import List
-
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.messaging_node import SubscriberNode
@@ -61,7 +59,7 @@ class MessageRecorderNode(SubscriberNode):
         PersistentMessageRecord.recreate_tables()
 
 
-    def find_latest(self, limit: int) -> List[PersistentMessageRecord]:
+    def find_latest(self, limit: int) -> list[PersistentMessageRecord]:
         self.__setup()
         return PersistentMessageRecord.find_latest(limit)
 

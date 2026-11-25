@@ -113,6 +113,7 @@ class ControlRouterNode(AsyncSubscriberNode):
             self.logger.warning(f'handle_message:{type(exc).__name__}:{exc} on:{message}')
 
         if self.on_message:
+            # noinspection calling-non-callable
             self.on_message(message)
 
 

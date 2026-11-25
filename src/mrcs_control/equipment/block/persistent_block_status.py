@@ -23,7 +23,8 @@ A structured representation of a BlockStatus
 }
 """
 
-from typing import List, Self
+from collections.abc import Sequence
+from typing import Self
 
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.equipment.block.block_persistence import BlockPersistence
@@ -80,7 +81,7 @@ class PersistentBlockStatus(BlockStatus, BlockPersistence, PersistentObject):
     # ----------------------------------------------------------------------------------------------------------------
 
     @property
-    def turnouts(self) -> List[TurnoutStatus]:
+    def turnouts(self) -> list[TurnoutStatus]:
         return PersistentTurnoutStatus.find_for_block(self.label)
 
 
@@ -94,5 +95,5 @@ class PersistentBlockStatus(BlockStatus, BlockPersistence, PersistentObject):
         raise NotImplementedError('use BlockReport classes instead')
 
 
-    def children(self) -> List[PersistentBlockOccupant]:
+    def children(self) -> Sequence[PersistentObject]:
         return [PersistentBlockOccupant.narrow(occupant) for occupant in self.occupants]
