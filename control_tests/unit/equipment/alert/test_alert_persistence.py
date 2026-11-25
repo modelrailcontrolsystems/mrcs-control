@@ -108,6 +108,27 @@ class TestAlertPersistence(unittest.TestCase):
         self.assertEqual(0, len(records))
 
 
+    def test_delete_noop(self):
+        PersistentAlert.recreate_tables()
+        obj1 = PersistentAlert.narrow(self.__sample_alert())
+        obj1.save()
+
+        PersistentAlert.delete_resolved()
+        record = PersistentAlert.find_by_id(1)
+        self.assertTrue(record is not None)
+
+
+    def test_delete_success(self):
+        PersistentAlert.recreate_tables()
+        obj1 = PersistentAlert.narrow(self.__sample_alert())
+        obj1.resolve()
+        obj1.save()
+
+        PersistentAlert.delete_resolved()
+        record = PersistentAlert.find_by_id(1)
+        self.assertTrue(record is None)
+
+
 # --------------------------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":

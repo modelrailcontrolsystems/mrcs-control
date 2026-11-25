@@ -48,14 +48,14 @@ class CommandGroup(CommonArgs, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @property
-    def has_command(self):
+    def has_command(self) -> bool:
         return (self.router_state or self.track_power is not None or self.set_turnout is not None or
                 self.can_detectors or self.get_decoder is not None or self.get_mpu is not None or
                 self.set_mpu_drive is not None or self.read_cv is not None or self.write_cv is not None)
 
 
     @property
-    def command(self):
+    def command(self) -> Command:
         if self.router_state:
             return Command.lan_system_get_data()
 
@@ -86,7 +86,7 @@ class CommandGroup(CommonArgs, ABC):
         if self.write_cv is not None:
             return XCommand.lan_x_set_cv(self.write_cv[0], self.write_cv[1])
 
-        return None
+        raise ValueError('no command has been selected')
 
 
     # ----------------------------------------------------------------------------------------------------------------
