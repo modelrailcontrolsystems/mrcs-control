@@ -60,7 +60,6 @@ if __name__ == '__main__':
 
     try:
         node = MPUNode(args.mode.value, on_message=message_handler)
-        logger.info(node)
 
         if args.drain:
             purged_count = node.drain()

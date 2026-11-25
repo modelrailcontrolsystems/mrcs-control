@@ -38,8 +38,8 @@ from pika.exceptions import AMQPError
 from mrcs_control.cli.args.publisher_args import PublisherArgs
 from mrcs_control.messaging.mq_client import MQPublisher
 from mrcs_core.data.datum import Datum
-from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
 from mrcs_core.data.json import JSONify
+from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey
 from mrcs_core.sys.logging import Logging
@@ -106,7 +106,6 @@ if __name__ == '__main__':
 
         # noinspection PyUnresolvedReferences
         publisher.connect()
-        logger.info(f'publisher: {publisher}')
 
         if args.message_body:
             if not publish_message(args.message_body):

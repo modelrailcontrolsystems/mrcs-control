@@ -56,7 +56,6 @@ if __name__ == '__main__':
 
     try:
         node = CronNode(args.mode.value, args.save_model_time)
-        logger.info(f'node: {node}')
 
         if args.drain:
             node.drain()
