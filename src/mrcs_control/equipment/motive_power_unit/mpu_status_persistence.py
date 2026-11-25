@@ -7,7 +7,7 @@ SQLite database management for MPU status
 """
 
 from abc import ABC
-from typing import List, Self
+from typing import Self
 
 from mrcs_control.data.persistence import PersistentObject
 from mrcs_control.db.db_client import DbClient
@@ -67,7 +67,7 @@ class MPUStatusPersistence(PersistentObject, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def find_addresses(cls) -> List[int]:
+    def find_addresses(cls) -> list[int]:
         client = DbClient.instance(cls.db_name())
 
         table = cls.table()
@@ -79,7 +79,7 @@ class MPUStatusPersistence(PersistentObject, ABC):
 
 
     @classmethod
-    def find_all(cls) -> List[Self]:
+    def find_all(cls) -> list[Self]:
         client = DbClient.instance(cls.db_name())
 
         table = cls.table()

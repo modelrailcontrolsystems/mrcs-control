@@ -10,8 +10,6 @@ Test with:
 mrcs_publisher -vti4 -t CRN -n 3 -m '{"event_id": "abc", "on": "1930-01-02T06:25:00.000+00:00"}'
 """
 
-from typing import List
-
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.messaging_node import SubscriberNode
@@ -69,7 +67,7 @@ class CrontabNode(SubscriberNode):
         PersistentCronjob.recreate_tables()
 
 
-    def find_all(self) -> List[PersistentCronjob]:
+    def find_all(self) -> list[PersistentCronjob]:
         self.__setup()
         return PersistentCronjob.find_all()
 

@@ -10,7 +10,6 @@ mrcs_control_subscriber -v -s MPU.*.002
 """
 
 from collections.abc import Callable
-from typing import List
 
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.dcc.z21.command.command import Command, XCommand
@@ -114,6 +113,7 @@ class MPUNode(AsyncSubscriberNode):
                 self.logger.warning(f'upsupported message:{message}')
 
             if self.on_message:
+                # noinspection calling-non-callable
                 self.on_message(message)
 
         except Exception as exc:
@@ -150,7 +150,7 @@ class MPUNode(AsyncSubscriberNode):
             PersistentMPUStatus.narrow(mpu).save()
 
 
-    def find_all_mpus(self) -> List[PersistentMPUStatus]:
+    def find_all_mpus(self) -> list[PersistentMPUStatus]:
         self.__setup()
         return PersistentMPUStatus.find_all()
 

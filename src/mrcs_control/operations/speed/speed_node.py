@@ -10,7 +10,6 @@ mrcs_control_subscriber -v -s SPD.*.2
 """
 
 from collections.abc import Callable
-from typing import List
 
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.equipment.block.persistent_block_status import PersistentBlockStatus
@@ -89,12 +88,13 @@ class SpeedNode(AsyncSubscriberNode):
 
     def handle_message(self, message: Message):
         self.logger.debug(f'handle_message: {JSONify.as_jdict(message)}')
+        # noinspection calling-non-callable
         return self.on_message(message)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def find_all_blocks(self) -> List[PersistentBlockStatus]:
+    def find_all_blocks(self) -> list[PersistentBlockStatus]:
         self.__setup()
         return PersistentBlockStatus.find_all()
 

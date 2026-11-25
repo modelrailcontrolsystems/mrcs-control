@@ -273,6 +273,7 @@ class MQAsyncPublisher(MQAsyncClient):
         self._is_connected = True
 
         if notify_startup and self.on_startup_complete is not None:
+            # noinspection calling-non-callable
             self.on_startup_complete()
 
 
@@ -371,6 +372,7 @@ class MQAsyncSubscriber(MQAsyncPublisher):
         self.channel.basic_consume(self.queue_name, self.on_consume)
 
         if self.on_startup_complete is not None:
+            # noinspection calling-non-callable
             self.on_startup_complete()
 
 

@@ -13,7 +13,7 @@ https://www.geeksforgeeks.org/python/how-to-hash-passwords-in-python/
 
 import uuid
 from abc import ABC
-from typing import List, Self
+from typing import Self
 
 from pwdlib import PasswordHash
 
@@ -106,7 +106,7 @@ class UserPersistence(PersistentObject, ABC):
     # ----------------------------------------------------------------------------------------------------------------
 
     @classmethod
-    def find_all(cls) -> List[Self]:
+    def find_all(cls) -> list[Self]:
         client = DbClient.instance(cls.db_name())
         table = cls.table()
 

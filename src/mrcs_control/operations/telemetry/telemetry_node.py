@@ -10,7 +10,6 @@ mrcs_control_subscriber -v -s TEL.*.2
 """
 
 from collections.abc import Callable
-from typing import List
 
 from mrcs_control.db.db_client import DbClient
 from mrcs_control.equipment.block.persistent_block_status import PersistentBlockStatus
@@ -111,6 +110,7 @@ class TelemetryNode(AsyncSubscriberNode):
                 self.logger.warning(f'upsupported message:{message}')
 
             if self.on_message:
+                # noinspection calling-non-callable
                 self.on_message(message)
 
         except Exception as exc:
@@ -140,12 +140,12 @@ class TelemetryNode(AsyncSubscriberNode):
             PersistentTurnoutStatus.narrow(turnout).save()
 
 
-    def find_all_blocks(self) -> List[PersistentBlockStatus]:
+    def find_all_blocks(self) -> list[PersistentBlockStatus]:
         self.__setup()
         return PersistentBlockStatus.find_all()
 
 
-    def find_all_turnouts(self) -> List[PersistentTurnoutStatus]:
+    def find_all_turnouts(self) -> list[PersistentTurnoutStatus]:
         self.__setup()
         return PersistentTurnoutStatus.find_all()
 
