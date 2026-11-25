@@ -58,7 +58,6 @@ if __name__ == '__main__':
 
     try:
         node = ClockManagerNode(args.mode.value)
-        logger.info(f'node: {node}')
 
         if args.drain:
             node.drain()

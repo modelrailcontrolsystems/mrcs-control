@@ -80,7 +80,6 @@ if __name__ == '__main__':
 
     try:
         router = ControlRouterNode(args.mode.value, conf, on_message=on_message)
-        logger.info(f'router: {router}')
 
         if args.drain:
             router.drain()
