@@ -3,7 +3,7 @@ Created on 11 Oct 2026
 
 @author: Bruno Beloff (bbeloff@me.com)
 
-A CV programmer that can command CV reads and writes
+A CV programmer that can manage CV reads and writes
 """
 
 from mrcs_control.cli.internal.topic_subscriber_node import TopicSubscriberNode
@@ -14,10 +14,10 @@ from mrcs_core.equipment.conviguration_variable.cv_report import CVReport
 from mrcs_core.equipment.equipment_enums import EquipmentType
 from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIdentifier
 from mrcs_core.equipment.track.track_enums import TrackMode
-from mrcs_core.inventory.configuration_variable.cv import CV
 from mrcs_core.inventory.configuration_variable.cv_address import CVAddress
 from mrcs_core.inventory.configuration_variable.cv_builder import CVBuilder
-from mrcs_core.inventory.motive_power_unit.manufacturer import Manufacturer
+from mrcs_core.inventory.configuration_variable.types.cv import CV
+from mrcs_core.inventory.manufacturer.manufacturer import Manufacturer
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
 from mrcs_core.operations.node_topology import NodeTopology
@@ -28,7 +28,7 @@ from mrcs_core.sys.logging import Logging
 
 class CVProgrammer(object):
     """
-    commands CV reads and writes
+    a CV programmer that can manage CV reads and writes
     """
 
 
@@ -55,7 +55,7 @@ class CVProgrammer(object):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def read_all(self):
+    def read(self):
         self.state.go_READ(*CVAddress.items())
 
         initial_message = self.__cv_message(self.state.next_command())

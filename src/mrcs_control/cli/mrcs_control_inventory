@@ -133,7 +133,7 @@ if __name__ == '__main__':
                 logger.error(f'The MPU {args.read_cvs} could not be found.')
                 exit(2)
 
-            programmer.read_all()
+            programmer.read()
             inventory.mpu(args.read_cvs).set_cvs(*programmer.cvs)
             inventory.save(Host)
             exit(0)
