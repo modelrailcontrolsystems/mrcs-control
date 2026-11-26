@@ -35,12 +35,12 @@
         {
           "type": "NumericCV",
           "addr": "MAX_SPEED",
-          "value": 201
+          "value": 99
         },
         {
           "type": "NumericCV",
           "addr": "MID_SPEED",
-          "value": 88
+          "value": 50
         },
         {
           "type": "NumericCV",
@@ -48,9 +48,9 @@
           "value": 255
         },
         {
-          "type": "NumericCV",
+          "type": "ManufacturerCV",
           "addr": "MANUFACTURER_ID",
-          "value": 151
+          "mfr": "ELECTRONIC_SOLUTIONS_ULM_GMBH"
         },
         {
           "type": "NumericCV",
@@ -79,15 +79,20 @@
           "reverse": false,
           "speed_128": true,
           "analog_enabled": false,
-          "railcom_enabled": false,
+          "railcom_enabled": true,
           "speed_curve": false,
           "long_address": false,
           "accessory_decoder": false
         },
         {
           "type": "NumericCV",
-          "addr": "SOUND_VOLUME",
-          "value": 150
+          "addr": "ESU_CONTROL_VOLTAGE",
+          "value": 205
+        },
+        {
+          "type": "NumericCV",
+          "addr": "ESU_MASTER_VOLUME",
+          "value": 60
         }
       ]
     }

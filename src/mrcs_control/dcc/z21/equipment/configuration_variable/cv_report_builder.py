@@ -21,7 +21,7 @@ from mrcs_core.equipment.conviguration_variable.cv_report import CVReport
 
 class CVReportBuilder(object):
     """
-    Reports a configuration variable with a Dataset supplied by a Z21 DCC control router station
+    reports a configuration variable with a Dataset supplied by a Z21 DCC control router station
     """
 
 
@@ -32,7 +32,7 @@ class CVReportBuilder(object):
         if len(data) != 4:
             raise ValueError(f'data requires 4 bytes, got {data.hex(" ")}')
 
-        cv_address = struct.unpack('>H', data[1:3])[0] + 1  # 1-based turnout addresses
+        address = struct.unpack('>H', data[1:3])[0] + 1  # 1-based turnout addresses
         value = int(data[3])
 
-        return CVReport(cv_address, value)
+        return CVReport(address, value)

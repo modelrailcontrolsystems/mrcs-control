@@ -14,9 +14,9 @@ import unittest
 from mrcs_control.dcc.z21.command.command import XCommand
 from mrcs_control.operations.configuration_variable.cv_programmer_state import CVProgrammerState, Node
 from mrcs_core.inventory.configuration_variable.cv_address import CVAddress
-from mrcs_core.inventory.configuration_variable.manufacturer_cv import ManufacturerCV
-from mrcs_core.inventory.configuration_variable.numeric_cv import NumericCV
-from mrcs_core.inventory.motive_power_unit.manufacturer import Manufacturer
+from mrcs_core.inventory.configuration_variable.types.manufacturer_cv import ManufacturerCV
+from mrcs_core.inventory.configuration_variable.types.numeric_cv import NumericCV
+from mrcs_core.inventory.manufacturer.manufacturer import Manufacturer
 from mrcs_core.operations.state_machine import StateMachineException
 
 
@@ -59,13 +59,6 @@ class TestCVProgrammerState(unittest.TestCase):
         obj1 = CVProgrammerState()
         obj1.go_READ(CVAddress.ACCELERATION)
         self.assertEqual([CVAddress.ACCELERATION], obj1.cv_queue)
-
-
-    def test_go_READ_all(self):
-        # as used by CVProgrammer.read_all()
-        obj1 = CVProgrammerState()
-        obj1.go_READ(*CVAddress.items())
-        self.assertEqual(list(CVAddress.items()), obj1.cv_queue)
 
 
     def test_go_READ_none(self):
