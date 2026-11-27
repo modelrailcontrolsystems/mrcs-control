@@ -23,7 +23,7 @@ the start of the test block so that acceleration is complete by the time the blo
 Actual results are gained from the --multi-run mode, which excercises the MPU over the set speed range 5 to 125.
 
 WARNING: the ACCELERATION and DECELERATION CVs should be set to a minimal value for the trial runs. The MPU sound
-whould be off, in case it alters the acceleration.
+should be off, in case it alters the acceleration.
 
 SYNOPSIS
 mrcs_control_speed_trial [-h] [-i INDENT] [-v] [--version] [-t] [-d] (-sr MPU BLOCK SPEED |
