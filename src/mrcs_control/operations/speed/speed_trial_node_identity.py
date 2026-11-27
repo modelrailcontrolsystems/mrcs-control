@@ -14,7 +14,7 @@ from mrcs_core.data.meta_enum import MetaEnum
 # --------------------------------------------------------------------------------------------------------------------
 
 @unique
-class SpeedNodeSerial(IntEnum, metaclass=MetaEnum):
+class SpeedTrialNodeSerial(IntEnum, metaclass=MetaEnum):
     """
     An enumeration of all the telemetry node serial numbers
     """

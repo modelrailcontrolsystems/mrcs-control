@@ -148,7 +148,7 @@ class TestBlockPersistence(unittest.TestCase):
         obj3.save()
 
         obj4 = PersistentBlockStatus.find('BS01')
-        self.assertEqual(obj3, obj4)                    # previous occupants have been removed
+        self.assertEqual(obj3, obj4)  # previous occupants have been removed
         self.assertEqual(16, len(PersistentBlockStatus.find_all()))
 
 
@@ -156,7 +156,7 @@ class TestBlockPersistence(unittest.TestCase):
         self.__setup_db()
         obj1 = self.__find('BS02')
         obj2 = PersistentBlockStatus(obj1.label, obj1.address, BlockHeading.UP, BlockVoltage.OCCUPIED_WITH_VOLTAGE)
-        obj2.save()                                     # REPLACE deletes the block's turnouts by cascade
+        obj2.save()  # REPLACE deletes the block's turnouts by cascade
 
         self.assertIsNone(PersistentTurnoutStatus.find('TE01'))
         self.assertEqual([], obj2.turnouts)
@@ -166,7 +166,7 @@ class TestBlockPersistence(unittest.TestCase):
         self.__setup_db()
         obj1 = self.__find('BS01')
         obj2 = PersistentBlockStatus('BX01', obj1.address, BlockHeading.UP, BlockVoltage.UNKNOWN)
-        obj2.save()                                     # REPLACE resolves the UNIQUE address conflict
+        obj2.save()  # REPLACE resolves the UNIQUE address conflict
 
         self.assertFalse(PersistentBlockStatus.exists('BS01'))
         self.assertTrue(PersistentBlockStatus.exists('BX01'))
@@ -290,7 +290,7 @@ class TestBlockPersistence(unittest.TestCase):
 
         PersistentBlockStatus.delete_occupants(block_id)
 
-        obj = self.__find('BS02')                       # the block itself is not deleted
+        obj = self.__find('BS02')  # the block itself is not deleted
         self.assertEqual([], obj.occupants)
 
 
@@ -303,12 +303,12 @@ class TestBlockPersistence(unittest.TestCase):
         self.assertEqual(obj1, obj2)
 
 
-    def test_construct_from_db(self):
+    def test_construct_from_db_shift_to_occupied(self):
         obj = PersistentBlockStatus.construct_from_db(['BX01', '7/1', 'UP', 'FREE_WITH_VOLTAGE'],
                                                       ['4660', 'FACE_FORWARD'])
         self.assertEqual('BlockStatus:{label:BX01, address:BlockAddress:{detector:7, channel:1}, heading:UP, '
-                         'voltage:FREE_WITH_VOLTAGE, occupants:[BlockOccupant:{mpu_address:4660, face:FACE_FORWARD}]}',
-                         str(obj))
+                         'voltage:OCCUPIED_WITH_VOLTAGE, occupants:[BlockOccupant:{mpu_address:4660, face:'
+                         'FACE_FORWARD}]}', str(obj))
 
 
     def test_as_db_insert(self):

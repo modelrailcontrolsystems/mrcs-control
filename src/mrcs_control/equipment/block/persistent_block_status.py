@@ -57,12 +57,18 @@ class PersistentBlockStatus(BlockStatus, BlockPersistence, PersistentObject):
 
     @classmethod
     def construct_from_db(cls, row, *child_rows) -> Self:
-        label, shortform_address, heading, voltage = row
+        label, shortform_address, db_heading, db_voltage = row
 
         address = BlockAddress.construct_from_shortform(shortform_address)
+        heading = BlockHeading[db_heading]
+        voltage = BlockVoltage[db_voltage]
+
         occupants = [PersistentBlockOccupant.construct_from_db(occupant_row) for occupant_row in child_rows]
 
-        return cls(label, address, BlockHeading[heading], BlockVoltage[voltage], *occupants)
+        if occupants and voltage == BlockVoltage.FREE_WITH_VOLTAGE:
+            voltage = BlockVoltage.OCCUPIED_WITH_VOLTAGE  # correct for out-of-sync data collection
+
+        return cls(label, address, heading, voltage, *occupants)
 
 
     # ----------------------------------------------------------------------------------------------------------------

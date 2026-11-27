@@ -6,7 +6,7 @@ Created on 29 Oct 2026
 https://realpython.com/command-line-interfaces-python-argparse/
 """
 
-from mrcs_control.cli.args.speed_trial_actions import SpeedTrialSingleRunAction
+from mrcs_control.cli.args.speed_trial_actions import MultiRunAction, SpeedTrialSingleRunAction
 from mrcs_control.cli.args.subscriber_control_args import SubscriberControlArgs
 
 
@@ -23,8 +23,8 @@ class SpeedTrialArgs(SubscriberControlArgs):
         group.add_argument('-sr', '--single-run', action=SpeedTrialSingleRunAction, nargs=3,
                            metavar=('MPU', 'BLOCK', 'SPEED'), help='run a single test for MPU BLOCK SPEED')
 
-        group.add_argument('-mr', '--multi-run', type=str, nargs=2, metavar=('MPU', 'BLOCK'),
-                           help='run multiple tests for MPU BLOCK')
+        group.add_argument('-mr', '--multi-run', action=MultiRunAction, nargs=4,
+                           metavar=('MPU', 'BLOCK', 'SLOWEST', 'FASTEST'), help='run multiple tests for MPU BLOCK')
 
         group.add_argument('-s', '--show', action='store', type=str, nargs=2, metavar=('MPU', 'BLOCK'),
                            help='print test trial for MPU BLOCK as JSON')
@@ -111,6 +111,22 @@ class SpeedTrialArgs(SubscriberControlArgs):
     def speed(self):
         if self.single_run:
             return self._args.single_run[2]
+
+        return None
+
+
+    @property
+    def slowest(self):
+        if self.multi_run:
+            return self._args.multi_run[2]
+
+        return None
+
+
+    @property
+    def fastest(self):
+        if self.multi_run:
+            return self._args.multi_run[3]
 
         return None
 

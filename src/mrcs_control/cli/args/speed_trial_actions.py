@@ -58,3 +58,36 @@ class SpeedTrialSingleRunAction(Action):
             parser.error(f"argument {opt}: VALUE must be 2 to 127 (got '{values[2]}')")
 
         setattr(namespace, self.dest, (str(values[0]), str(values[1]), int(values[2])))
+
+
+# --------------------------------------------------------------------------------------------------------------------
+
+class MultiRunAction(Action):
+    """
+    argparse action for multi run option (MPU BLOCK SLOWEST FASTEST)
+    """
+
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        if values is None:
+            return
+
+        opt = option_string if option_string else '-mr/--multi-run'
+
+        mpu = values[0]
+        block = values[1]
+
+        try:
+            slowest = Valid.int(values[2], min_value=0, max_value=255)
+        except ValueError:
+            parser.error(f"argument {opt}: SLOWEST must be an integer in range 0-255 (got '{values[2]}')")
+
+        try:
+            fastest = Valid.int(values[3], min_value=0, max_value=255)
+        except ValueError:
+            parser.error(f"argument {opt}: FASTEST must be an integer in range 0-255 (got '{values[3]}')")
+
+        if fastest <= slowest:
+            parser.error(f"argument {opt}: FASTEST ({fastest}) must be greater than SLOWEST ({slowest})")
+
+        setattr(namespace, self.dest, (mpu, block, slowest, fastest))
