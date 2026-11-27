@@ -153,5 +153,6 @@ class SpeedTrialState(StateMachine[Node]):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
+        speed_logs = None if self.__speed_log is None else len(self.__speed_log)
         return (f'SpeedTrialState:{{node:{self.node}, heading:{self.heading.name}, '
-                f'latest_reported_speed:{self.__latest_reported_speed}, speed_log:{self.__speed_log}}}')
+                f'latest_reported_speed:{self.__latest_reported_speed}, speed_logs:{speed_logs}}}')

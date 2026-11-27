@@ -213,14 +213,14 @@ class TestSpeedTrialState(unittest.TestCase):
 
     def test_str(self):
         obj1 = SpeedTrialState(BlockHeading.UP, 20)
-        self.assertEqual('SpeedTrialState:{node:STANDBY, heading:UP, latest_reported_speed:20, speed_log:None}',
+        self.assertEqual('SpeedTrialState:{node:STANDBY, heading:UP, latest_reported_speed:20, speed_logs:None}',
                          str(obj1))
 
 
     def test_str_new(self):
         obj1 = SpeedTrialState()
         self.assertEqual('SpeedTrialState:{node:STANDBY, heading:UNASSIGNED, latest_reported_speed:None, '
-                         'speed_log:None}', str(obj1))
+                         'speed_logs:None}', str(obj1))
 
 
 # --------------------------------------------------------------------------------------------------------------------

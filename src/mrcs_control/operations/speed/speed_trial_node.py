@@ -15,8 +15,9 @@ from mrcs_control.db.db_client import DbClient
 from mrcs_control.equipment.block.persistent_block_status import PersistentBlockStatus
 from mrcs_control.messaging.mq_topology import MQTopology
 from mrcs_control.operations.async_messaging_node import AsyncSubscriberNode
+from mrcs_control.operations.control_router.control_router_node import ControlRouterNode
 from mrcs_control.operations.motive_power_unit.mpu_node import MPUNode
-from mrcs_control.operations.speed.speed_node_identity import SpeedNodeSerial
+from mrcs_control.operations.speed.speed_trial_node_identity import SpeedTrialNodeSerial
 from mrcs_control.operations.track.track_node import TrackNode
 from mrcs_core.data.json import JSONable, JSONify
 from mrcs_core.equipment.equipment_enums import EquipmentType
@@ -28,7 +29,7 @@ from mrcs_core.operations.node_topology import NodeTopology
 
 # --------------------------------------------------------------------------------------------------------------------
 
-class SpeedNode(AsyncSubscriberNode):
+class SpeedTrialNode(AsyncSubscriberNode):
     """
     a service that runs MPU speed trials
     """
@@ -36,12 +37,12 @@ class SpeedNode(AsyncSubscriberNode):
 
     @classmethod
     def id(cls) -> EquipmentIdentifier:
-        return EquipmentIdentifier(EquipmentType.SPD, None, SpeedNodeSerial.NODE)
+        return EquipmentIdentifier(EquipmentType.SPD, None, SpeedTrialNodeSerial.NODE)
 
 
     @classmethod
     def broadcast_id(cls) -> EquipmentIdentifier:
-        return EquipmentIdentifier(EquipmentType.SPD, None, SpeedNodeSerial.SPEED_REPORT)
+        return EquipmentIdentifier(EquipmentType.SPD, None, SpeedTrialNodeSerial.SPEED_REPORT)
 
 
     @classmethod
@@ -60,6 +61,11 @@ class SpeedNode(AsyncSubscriberNode):
     @classmethod
     def broadcast_routing_key(cls):
         return PublicationRoutingKey(cls.broadcast_id(), EquipmentFilter.any())
+
+
+    @classmethod
+    def control_routing_key(cls):
+        return PublicationRoutingKey(SpeedTrialNode.id(), ControlRouterNode.id())
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -140,8 +146,8 @@ class SpeedNode(AsyncSubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):
-        on_message = self.on_message.__name__
         routing_keys = '[' + ', '.join(map(str, self.subscription_routing_keys())) + ']'
+        on_message = self.on_message.__name__
 
-        return (f'SpeedNode:{{routing_keys:{routing_keys}, on_message:{on_message}, '
+        return (f'SpeedTrialNode:{{routing_keys:{routing_keys}, on_message:{on_message}, '
                 f'ops:{self.ops}, mq_client:{self.mq_client}}}')
