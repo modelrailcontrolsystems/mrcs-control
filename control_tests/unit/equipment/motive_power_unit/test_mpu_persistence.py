@@ -65,8 +65,8 @@ class TestMPUPersistence(unittest.TestCase):
 
     @classmethod
     def __save_mpu(cls, label: str, mpu_address: int) -> PersistentMPUStatus:
-        obj = PersistentMPUStatus(label, mpu_address, MPUFunctions.construct_from_jdict('+-+'), 12, 7,
-                                  MPUDirection.FORWARD)
+        obj = PersistentMPUStatus(label, mpu_address, MPUFunctions.construct_from_jdict('+-+'),
+                                  12, 7, 3.6, MPUDirection.FORWARD)
         obj.save()
 
         return obj
@@ -108,8 +108,8 @@ class TestMPUPersistence(unittest.TestCase):
     def test_find(self):
         self.__setup_db()
         obj = PersistentMPUStatus.find('DB59')
-        self.assertEqual('PersistentMPUStatus:{label:DB59, mpu_address:5, functions:, speed_setting:None, speed:None, '
-                         'direction:UNKNOWN{2}}', str(obj))
+        self.assertEqual('PersistentMPUStatus:{label:DB59, mpu_address:5, functions:, speed_setting:None, '
+                         'reported_speed:None, actual_speed:None, direction:UNKNOWN{2}}', str(obj))
 
 
     def test_find_not_found(self):
@@ -155,8 +155,8 @@ class TestMPUPersistence(unittest.TestCase):
     def test_save_replace(self):
         self.__setup_db()
         obj1 = self.__find('DB59')
-        obj2 = PersistentMPUStatus(obj1.label, obj1.mpu_address, MPUFunctions.construct_from_jdict('++-'), 20, 15,
-                                   MPUDirection.REVERSE)
+        obj2 = PersistentMPUStatus(obj1.label, obj1.mpu_address, MPUFunctions.construct_from_jdict('++-'),
+                                   20, 15, 7.5, MPUDirection.REVERSE)
         obj2.save()
 
         obj3 = PersistentMPUStatus.find('DB59')
@@ -167,7 +167,7 @@ class TestMPUPersistence(unittest.TestCase):
     def test_save_duplicate_address(self):
         self.__setup_db()
         obj1 = self.__find('DB59')
-        self.__save_mpu('CL60', obj1.mpu_address)      # REPLACE resolves the UNIQUE address conflict
+        self.__save_mpu('CL60', obj1.mpu_address)  # REPLACE resolves the UNIQUE address conflict
 
         self.assertFalse(PersistentMPUStatus.exists('DB59'))
         self.assertTrue(PersistentMPUStatus.exists('CL60'))
@@ -180,7 +180,7 @@ class TestMPUPersistence(unittest.TestCase):
 
         obj1 = PersistentMPUStatus.update_from_configuration_report(report)
         self.assertEqual('PersistentMPUStatus:{label:DB59, mpu_address:5, functions:+-+, speed_setting:12, '
-                         'speed:None, direction:REVERSE{1}}', str(obj1))
+                         'reported_speed:None, actual_speed:None, direction:REVERSE{1}}', str(obj1))
 
         obj2 = PersistentMPUStatus.find('DB59')
         self.assertEqual(obj1, obj2)
@@ -202,7 +202,7 @@ class TestMPUPersistence(unittest.TestCase):
                                         20, True, False, True)
 
         obj2 = PersistentMPUStatus.update_from_configuration_report(report)
-        self.assertEqual(obj1.speed, obj2.speed)
+        self.assertEqual(obj1.reported_speed, obj2.reported_speed)
 
 
     def test_update_from_configuration_report_not_found(self):
@@ -218,9 +218,9 @@ class TestMPUPersistence(unittest.TestCase):
         self.__setup_db()
         report = MPUDecoderReport(5, 456, 789, 171, 90, 5)
 
-        obj1 = PersistentMPUStatus.update_from_decoder_report(report)
-        self.assertEqual('PersistentMPUStatus:{label:DB59, mpu_address:5, functions:, speed_setting:None, speed:90, '
-                         'direction:UNKNOWN{2}}', str(obj1))
+        obj1 = PersistentMPUStatus.update_from_decoder_report(report, 45.9)
+        self.assertEqual('PersistentMPUStatus:{label:DB59, mpu_address:5, functions:, speed_setting:None, '
+                         'reported_speed:90, actual_speed:45.9, direction:UNKNOWN{2}}', str(obj1))
 
         obj2 = PersistentMPUStatus.find('DB59')
         self.assertEqual(obj1, obj2)
@@ -231,7 +231,7 @@ class TestMPUPersistence(unittest.TestCase):
         obj1 = self.__save_mpu('CL60', 4)
         report = MPUDecoderReport(4, 456, 789, 171, 90, 5)
 
-        obj2 = PersistentMPUStatus.update_from_decoder_report(report)
+        obj2 = PersistentMPUStatus.update_from_decoder_report(report, 45.9)
         self.assertEqual(obj1.functions, obj2.functions)
         self.assertEqual(obj1.speed_setting, obj2.speed_setting)
         self.assertEqual(obj1.direction, obj2.direction)
@@ -242,7 +242,7 @@ class TestMPUPersistence(unittest.TestCase):
         report = MPUDecoderReport(99, 456, 789, 171, 90, 5)
 
         with self.assertRaises(KeyError):
-            PersistentMPUStatus.update_from_decoder_report(report)
+            PersistentMPUStatus.update_from_decoder_report(report, 45.9)
 
 
     def test_delete(self):
@@ -263,32 +263,35 @@ class TestMPUPersistence(unittest.TestCase):
     # ----------------------------------------------------------------------------------------------------------------
 
     def test_narrow(self):
-        obj1 = MPUStatus('CL60', 4, MPUFunctions.construct_from_jdict('+-+'), 12, 7, MPUDirection.FORWARD)
+        obj1 = MPUStatus('CL60', 4, MPUFunctions.construct_from_jdict('+-+'),
+                         12, 7, 3.6, MPUDirection.FORWARD)
         obj2 = PersistentMPUStatus.narrow(obj1)
         self.assertIsInstance(obj2, PersistentMPUStatus)
         self.assertEqual(obj1, obj2)
 
 
     def test_construct_from_db(self):
-        obj = PersistentMPUStatus.construct_from_db(['CL60', 4, '+-+', 12, 7, 'FORWARD'])
-        self.assertEqual('PersistentMPUStatus:{label:CL60, mpu_address:4, functions:+-+, speed_setting:12, speed:7, '
-                         'direction:FORWARD{0}}', str(obj))
+        obj = PersistentMPUStatus.construct_from_db(['CL60', 4, '+-+', 12, 7, 3.6, 'FORWARD'])
+        self.assertEqual('PersistentMPUStatus:{label:CL60, mpu_address:4, functions:+-+, speed_setting:12, '
+                         'reported_speed:7, actual_speed:3.6, direction:FORWARD{0}}', str(obj))
 
 
     def test_construct_from_db_nulls(self):
-        obj = PersistentMPUStatus.construct_from_db(['CL60', 4, '', None, None, 'UNKNOWN'])
+        obj = PersistentMPUStatus.construct_from_db(['CL60', 4, '', None, None, None, 'UNKNOWN'])
         self.assertEqual([], obj.functions.funcs)
         self.assertIsNone(obj.speed_setting)
-        self.assertIsNone(obj.speed)
+        self.assertIsNone(obj.reported_speed)
 
 
     def test_as_db_insert(self):
-        obj = PersistentMPUStatus('CL60', 4, MPUFunctions.construct_from_jdict('+-+'), 12, 7, MPUDirection.FORWARD)
-        self.assertEqual(('CL60', 4, '+-+', 12, 7, 'FORWARD'), obj.as_db_insert())
+        obj = PersistentMPUStatus('CL60', 4, MPUFunctions.construct_from_jdict('+-+'),
+                                  12, 7, 3.6, MPUDirection.FORWARD)
+        self.assertEqual(('CL60', 4, '+-+', 12, 7, 3.6, 'FORWARD'), obj.as_db_insert())
 
 
     def test_as_db_update(self):
-        obj = PersistentMPUStatus('CL60', 4, MPUFunctions.construct_from_jdict('+-+'), 12, 7, MPUDirection.FORWARD)
+        obj = PersistentMPUStatus('CL60', 4, MPUFunctions.construct_from_jdict('+-+'),
+                                  12, 7, 3.6, MPUDirection.FORWARD)
         with self.assertRaises(NotImplementedError):
             obj.as_db_update()
 

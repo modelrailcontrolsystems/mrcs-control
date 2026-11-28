@@ -7,12 +7,13 @@ A structured representation of an MPUStatus
 
 {
     "type": "MPUStatus",
-    "label": "EMR Class 08",
-    "addr": 3,
+    "label": "GW158",
+    "addr": 8,
     "functions": "+-+",
-    "speed_setting": 12,
-    "speed": 7,
-    "direction": true
+    "speed_setting": 31,
+    "reported_speed": 7,
+    "actual_speed": 3.6,
+    "direction": FORWARD
 }
 """
 
@@ -40,22 +41,23 @@ class PersistentMPUStatus(MPUStatus, MPUStatusPersistence, PersistentObject):
 
     @classmethod
     def narrow(cls, mpu: MPUStatus) -> Self:
-        return cls(mpu.label, mpu.mpu_address, mpu.functions, mpu.speed_setting, mpu.speed, mpu.direction)
+        return cls(mpu.label, mpu.mpu_address, mpu.functions, mpu.speed_setting, mpu.reported_speed, mpu.actual_speed,
+                   mpu.direction)
 
 
     @classmethod
     def construct_from_db(cls, row, *child_rows) -> Self:
-        label, mpu_address, functions, speed_setting, speed, direction = row
+        label, mpu_address, functions, speed_setting, reported_speed, actual_speed, direction = row
 
-        return cls(label, mpu_address, MPUFunctions.construct_from_jdict(functions), speed_setting, speed,
-                   MPUDirection[direction])
+        return cls(label, mpu_address, MPUFunctions.construct_from_jdict(functions), speed_setting, reported_speed,
+                   actual_speed, MPUDirection[direction])
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     def __init__(self, label: str, mpu_address: int, functions: MPUFunctions, speed_setting: int | None,
-                 speed: int | None, direction: MPUDirection):
-        super().__init__(label, mpu_address, functions, speed_setting, speed, direction)
+                 reported_speed: int | None, actual_speed: float | None, direction: MPUDirection):
+        super().__init__(label, mpu_address, functions, speed_setting, reported_speed, actual_speed, direction)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -67,8 +69,8 @@ class PersistentMPUStatus(MPUStatus, MPUStatusPersistence, PersistentObject):
     # ----------------------------------------------------------------------------------------------------------------
 
     def as_db_insert(self):
-        return (self.label, self.mpu_address, self.functions.as_json(), self.speed_setting, self.speed,
-                self.direction.name)
+        return (self.label, self.mpu_address, self.functions.as_json(), self.speed_setting, self.reported_speed,
+                self.actual_speed, self.direction.name)
 
 
     def as_db_update(self):

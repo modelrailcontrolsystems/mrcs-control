@@ -118,17 +118,23 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    if args.show:
+    if args.trial_view:
         speed_trial = SpeedTrial.load(Host, name=SpeedTrial.trial_name(args.mpu, args.block))
         print(JSONify.dumps(speed_trial, indent=args.indent))
         exit(0)
 
-    if args.csv:
+    if args.trial_csv:
         speed_trial = SpeedTrial.load(Host, name=SpeedTrial.trial_name(args.mpu, args.block))
         CSV.write(JSONify.as_jdict(speed_trial.runs))
         exit(0)
 
-    if args.erase:
+    if args.trial_normalisation:
+        speed_trial = SpeedTrial.load(Host, name=SpeedTrial.trial_name(args.mpu, args.block))
+        normalisation = speed_trial.normalisation()
+        print(JSONify.dumps(normalisation, indent=args.indent))
+        exit(0)
+
+    if args.trial_erase:
         SpeedTrial.delete(Host, name=SpeedTrial.trial_name(args.mpu, args.block))
         exit(0)
 
@@ -138,10 +144,10 @@ if __name__ == '__main__':
         speed_trial = SpeedTrial.load(Host, SpeedTrial.trial_name(mpu.label, block.label))
         runner = SpeedTrialRunner(args.mode.value, layout, speed_trial, mpu, block)
 
-        if args.single_run:
+        if args.run_single:
             run_single(args.speed)
 
-        if args.multi_run:
+        if args.run_multi:
             for speed in range(args.slowest, args.fastest + 1, 5):
                 run_single(speed)
 

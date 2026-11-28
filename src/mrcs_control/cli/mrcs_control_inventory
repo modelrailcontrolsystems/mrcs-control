@@ -134,6 +134,7 @@ if __name__ == '__main__':
                 exit(2)
 
             programmer.read()
+            # noinspection unresolved-references
             inventory.mpu(args.read_cvs).set_cvs(*programmer.cvs)
             inventory.save(Host)
             exit(0)

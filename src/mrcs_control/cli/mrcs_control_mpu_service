@@ -59,7 +59,20 @@ if __name__ == '__main__':
     # ----------------------------------------------------------------------------------------------------------------
 
     try:
-        node = MPUNode(args.mode.value, on_message=message_handler)
+        inventory = InventoryConf.load_selected_inventory(Host)
+    except Exception as exc:
+        logger.error(f'Error in inventory component: {exc}.')
+        exit(1)
+
+    if inventory is None:
+        logger.error(f'No inventory is selected. Use mrcs_control_inventory --set-selected-inventory to set one.')
+        exit(1)
+
+    logger.info(f'inventory: {inventory.description}')
+
+
+    try:
+        node = MPUNode(args.mode.value, inventory, on_message=message_handler)
 
         if args.drain:
             purged_count = node.drain()
