@@ -16,7 +16,7 @@ over a block that is straight, level and has sufficient distance up and down for
 to take place. The output is a SpeedTrial JSON file that can be used to determine the set speed -> actual speed
 relationship, which is assumed to be a first-order linear function.
 
-The --single-run mode can be used to check the configuration of the system. The test is run in both directions;
+The --single-run mode can be used to set the speed calibration of the MPU. The test is run in both directions;
 the MPU heading is determined automatically. The initial position of the MPU must be sufficiently far from
 the start of the test block so that acceleration is complete by the time the block is entered.
 
