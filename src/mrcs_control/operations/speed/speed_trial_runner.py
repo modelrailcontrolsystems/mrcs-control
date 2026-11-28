@@ -71,12 +71,12 @@ class SpeedTrialRunner(object):
 
 
     async def __on_mpu_message(self, mpu_status: MPUStatus) -> None:
-        self.state.latest_reported_speed = mpu_status.speed
+        self.state.latest_reported_speed = mpu_status.reported_speed
 
         if self.state.is_TRIAL_RUNNING():
             self.state.mark()
 
-        elif self.state.is_STOPPING() and mpu_status.speed == 0:
+        elif self.state.is_STOPPING() and mpu_status.reported_speed == 0:
             self.state.go_STOPPED()
             self.node.request_shutdown()
 

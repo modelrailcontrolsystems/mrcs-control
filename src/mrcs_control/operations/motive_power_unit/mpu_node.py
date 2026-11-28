@@ -24,6 +24,7 @@ from mrcs_core.equipment.equipment_identity import EquipmentFilter, EquipmentIde
 from mrcs_core.equipment.motive_power_unit.mpu_configuration_report import MPUConfigurationReport
 from mrcs_core.equipment.motive_power_unit.mpu_decoder_report import MPUDecoderReport
 from mrcs_core.equipment.motive_power_unit.mpu_status import MPUStatus
+from mrcs_core.inventory.inventory import Inventory
 from mrcs_core.inventory.motive_power_unit.mpu_abstract import MPUAbstract
 from mrcs_core.messaging.message import Message
 from mrcs_core.messaging.routing_key import PublicationRoutingKey, SubscriptionRoutingKey
@@ -73,10 +74,14 @@ class MPUNode(AsyncSubscriberNode):
 
     # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, ops: NodeTopology.ServiceConfiguration, on_message: Callable[JSONable] | None = None):
+    def __init__(self, ops: NodeTopology.ServiceConfiguration, inventory: Inventory,
+                 on_message: Callable[JSONable] | None = None):
         super().__init__(ops, MQTopology.SINGLE_PROCESS)
 
+        self.__inventory = inventory
         self.__on_message = on_message
+
+        self.__prev_status = None
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -105,9 +110,11 @@ class MPUNode(AsyncSubscriberNode):
 
             elif body_type == MPUDecoderReport.type_name():
                 report = MPUDecoderReport.construct_from_jdict(message.body)
-                status = PersistentMPUStatus.update_from_decoder_report(report)
+                status = PersistentMPUStatus.update_from_decoder_report(report, self.__actual_speed(report))
 
-                self.__publish_update_message(status)
+                if status != self.prev_status:
+                    self.__prev_status = status
+                    self.__publish_update_message(status)
 
             else:
                 self.logger.warning(f'upsupported message:{message}')
@@ -118,6 +125,11 @@ class MPUNode(AsyncSubscriberNode):
 
         except Exception as exc:
             self.logger.warning(f'handle_message:{type(exc).__name__}:{exc} on:{message}')
+
+
+    def __actual_speed(self, report: MPUDecoderReport) -> float | None:
+        mpu = self.inventory.mpu_by_address(report.mpu_address)
+        return None if mpu is None else mpu.actual_speed(report.speed)
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -168,8 +180,18 @@ class MPUNode(AsyncSubscriberNode):
     # ----------------------------------------------------------------------------------------------------------------
 
     @property
+    def inventory(self):
+        return self.__inventory
+
+
+    @property
     def on_message(self):
         return self.__on_message
+
+
+    @property
+    def prev_status(self):
+        return self.__prev_status
 
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -178,5 +200,5 @@ class MPUNode(AsyncSubscriberNode):
         on_message = self.on_message.__name__
         routing_keys = '[' + ', '.join(map(str, self.subscription_routing_keys())) + ']'
 
-        return (f'MPUNode:{{routing_keys:{routing_keys}, on_message:{on_message}, '
+        return (f'MPUNode:{{routing_keys:{routing_keys}, on_message:{on_message}, prev_status:{self.prev_status}, '
                 f'ops:{self.ops}, mq_client:{self.mq_client}}}')

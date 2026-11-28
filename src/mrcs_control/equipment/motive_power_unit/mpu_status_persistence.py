@@ -51,15 +51,28 @@ class MPUStatusPersistence(PersistentObject, ABC):
             address INTEGER UNIQUE, 
             functions TEXT,
             speed_setting INTEGER,
-            speed INTEGER,
+            reported_speed INTEGER,
+            actual_speed FLOAT,
             direction TEXT)
             '''
+        client.execute(sql)
+
+        sql = f'CREATE INDEX IF NOT EXISTS {table}_label ON {table}(label)'
+        client.execute(sql)
+
+        sql = f'CREATE INDEX IF NOT EXISTS {table}_address ON {table}(address)'
         client.execute(sql)
 
 
     @classmethod
     def _drop_tables(cls, client):
         table = cls.table()
+        sql = f'DROP INDEX IF EXISTS {table}_label'
+        client.execute(sql)
+
+        sql = f'DROP INDEX IF EXISTS {table}_address'
+        client.execute(sql)
+
         sql = f'DROP TABLE IF EXISTS {table}'
         client.execute(sql)
 
@@ -83,7 +96,8 @@ class MPUStatusPersistence(PersistentObject, ABC):
         client = DbClient.instance(cls.db_name())
 
         table = cls.table()
-        sql = f'SELECT label, address, functions, speed_setting, speed, direction FROM {table} ORDER BY label'
+        sql = (f'SELECT label, address, functions, speed_setting, reported_speed, actual_speed, direction FROM {table} '
+               f'ORDER BY label')
         client.execute(sql)
         rows = client.fetchall()
 
@@ -95,7 +109,8 @@ class MPUStatusPersistence(PersistentObject, ABC):
         client = DbClient.instance(cls.db_name())
 
         table = cls.table()
-        sql = f'SELECT label, address, functions, speed_setting, speed, direction FROM {table} WHERE address = ?'
+        sql = (f'SELECT label, address, functions, speed_setting, reported_speed, actual_speed, direction FROM {table} '
+               f'WHERE address = ?')
         client.execute(sql, data=(address,))
         row = client.fetchone()
 
@@ -110,7 +125,8 @@ class MPUStatusPersistence(PersistentObject, ABC):
         client = DbClient.instance(cls.db_name())
 
         table = cls.table()
-        sql = f'SELECT label, address, functions, speed_setting, speed, direction FROM {table} WHERE label = ?'
+        sql = (f'SELECT label, address, functions, speed_setting, reported_speed, actual_speed, direction FROM {table} '
+               f'WHERE label = ?')
         client.execute(sql, data=(label,))
         row = client.fetchone()
 
@@ -142,8 +158,9 @@ class MPUStatusPersistence(PersistentObject, ABC):
             client.txIMMEDIATE()
 
             table = cls.table()
-            sql = (f'REPLACE INTO {table} (label, address, functions, speed_setting, speed, direction) '
-                   f'VALUES (?, ?, ?, ?, ?, ?)')
+            sql = (
+                f'REPLACE INTO {table} (label, address, functions, speed_setting, reported_speed, actual_speed, '
+                f'direction) VALUES (?, ?, ?, ?, ?, ?, ?)')
             client.execute(sql, data=item.as_db_insert())
 
             client.txCOMMIT()
@@ -162,11 +179,11 @@ class MPUStatusPersistence(PersistentObject, ABC):
 
             table = cls.table()
             sql = f'UPDATE {table} SET functions = ? , speed_setting = ?, direction = ? WHERE address = ?'
-            client.execute(sql,
-                           data=(config.functions.as_json(), config.speed_setting,
-                                 MPUDirection.from_reverse(config.reverse).name, config.mpu_address))
+            client.execute(sql, data=(config.functions.as_json(), config.speed_setting,
+                                      MPUDirection.from_reverse(config.reverse).name, config.mpu_address))
 
-            sql = f'SELECT label, address, functions, speed_setting, speed, direction FROM {table} WHERE address = ?'
+            sql = (f'SELECT label, address, functions, speed_setting, reported_speed, actual_speed, direction '
+                   f'FROM {table} WHERE address = ?')
             client.execute(sql, data=(config.mpu_address,))
             row = client.fetchone()
 
@@ -183,22 +200,23 @@ class MPUStatusPersistence(PersistentObject, ABC):
 
 
     @classmethod
-    def update_from_decoder_report(cls, decoder: MPUDecoderReport) -> Self:
+    def update_from_decoder_report(cls, report: MPUDecoderReport, actual_speed: float | None) -> Self:
         client = DbClient.instance(cls.db_name())
 
         try:
             client.txIMMEDIATE()
 
             table = cls.table()
-            sql = f'UPDATE {table} SET speed = ? WHERE address = ?'
-            client.execute(sql, data=(decoder.speed, decoder.mpu_address))
+            sql = f'UPDATE {table} SET reported_speed = ?, actual_speed = ? WHERE address = ?'
+            client.execute(sql, data=(report.speed, actual_speed, report.mpu_address))
 
-            sql = f'SELECT label, address, functions, speed_setting, speed, direction FROM {table} WHERE address = ?'
-            client.execute(sql, data=(decoder.mpu_address,))
+            sql = (f'SELECT label, address, functions, speed_setting, reported_speed, actual_speed, direction '
+                   f'FROM {table} WHERE address = ?')
+            client.execute(sql, data=(report.mpu_address,))
             row = client.fetchone()
 
             if not row:
-                raise KeyError(f'no MPUStatus with address 0x{decoder.mpu_address:02x}')
+                raise KeyError(f'no MPUStatus with address 0x{report.mpu_address:02x}')
 
             client.txCOMMIT()
 

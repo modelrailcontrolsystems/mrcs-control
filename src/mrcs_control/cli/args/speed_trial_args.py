@@ -20,20 +20,23 @@ class SpeedTrialArgs(SubscriberControlArgs):
         super().__init__(description)
 
         group = self._parser.add_mutually_exclusive_group(required=True)
-        group.add_argument('-sr', '--single-run', action=SpeedTrialSingleRunAction, nargs=3,
+        group.add_argument('-rs', '--run-single', action=SpeedTrialSingleRunAction, nargs=3,
                            metavar=('MPU', 'BLOCK', 'SPEED'), help='run a single test for MPU BLOCK SPEED')
 
-        group.add_argument('-mr', '--multi-run', action=MultiRunAction, nargs=4,
+        group.add_argument('-rm', '--run-multi', action=MultiRunAction, nargs=4,
                            metavar=('MPU', 'BLOCK', 'SLOWEST', 'FASTEST'), help='run multiple tests for MPU BLOCK')
 
-        group.add_argument('-s', '--show', action='store', type=str, nargs=2, metavar=('MPU', 'BLOCK'),
-                           help='print test trial for MPU BLOCK as JSON')
+        group.add_argument('-tv', '--trial-view', action='store', type=str, nargs=2, metavar=('MPU', 'BLOCK'),
+                           help='print trial for MPU BLOCK as JSON')
 
-        group.add_argument('-c', '--csv', action='store', type=str, nargs=2, metavar=('MPU', 'BLOCK'),
-                           help='print tests for MPU BLOCK as CSV')
+        group.add_argument('-tc', '--trial-csv', action='store', type=str, nargs=2, metavar=('MPU', 'BLOCK'),
+                           help='print trial for MPU BLOCK as CSV')
 
-        group.add_argument('-z', '--erase', action='store', type=str, nargs=2, metavar=('MPU', 'BLOCK'),
-                           help='erase test trial for MPU BLOCK')
+        group.add_argument('-tn', '--trial-normalisation', action='store', type=str, nargs=2, metavar=('MPU', 'BLOCK'),
+                           help='normalisation for MPU BLOCK as CSV')
+
+        group.add_argument('-tz', '--trial-erase', action='store', type=str, nargs=2, metavar=('MPU', 'BLOCK'),
+                           help='erase trial for MPU BLOCK')
 
         self._args = self._parser.parse_args()
 
@@ -41,92 +44,103 @@ class SpeedTrialArgs(SubscriberControlArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     @property
-    def single_run(self):
-        return bool(self._args.single_run)
+    def run_single(self):
+        return bool(self._args.run_single)
 
 
     @property
-    def multi_run(self):
-        return bool(self._args.multi_run)
+    def run_multi(self):
+        return bool(self._args.run_multi)
 
 
     @property
-    def show(self):
-        return bool(self._args.show)
+    def trial_view(self):
+        return bool(self._args.trial_view)
 
 
     @property
-    def csv(self):
-        return bool(self._args.csv)
+    def trial_csv(self):
+        return bool(self._args.trial_csv)
 
 
     @property
-    def erase(self):
-        return bool(self._args.erase)
+    def trial_normalisation(self):
+        return bool(self._args.trial_normalisation)
+
+
+    @property
+    def trial_erase(self):
+        return bool(self._args.trial_erase)
 
 
     # ----------------------------------------------------------------------------------------------------------------
 
     @property
     def mpu(self):
-        if self.single_run:
-            return self._args.single_run[0]
+        if self.run_single:
+            return self._args.run_single[0]
 
-        if self.multi_run:
-            return self._args.multi_run[0]
+        if self.run_multi:
+            return self._args.run_multi[0]
 
-        if self.show:
-            return self._args.show[0]
+        if self.trial_view:
+            return self._args.trial_view[0]
 
-        if self.csv:
-            return self._args.csv[0]
+        if self.trial_csv:
+            return self._args.trial_csv[0]
 
-        if self.erase:
-            return self._args.erase[0]
+        if self.trial_normalisation:
+            return self._args.trial_normalisation[0]
+
+        if self.trial_erase:
+            return self._args.trial_erase[0]
 
         return None
 
 
     @property
     def block(self):
-        if self.single_run:
-            return self._args.single_run[1]
+        if self.run_single:
+            return self._args.run_single[1]
 
-        if self.multi_run:
-            return self._args.multi_run[1]
+        if self.run_multi:
+            return self._args.run_multi[1]
 
-        if self.show:
-            return self._args.show[1]
+        if self.trial_view:
+            return self._args.trial_view[1]
 
-        if self.csv:
-            return self._args.csv[1]
+        if self.trial_csv:
+            return self._args.trial_csv[1]
 
-        if self.erase:
-            return self._args.erase[1]
+        if self.trial_normalisation:
+            return self._args.trial_normalisation[1]
+
+        if self.trial_erase:
+            return self._args.trial_erase[1]
 
         return None
 
 
     @property
     def speed(self):
-        if self.single_run:
-            return self._args.single_run[2]
+        if self.run_single:
+            return self._args.run_single[2]
 
         return None
 
 
     @property
     def slowest(self):
-        if self.multi_run:
-            return self._args.multi_run[2]
+        if self.run_multi:
+            return self._args.run_multi[2]
 
         return None
 
 
     @property
     def fastest(self):
-        if self.multi_run:
-            return self._args.multi_run[3]
+        if self.run_multi:
+            return self._args.run_multi[3]
 
         return None
 
@@ -134,6 +148,7 @@ class SpeedTrialArgs(SubscriberControlArgs):
     # ----------------------------------------------------------------------------------------------------------------
 
     def __str__(self, *args, **kwargs):  #
-        return (f'SpeedTrialArgs:{{single_run:{self._args.single_run}, multi_run:{self._args.multi_run}, '
-                f'show:{self._args.show}, csv:{self._args.csv}, erase:{self._args.erase}, '
+        return (f'SpeedTrialArgs:{{run_single:{self._args.run_single}, run_multi:{self._args.run_multi}, '
+                f'trial_view:{self._args.trial_view}, trial_csv:{self._args.trial_csv}, '
+                f'trial_normalisation:{self._args.trial_normalisation}, trial_erase:{self._args.trial_erase}, '
                 f'verbose:{self.verbose}}}')
