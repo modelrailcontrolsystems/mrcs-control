@@ -68,6 +68,7 @@ class Protocol(DatagramProtocol):
 
     def error_received(self, exc):
         self.logger.warn(f'Protocol - error_received:{exc}')
+        raise exc
 
 
     # ----------------------------------------------------------------------------------------------------------------
